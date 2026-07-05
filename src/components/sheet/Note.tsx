@@ -1,6 +1,6 @@
-import type { Note as INote } from "../../types/MusicNotation"
+import type { Note as NoteProps } from "../../types/MusicNotation"
 
-export function Note({ note, char, pinyin }: INote) {
+export function Note({ note, char, pinyin }: NoteProps) {
     return (
         <div className="notation">
             <span className="note">{note}</span>

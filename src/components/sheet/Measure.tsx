@@ -1,7 +1,7 @@
-import type { Measure } from "../../types/MusicNotation";
+import type { Measure as MeasureProps } from "../../types/MusicNotation";
 import { Note } from "./Note";
 
-export function Measure({ chords, notes }: Measure) {
+export function Measure({ chords, notes }: MeasureProps) {
     return (
         <div className="measure">
             <div className="measure-chords">
