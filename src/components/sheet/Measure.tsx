@@ -18,6 +18,7 @@ export function Measure({ measure, showOptions }: Props) {
                 {measure.notes.map((n, i) => (
                     <Note key={i} note={n} showOptions={showOptions}></Note>
                 ))}
+                <span className="barline">|</span>
             </div>
         </div>
     )

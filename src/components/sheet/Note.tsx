@@ -9,8 +9,8 @@ export function Note({ note, showOptions }: Props) {
     return (
         <div className="notation">
             {showOptions.jianpu && <span className="note">{note.note}</span>}
-            {showOptions.lyrics && <span className="lyric">{note.char}</span>}
             {showOptions.pinyin && <span className="pinyin">{note.pinyin}</span>}
+            {showOptions.lyrics && <span className="lyric">{note.char}</span>}
         </div>
     )
 }

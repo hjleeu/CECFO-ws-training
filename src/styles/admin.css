@@ -1,0 +1,46 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: 7px;
+}
+
+.container > h2 {
+    text-align: center;
+}
+
+.container > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    padding: 3px;
+}
+
+.input-area {
+    display: flex;
+    flex-direction: column;
+    margin-right: 7px;
+}
+
+.input-area > textarea {
+    width: 100%;
+    height: 375px;
+    font-family: "Noto serif SC", serif;
+    font-size: 15px;
+    border-radius: 7px;
+    resize: none;
+    min-width: 375px;
+}
+
+.preview-area {
+    width: 100%;
+    border: none;
+    padding: 7px;
+    background: beige;
+    border-radius: 7px;
+}
+
+.save-btn {
+    width: 100%;
+    border: 1px solid black;
+    border-radius: 7px;
+}

@@ -8,6 +8,13 @@
     display: flex;
 }
 
+.barline {
+    align-self: flex-start;
+    padding-bottom: 1.37rem;
+    user-select: none;
+    font-size: 1.37rem;
+}
+
 .measure {
     display: flex;
     flex-direction: column;
@@ -17,24 +24,37 @@
 
 .chord {
     font-family: monospace;
+    color: blue;
+    text-transform: capitalize;
+    font-size: 1.15rem;
 }
 
 .measure-notes {
     display: flex;
+    align-items: center;
 }
 
 .notation {
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-width: 2rem;
 }
 
 .note {
     font-family: "JianpuASCII";
+    font-size: 1.37rem;
+    min-height: 1.37rem;
 }
 
 .lyric {
-    font-family: "Noto Sans SC", sans-serif;
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.37rem;
+    min-height: 1.37rem;
 }
 
-/* .pinyin {} */
+.pinyin {
+    color: gray;
+    font-size: 0.73rem;
+    min-height: 0.88rem;
+}

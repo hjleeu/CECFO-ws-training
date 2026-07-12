@@ -1,9 +1,9 @@
 import type { Jianpu } from "./Jianpu";
 
 export interface Note {
-    note: Jianpu
-    char: string
-    pinyin: string
+    note: Jianpu | '-'
+    char: string | ''
+    pinyin: string | ''
 }
 
 export interface Measure {
