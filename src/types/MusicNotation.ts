@@ -16,5 +16,13 @@ export interface Row {
 }
 
 export interface Sheet {
+    label: string
     rows: Row[]
+}
+
+export interface ShowOptions {
+    chords: boolean
+    jianpu: boolean
+    lyrics: boolean
+    pinyin: boolean
 }

@@ -1,0 +1,40 @@
+/* .sheet {} */
+
+.sheet-label {
+    text-transform: uppercase;
+}
+
+.row {
+    display: flex;
+}
+
+.measure {
+    display: flex;
+    flex-direction: column;
+}
+
+/* .measure-chords {} */
+
+.chord {
+    font-family: monospace;
+}
+
+.measure-notes {
+    display: flex;
+}
+
+.notation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.note {
+    font-family: "JianpuASCII";
+}
+
+.lyric {
+    font-family: "Noto Sans SC", sans-serif;
+}
+
+/* .pinyin {} */

@@ -1,11 +1,16 @@
-import type { Row as RowProps } from "../../types/MusicNotation";
+import type { Row as RowProps, ShowOptions } from "../../types/MusicNotation";
 import { Measure } from "./Measure";
 
-export function Row({ measures }: RowProps) {
+interface Props {
+    row: RowProps
+    showOptions: ShowOptions
+}
+
+export function Row({ row, showOptions }: Props) {
     return (
         <div className="row">
-            {measures.map((m, i) => (
-                <Measure key={i} {...m}></Measure>
+            {row.measures.map((m, i) => (
+                <Measure key={i} measure={m} showOptions={showOptions}></Measure>
             ))}
         </div>
     )

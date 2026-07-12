@@ -1,11 +1,16 @@
-import type { Note as NoteProps } from "../../types/MusicNotation"
+import type { Note, Note as NoteProps, ShowOptions } from "../../types/MusicNotation"
 
-export function Note({ note, char, pinyin }: NoteProps) {
+interface Props {
+    note: NoteProps
+    showOptions: ShowOptions
+}
+
+export function Note({ note, showOptions }: Props) {
     return (
         <div className="notation">
-            <span className="note">{note}</span>
-            <span className="lyric">{char}</span>
-            <span className="pinyin">{pinyin}</span>
+            {showOptions.jianpu && <span className="note">{note.note}</span>}
+            {showOptions.lyrics && <span className="lyric">{note.char}</span>}
+            {showOptions.pinyin && <span className="pinyin">{note.pinyin}</span>}
         </div>
     )
 }
