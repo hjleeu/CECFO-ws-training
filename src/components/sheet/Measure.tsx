@@ -9,14 +9,14 @@ interface Props {
 export function Measure({ measure, showOptions }: Props) {
     return (
         <div className="measure">
-            {showOptions.chords && <div className="measure-chords">
-                {measure.chords.map((c, i) => (
-                    <span key={i} className="chord">{c}</span>
-                ))}
-            </div>}
             <div className="measure-notes">
                 {measure.notes.map((n, i) => (
-                    <Note key={i} note={n} showOptions={showOptions}></Note>
+                    <div key={i} className="note-column">
+                        <span className="chord">
+                            {showOptions.chords && n.chord ? n.chord : ''}
+                        </span>
+                        <Note note={n} showOptions={showOptions}></Note>
+                    </div>
                 ))}
                 <span className="barline">|</span>
             </div>

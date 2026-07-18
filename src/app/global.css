@@ -4,3 +4,24 @@
   font-family: 'JianpuASCII';
   src: url('/fonts/JianpuASCII.ttf');
 }
+
+:root {
+  --font-chinese: "Noto Serif SC", serif;
+  --font-jianpu: "JianpuASCII", monospace;
+  --font-mono: "Fira Code", monospace;
+
+  --color-bg: #F5F1EB;
+  --color-surface: #FFFFFF;
+  --color-text: #2C2416;
+  --color-muted: #6B5E4A;
+  --color-accent: #2A5C8A;
+  --color-danger: #B5343A;
+  --color-border: #D6CDBC;
+  --color-shadow: rgba(0, 0, 0, 0.5);
+
+  --radius-sm: 7px;
+  --radius-md: 15px;
+  --shadow-sm: 0 3px 7px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.07);
+  --transition: 0.3s ease;
+}

@@ -1,19 +1,33 @@
 .sheet {
     user-select: none;
+    font-family: var(--font-chinese);
 }
 
 .sheet-label {
     text-transform: uppercase;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--color-muted);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.25rem;
 }
 
 .row {
     display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
 }
 
 .barline {
     align-self: flex-start;
+    font-size: 1.5rem;
+    color: var(--color-muted);
     user-select: none;
-    font-size: 1.37rem;
+    padding-top: 1.37rem;
+    opacity: 0.7;
+    line-height: 1;
 }
 
 .measure {
@@ -21,13 +35,20 @@
     flex-direction: column;
 }
 
-/* .measure-chords {} */
+.note-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 .chord {
-    font-family: monospace;
-    color: blue;
+    font-family: var(--font-mono);
+    color: var(--color-accent);
     text-transform: capitalize;
-    font-size: 1.15rem;
+    font-size: 0.99rem;
+    font-weight: 600;
+    line-height: 1.37;
+    min-height: 1.37rem;
 }
 
 .measure-notes {
@@ -39,23 +60,39 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 2rem;
+    justify-content: flex-end;
+    min-width: 2.2rem;
+    padding: 0 0.15rem;
 }
 
 .note {
-    font-family: "JianpuASCII";
-    font-size: 1.37rem;
-    min-height: 1.37rem;
+    font-family: var(--font-jianpu);
+    font-size: 1.5rem;
+    line-height: 1.37;
+    color: #1F1A12;
+}
+
+.note-eighth {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.note-sixteenth {
+    text-decoration: underline double;
+    text-underline-offset: 2px;
 }
 
 .lyric {
-    font-family: "Noto Serif SC", serif;
+    font-family: var(--font-chinese);
     font-size: 1.37rem;
+    line-height: 1.37;
+    color: var(--color-text);
     min-height: 1.37rem;
 }
 
 .pinyin {
-    color: gray;
+    color: #8C7A5C;
     font-size: 0.73rem;
+    line-height: 1.37;
     min-height: 0.88rem;
 }

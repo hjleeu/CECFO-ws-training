@@ -4,10 +4,10 @@ export interface Note {
     note: Jianpu | '-'
     char: string
     pinyin: string
+    chord?: string
 }
 
 export interface Measure {
-    chords: string[]
     notes: Note[]
 }
 

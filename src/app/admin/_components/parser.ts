@@ -2,6 +2,60 @@ import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
 import { Measure, Note, Row, Sheet } from "@/types/MusicNotation";
 
+// INTERNAL HELPER FUNCTIONS.
+function toToken(raw: string): string[] {
+  const result: string[] = []
+
+  // Match a full jianpu token.
+  const NOTE_REGEX = /(\[[^\]]+\])?([0-7][',]*\/{0,2}|-)/g
+  const raw2 = "2,/"
+  let match
+  while ((match = NOTE_REGEX.exec(raw2)) !== null) {
+    console.log(match[2])
+
+    const chord = match[1] ?? undefined
+    const note = match[2]
+    if (chord) {
+      result.push(`${chord}${note}`)
+    } else {
+      result.push(note)
+    }
+  }
+  return result
+}
+
+function parseNotes(raw: string): { note: string, chord?: string }[] {
+  const tokens = toToken(raw)
+  const result: { note: string, chord?: string }[] = []
+  let pendingChord: string | undefined
+
+  for (const t of tokens) {
+    if (t.startsWith('[') && t.endsWith(']')) {
+      pendingChord = t.slice(1, -1)
+      continue
+    }
+
+    if (t.startsWith('[')) {
+      const closeBracket = t.indexOf(']')
+      pendingChord = t.slice(1, closeBracket)
+      const note = t.slice(closeBracket + 1)
+      result.push({ note, chord: pendingChord })
+      pendingChord = undefined
+      continue
+    }
+
+    result.push({ note: t, chord: pendingChord })
+    pendingChord = undefined
+  }
+
+  return result
+}
+
+function parseLyrics(raw: string): string[] {
+  return [...raw.replace(/\s+/g, '')].filter(Boolean)
+}
+
+
 export function parse(raw: string): Sheet {
   const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean)
 
@@ -9,43 +63,46 @@ export function parse(raw: string): Sheet {
 
   const labelLine = lines[0]
   if (!labelLine.startsWith('[') || !labelLine.endsWith(']'))
-    throw new Error("First line must be a section label like [Verse 1]")
+    throw new Error("第一行应是段落label 例如 [Verse 1]")
 
-  const label = labelLine.trim()
+  const label = labelLine.slice(1, -1).trim()
   const dataLines = lines.slice(1)
 
-  if (dataLines.length % 3 !== 0)
-    throw new Error("Each row needs exactly 3 lines: chords, notes, lyrics.")
+  if (dataLines.length % 2 !== 0)
+    throw new Error("Each row needs exactly 2 lines: notes, lyrics.")
 
   const rows: Row[] = []
 
-  for (let i = 0; i < dataLines.length; i += 3) {
-    const chordLine = dataLines[i]
-    const noteLine = dataLines[i + 1]
-    const lyricLine = dataLines[i + 2]
+  for (let i = 0; i < dataLines.length; i += 2) {
+    const noteLine = dataLines[i]
+    const lyricLine = dataLines[i + 1]
 
-    const chordCols = chordLine.split('|').map(s => s.trim())
-    const noteCols = noteLine.split('|').map(s => s.trim())
-    const lyricCols = lyricLine.split('|').map(s => s.trim())
+    const noteCols = noteLine.split('|').map(s => s.trim()).filter(Boolean)
+    const lyricCols = lyricLine.split('|').map(s => s.trim()).filter(Boolean)
 
-    if (chordCols.length !== noteCols.length || noteCols.length !== lyricCols.length)
-      throw new Error(`Row ${i / 3 + 1}: chord / note / lyric columns must match`)
+    if (noteCols.length !== lyricCols.length)
+      throw new Error(`Row ${i / 2 + 1}: note / lyric columns must match`)
 
-    const measures: Measure[] = chordCols.map((chordCol, j) => {
-      const chords = chordCol.split(/\s+/).filter(Boolean)
-      const notes = noteCols[j].split(/\s+/).filter(Boolean)
-      const lyrics = lyricCols[j].split(/\s+/).filter(Boolean)
+    const measures: Measure[] = noteCols.map((noteCol, j) => {
+      const parsedNotes = parseNotes(noteCols[j])
+      const lyrics = parseLyrics(lyricCols[j])
 
-      if (notes.length !== lyrics.length)
-        throw new Error(`Row ${i / 3 + 1}, measure ${j + 1}: note count doesn't match lyric count`)
+      if (parsedNotes.length !== lyrics.length)
+        throw new Error(`Row ${i / 2 + 1}, measure ${j + 1}: notes count doesn't match lyrics count`)
 
-      const noteItems: Note[] = notes.map((n, k) => ({
-        note: n as Jianpu | '-',
-        char: lyrics[k] !== '-' ? lyrics[k] : '',
-        pinyin: pinyin(lyrics[k] !== '-' ? lyrics[k] : '', {toneType: "symbol", type: "array"})[0]
-      }))
+      const noteItems: Note[] = parsedNotes.map(({ note: n, chord }, k) => {
+        const char = lyrics[k] !== '-' ? lyrics[k] : ''
+        const py = char ? pinyin(char, { toneType: "symbol", type: "array"})[0] ?? '' : ''
 
-      return { chords, notes: noteItems }
+        return {
+          note: n as Jianpu | '-',
+          char,
+          pinyin: py,
+          chord
+        }
+      })
+
+      return { notes: noteItems }
     })
 
     rows.push({ measures })
