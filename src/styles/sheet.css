@@ -1,4 +1,6 @@
-/* .sheet {} */
+.sheet {
+    user-select: none;
+}
 
 .sheet-label {
     text-transform: uppercase;
@@ -10,7 +12,6 @@
 
 .barline {
     align-self: flex-start;
-    padding-bottom: 1.37rem;
     user-select: none;
     font-size: 1.37rem;
 }
@@ -31,7 +32,7 @@
 
 .measure-notes {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .notation {

@@ -1,3 +1,4 @@
+import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
 import { Measure, Note, Row, Sheet } from "@/types/MusicNotation";
 
@@ -24,7 +25,7 @@ export function parse(raw: string): Sheet {
     const lyricLine = dataLines[i + 2]
 
     const chordCols = chordLine.split('|').map(s => s.trim())
-    const noteCols = noteLine.split('|').map(s => s .trim())
+    const noteCols = noteLine.split('|').map(s => s.trim())
     const lyricCols = lyricLine.split('|').map(s => s.trim())
 
     if (chordCols.length !== noteCols.length || noteCols.length !== lyricCols.length)
@@ -40,8 +41,8 @@ export function parse(raw: string): Sheet {
 
       const noteItems: Note[] = notes.map((n, k) => ({
         note: n as Jianpu | '-',
-        char: lyrics[k] !== '-' ? lyrics[k] : ' ',
-        pinyin: ''
+        char: lyrics[k] !== '-' ? lyrics[k] : '',
+        pinyin: pinyin(lyrics[k] !== '-' ? lyrics[k] : '', {toneType: "symbol", type: "array"})[0]
       }))
 
       return { chords, notes: noteItems }

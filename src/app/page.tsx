@@ -13,7 +13,7 @@ export default function TrainingPage() {
       pinyin: true
     });
   
-    const toogle = (key: keyof ShowOptions) => {
+    const toggle = (key: keyof ShowOptions) => {
       setOptions(prev => ({...prev, [key]: !prev[key]}));
     };
     
@@ -21,7 +21,7 @@ export default function TrainingPage() {
       <div>
         <div>
           {(Object.keys(showOptions) as (keyof ShowOptions)[]).map(key => (
-            <button key={key} onClick={() => toogle(key)}>
+            <button key={key} onClick={() => toggle(key)}>
               {key}: {showOptions[key] ? "on" : "off"}
             </button>
           ))}

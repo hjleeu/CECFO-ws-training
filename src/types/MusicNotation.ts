@@ -2,8 +2,8 @@ import type { Jianpu } from "./Jianpu";
 
 export interface Note {
     note: Jianpu | '-'
-    char: string | ''
-    pinyin: string | ''
+    char: string
+    pinyin: string
 }
 
 export interface Measure {

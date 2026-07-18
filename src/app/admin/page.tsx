@@ -44,6 +44,7 @@ export default function AdminPage() {
             <div>
                 <div className="input-area">
                     <textarea
+                    spellCheck="false"
                     value={raw}
                     onChange={e => handleChange(e.target.value)}
                 />
@@ -51,11 +52,11 @@ export default function AdminPage() {
                 <div className="preview-area">
                     {parsed
                         ? <Sheet sheet={parsed} showOptions={DEFAULT_SHOW}></Sheet>
-                        : <p style={{ color: "gold" }}>Start typing to see preview</p>
+                        : <p style={{ color: "gold" }}>输入来显示预览</p>
                     }
                 </div>
             </div>
-            <button disabled={!parsed} className="save-btn">Save to DB</button>
+            <button disabled={!parsed} className="save-btn">录入到数据库</button>
         </div>
     )
 }
