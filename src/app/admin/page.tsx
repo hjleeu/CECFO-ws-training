@@ -1,10 +1,10 @@
 "use client"
 
-import { Sheet as SheetType, ShowOptions } from "@/types/MusicNotation"
+import { Section as SectionType, ShowOptions } from "@/types/MusicNotation"
 import { useState } from "react"
 import { parse } from "./_components/parser"
-import { Sheet } from "@/components/sheet/Sheet"
 import "@/styles/admin.css"
+import { Section } from "@/components/sheet/Section"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -54,7 +54,7 @@ function format(raw: string): string {
 
 export default function AdminPage() {
     const [raw, setRaw] = useState('')
-    const [parsed, setParsed] = useState<SheetType | null>(null)
+    const [parsed, setParsed] = useState<SectionType | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     const handleChange = (text: string) => {
@@ -85,8 +85,33 @@ export default function AdminPage() {
     return (
         <div className="container">
             <h2>ADMIN EDITOR</h2>
+            <div className="meta-area">
+                <div className="meta-group">
+                    <label htmlFor="song-title" className="meta-label">歌名</label>
+                    <input type="text" id="song-title" className="meta-input" />
+                </div>
+                <div className="meta-group">
+                    <label htmlFor="song-subtitle" className="meta-label">副标题</label>
+                    <input type="text" id="song-subtitle" className="meta-input" />
+                </div>
+                <div className="meta-group">
+                    <label htmlFor="song-key" className="meta-label">KEY</label>
+                    <input type="text" id="song-key" className="meta-input" />
+                </div>
+                <div className="meta-group">
+                    <label htmlFor="song-bpm" className="meta-label">BPM</label>
+                    <input
+                        type="number"
+                        inputMode="numeric"
+                        step={1}
+                        pattern="[0-9]*"
+                        min={1}
+                        className="meta-input"
+                    />
+                </div>
+            </div>
             {error && <p className="error-msg">{error}</p>}
-            <div>
+            <div className="content-area">
                 <div className="input-area">
                     <textarea
                     spellCheck="false"
@@ -97,7 +122,7 @@ export default function AdminPage() {
                 </div>
                 <div className="preview-area">
                     {parsed
-                        ? <Sheet sheet={parsed} showOptions={DEFAULT_SHOW}></Sheet>
+                        ? <Section section={parsed} showOptions={DEFAULT_SHOW}></Section>
                         : <p>输入来显示预览</p>
                     }
                 </div>

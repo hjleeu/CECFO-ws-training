@@ -1,6 +1,6 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
-import { Measure, Note, Row, Sheet } from "@/types/MusicNotation";
+import { Measure, Note, Row, Section } from "@/types/MusicNotation";
 
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
@@ -8,11 +8,8 @@ function toToken(raw: string): string[] {
 
   // Match a full jianpu token.
   const NOTE_REGEX = /(\[[^\]]+\])?([0-7][',]*\/{0,2}|-)/g
-  const raw2 = "2,/"
   let match
-  while ((match = NOTE_REGEX.exec(raw2)) !== null) {
-    console.log(match[2])
-
+  while ((match = NOTE_REGEX.exec(raw)) !== null) {
     const chord = match[1] ?? undefined
     const note = match[2]
     if (chord) {
@@ -56,7 +53,7 @@ function parseLyrics(raw: string): string[] {
 }
 
 
-export function parse(raw: string): Sheet {
+export function parse(raw: string): Section {
   const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean)
 
   if (!lines.length) throw new Error("Empty input")

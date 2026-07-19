@@ -15,9 +15,17 @@ export interface Row {
     measures: Measure[]
 }
 
-export interface Sheet {
+export interface Section {
     label: string
     rows: Row[]
+}
+
+export interface Song {
+    title: string
+    subtitle: string
+    key: string
+    bpm: number
+    sections: Section[]
 }
 
 export interface ShowOptions {

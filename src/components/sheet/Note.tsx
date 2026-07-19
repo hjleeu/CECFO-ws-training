@@ -1,24 +1,47 @@
+import { parseJianpu } from "@/lib/jianpu"
 import type { Note as NoteProps, ShowOptions } from "../../types/MusicNotation"
 
 interface Props {
     note: NoteProps
     showOptions: ShowOptions
+    extraBeams?: number
 }
 
-export function Note({ note, showOptions }: Props) {
+export function Note({ note, showOptions, extraBeams }: Props) {
     const raw = note.note
     const isRest = raw === '-'
+    const { base, octave, duration } = parseJianpu(raw)
 
-    const underlines = raw.endsWith('//') ? 2 : raw.endsWith('/') ? 1 : 0
+    const dotAbove = octave.startsWith("'")
+    const dotBelow = octave.startsWith(",")
+    const dotCount = octave.length // 1 or 2
 
-    const displayNote = raw.replace(/\/+$/, '')
+    const barsToDraw = extraBeams !== undefined ? extraBeams : duration
 
     return (
         <div className="notation">
             {showOptions.jianpu && (
-                <span
-                    className={`note ${underlines === 1 ? 'note-eighth' : underlines === 2 ? 'note-sixteenth' : ''}`}
-                >{isRest ? '-' : displayNote}</span>
+                <div className="note-wrapper">
+                    <div className="dots-above">
+                        {dotAbove && Array.from({ length: dotCount }).map((_, i) => (
+                            <span key={i} className="octave-dot">·</span>
+                        ))}
+                    </div>
+
+                    <span className="note">{isRest ? '-' : base}</span>
+
+                    <div className="note-duration">
+                        {Array.from({ length: barsToDraw }).map((_, i) => (
+                            <span key={i} className="duration-bar"></span>
+                        ))}
+                    </div>
+
+                    <div className="dots-below">
+                        {dotBelow && Array.from({ length: dotCount }).map((_, i) => (
+                            <span key={i} className="octave-dot">·</span>
+                        ))}
+                    </div>
+                </div>
             )}
             {showOptions.pinyin && (
                 <span className="pinyin">{isRest ? '' : note.pinyin}</span>

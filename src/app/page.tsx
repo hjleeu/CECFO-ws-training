@@ -1,6 +1,6 @@
 "use client"
 
-import { Sheet } from '@/components/sheet/Sheet'
+import { Section } from '@/components/sheet/Section'
 import '@/styles/sheet.css'
 import { ShowOptions } from '@/types/MusicNotation';
 import { useState } from 'react';
@@ -27,14 +27,13 @@ export default function TrainingPage() {
           ))}
         </div>
   
-        <Sheet
-          sheet={{
+        <Section
+          section={{
             label: "Verse 1",
             rows: [
               {
                 measures: [
                   {
-                    chords: ["G"],
                     notes: [
                       { note: "5'", char: "你", pinyin: "ni"}
                     ]
@@ -44,7 +43,7 @@ export default function TrainingPage() {
             ]
           }}
           showOptions={showOptions}
-        ></Sheet>
+        ></Section>
       </div>
     );
 }

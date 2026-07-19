@@ -1,9 +1,9 @@
-.sheet {
+.section {
     user-select: none;
     font-family: var(--font-chinese);
 }
 
-.sheet-label {
+.section-label {
     text-transform: uppercase;
     font-size: 0.88rem;
     font-weight: 600;
@@ -22,10 +22,10 @@
 
 .barline {
     align-self: flex-start;
-    font-size: 1.5rem;
+    font-size: 1.88rem;
     color: var(--color-muted);
     user-select: none;
-    padding-top: 1.37rem;
+    padding-top: 1.88rem;
     opacity: 0.7;
     line-height: 1;
 }
@@ -56,20 +56,97 @@
     align-items: flex-start;
 }
 
+.beam-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+}
+
+.beam-bars {
+    position: absolute;
+    top: 2.75rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.beam-bar {
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+}
+
+.notes-row {
+    display: flex;
+}
+
 .notation {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
     min-width: 2.2rem;
     padding: 0 0.15rem;
+    padding-bottom: 0.88rem;
+}
+
+.note-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
 }
 
 .note {
-    font-family: var(--font-jianpu);
+    font-family: var(--font-mono);
     font-size: 1.5rem;
     line-height: 1.37;
     color: #1F1A12;
+}
+
+.dots-above {
+    display: flex;
+    top: 100%;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0;
+    line-height: 0.66;
+    align-items: center;
+    min-height: 0.88rem;
+}
+
+.dots-below {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    line-height: 0.66;
+    align-items: center;
+    min-height: 0.88rem;
+}
+
+.octave-dot {
+    line-height: 0.66;
+    font-size: 0.66rem;
+    display: block;
+}
+
+.note-duration {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5px;
+    width: 100%;
+    margin-top: 1px;
+    min-height: 5px;
+}
+
+.duration-bar {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
 }
 
 .note-eighth {

@@ -15,7 +15,33 @@
     margin: 0;
 }
 
-.container > div {
+.meta-area {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-group {
+    display: flex;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 200px;
+    font-family: var(--font-chinese);
+    align-items: center;
+}
+
+.meta-label {
+    font-size: 0.99rem;
+}
+
+.meta-input {
+    padding: 0.37rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.content-area {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;

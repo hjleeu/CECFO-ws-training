@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
 
 @font-face {
   font-family: 'JianpuASCII';
@@ -7,8 +8,7 @@
 
 :root {
   --font-chinese: "Noto Serif SC", serif;
-  --font-jianpu: "JianpuASCII", monospace;
-  --font-mono: "Fira Code", monospace;
+  --font-mono: "Space Mono", monospace;
 
   --color-bg: #F5F1EB;
   --color-surface: #FFFFFF;
