@@ -1,6 +1,6 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
-import { Measure, Note, Row, Section } from "@/types/MusicNotation";
+import { Measure, Note, Row, Section, Song } from "@/types/MusicNotation";
 
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
@@ -53,50 +53,82 @@ function parseLyrics(raw: string): string[] {
 }
 
 
-export function parse(raw: string): Section {
-  const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean)
+export function parse(raw: string): Song {
+  const lines = raw.trim().split('\n').map(l => l.trim())
 
-  if (!lines.length) throw new Error("Empty input")
+  if (!lines.length) throw new Error('Empty input')
 
-  const labelLine = lines[0]
-  if (!labelLine.startsWith('[') || !labelLine.endsWith(']'))
-    throw new Error("第一行应是段落label 例如 [Verse 1]")
+  // collect sections
+  const sections: Section[] = []
+  let currentLabel  = ''
+  let currentLines: string[] = []
 
-  const label = labelLine.slice(1, -1).trim()
-  const dataLines = lines.slice(1)
+  for (const line of lines) {
+    if (isSectionLabel(line)) {
+      // save previous section if exists
+      if (currentLabel && currentLines.length) {
+        sections.push(parseSection(currentLabel, currentLines))
+        currentLines = []
+      }
+      currentLabel = line.slice(1, -1).trim()
+    } else {
+      if (line) currentLines.push(line)
+    }
+  }
 
-  if (dataLines.length % 2 !== 0)
-    throw new Error("Each row needs exactly 2 lines: notes, lyrics.")
+  // push last section
+  if (currentLabel && currentLines.length) {
+    sections.push(parseSection(currentLabel, currentLines))
+  }
+
+  if (!sections.length) throw new Error('第一行应是段落label 例如 [Verse 1]')
+
+  return {
+    title:    '',
+    subtitle: '',
+    key:      'C',
+    bpm:      80,
+    sections,
+  }
+}
+
+const CHORD_PATTERN = /^[A-G][#b]?(m|maj|min|dim|aug|sus)?[0-9]?$/
+
+function isSectionLabel(line: string): boolean {
+  const trimmed = line.trim()
+  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return false
+  const inner = trimmed.slice(1, -1).trim()
+  const isChord = CHORD_PATTERN.test(inner)
+  return !isChord
+}
+
+function parseSection(label: string, lines: string[]): Section {
+  if (lines.length % 2 !== 0)
+    throw new Error(`[${label}]: needs exactly 2 lines per row (notes, lyrics)`)
 
   const rows: Row[] = []
 
-  for (let i = 0; i < dataLines.length; i += 2) {
-    const noteLine = dataLines[i]
-    const lyricLine = dataLines[i + 1]
+  for (let i = 0; i < lines.length; i += 2) {
+    const noteLine  = lines[i]
+    const lyricLine = lines[i + 1]
 
-    const noteCols = noteLine.split('|').map(s => s.trim()).filter(Boolean)
+    const noteCols  = noteLine.split('|').map(s => s.trim()).filter(Boolean)
     const lyricCols = lyricLine.split('|').map(s => s.trim()).filter(Boolean)
 
     if (noteCols.length !== lyricCols.length)
-      throw new Error(`Row ${i / 2 + 1}: note / lyric columns must match`)
+      throw new Error(`[${label}] Row ${i / 2 + 1}: note / lyric columns must match`)
 
     const measures: Measure[] = noteCols.map((noteCol, j) => {
-      const parsedNotes = parseNotes(noteCols[j])
-      const lyrics = parseLyrics(lyricCols[j])
+      const parsedNotes = parseNotes(noteCol)
+      const lyrics      = parseLyrics(lyricCols[j])
 
       if (parsedNotes.length !== lyrics.length)
-        throw new Error(`Row ${i / 2 + 1}, measure ${j + 1}: notes count doesn't match lyrics count`)
+        throw new Error(`[${label}] Row ${i / 2 + 1}, measure ${j + 1}: notes count doesn't match lyrics count`)
 
       const noteItems: Note[] = parsedNotes.map(({ note: n, chord }, k) => {
         const char = lyrics[k] !== '-' ? lyrics[k] : ''
-        const py = char ? pinyin(char, { toneType: "symbol", type: "array"})[0] ?? '' : ''
-
-        return {
-          note: n as Jianpu | '-',
-          char,
-          pinyin: py,
-          chord
-        }
+        const py   = char ? pinyin(char, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
+        return { note: n as Jianpu | '-', char, pinyin: py, chord }
       })
 
       return { notes: noteItems }

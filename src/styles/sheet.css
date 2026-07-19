@@ -57,26 +57,33 @@
 }
 
 .beam-group {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: stretch;
     position: relative;
+    width: fit-content;
 }
 
 .beam-bars {
     position: absolute;
-    top: 2.75rem;
-    left: 0;
-    right: 0;
+    top: 4rem;
+    left: 12px;
+    right: 12px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    pointer-events: none;
 }
 
 .beam-bar {
     width: 100%;
     height: 2px;
     background-color: currentColor;
+}
+
+.beam-notes {
+    display: flex;
+    align-items: flex-start;
 }
 
 .notes-row {

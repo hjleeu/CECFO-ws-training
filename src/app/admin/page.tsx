@@ -1,10 +1,10 @@
 "use client"
 
-import { Section as SectionType, ShowOptions } from "@/types/MusicNotation"
+import { Song as SongType, Section as SectionType, ShowOptions } from "@/types/MusicNotation"
 import { useState } from "react"
 import { parse } from "./_components/parser"
 import "@/styles/admin.css"
-import { Section } from "@/components/sheet/Section"
+import { Song } from "@/components/sheet/Song"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -54,8 +54,12 @@ function format(raw: string): string {
 
 export default function AdminPage() {
     const [raw, setRaw] = useState('')
-    const [parsed, setParsed] = useState<SectionType | null>(null)
+    const [parsed, setParsed] = useState<SongType | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [title, setTitle] = useState('')
+    const [subtitle, setSubtitle] = useState('')
+    const [songKey, setSongKey] = useState('C')
+    const [bpm, setBpm] = useState(80)
 
     const handleChange = (text: string) => {
         setRaw(text)
@@ -82,21 +86,48 @@ export default function AdminPage() {
         }
     }
 
+    const handleSave = async () => {
+        if (!parsed) return
+
+        const song = {
+            ...parsed,
+            title,
+            subtitle,
+            key: songKey,
+            bpm
+        }
+
+        try {
+            const res = await fetch('/api/songs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(song),
+            })
+
+            if (!res.ok) throw new Error('Failed to save')
+
+            const saved = await res.json()
+            alert(`Saved: ${saved.title} (id: ${saved.id})`)
+        } catch (e) {
+            alert((e as Error).message)
+        }
+    }
+
     return (
         <div className="container">
             <h2>ADMIN EDITOR</h2>
             <div className="meta-area">
                 <div className="meta-group">
                     <label htmlFor="song-title" className="meta-label">歌名</label>
-                    <input type="text" id="song-title" className="meta-input" />
+                    <input type="text" id="song-title" className="meta-input" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-subtitle" className="meta-label">副标题</label>
-                    <input type="text" id="song-subtitle" className="meta-input" />
+                    <input type="text" id="song-subtitle" className="meta-input" value={subtitle} onChange={e => setSubtitle(e.target.value)} />
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-key" className="meta-label">KEY</label>
-                    <input type="text" id="song-key" className="meta-input" />
+                    <input type="text" id="song-key" className="meta-input" value={songKey} onChange={e => setSongKey(e.target.value)} />
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-bpm" className="meta-label">BPM</label>
@@ -107,6 +138,8 @@ export default function AdminPage() {
                         pattern="[0-9]*"
                         min={1}
                         className="meta-input"
+                        value={bpm}
+                        onChange={e => setBpm(parseInt(e.target.value))}
                     />
                 </div>
             </div>
@@ -114,20 +147,20 @@ export default function AdminPage() {
             <div className="content-area">
                 <div className="input-area">
                     <textarea
-                    spellCheck="false"
-                    value={raw}
-                    onChange={e => handleChange(e.target.value)}
-                    onBlur={handleBlur}
-                />
+                        spellCheck="false"
+                        value={raw}
+                        onChange={e => handleChange(e.target.value)}
+                        onBlur={handleBlur}
+                    />
                 </div>
                 <div className="preview-area">
                     {parsed
-                        ? <Section section={parsed} showOptions={DEFAULT_SHOW}></Section>
+                        ? <Song song={parsed} showOptions={DEFAULT_SHOW}></Song>
                         : <p>输入来显示预览</p>
                     }
                 </div>
             </div>
-            <button disabled={!parsed} className="save-btn">录入到数据库</button>
+            <button disabled={!parsed} className="save-btn" onClick={handleSave}>录入到数据库</button>
         </div>
     )
 }

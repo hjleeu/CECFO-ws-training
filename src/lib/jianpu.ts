@@ -11,7 +11,7 @@ export function computeBeamGroups(durations: number[]): BeamGroup[] {
   while (i < durations.length) {
     if (durations[i] === 0) { i++; continue }
 
-    const start = 1
+    const start = i
     while (i < durations.length && durations[i] > 0) i++
     const end = i - 1
 

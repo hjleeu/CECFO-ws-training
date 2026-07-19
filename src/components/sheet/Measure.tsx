@@ -62,6 +62,13 @@ export function Measure({ measure, showOptions }: Props) {
 
                     return (
                         <div key={si} className={isGroup ? 'beam-group' : ''}>
+                            {isGroup && (
+                                <div className="beam-bars">
+                                    {Array.from({ length: seg.sharedBeams }).map((_, bi) => (
+                                        <div key={bi} className="beam-bar" />
+                                    ))}
+                                </div>
+                            )}
                             <div className="beam-notes">
                                 {seg.notes.map((ni, k) => {
                                     const extra = beamMap.get(ni)?.extra ?? 0
@@ -80,9 +87,6 @@ export function Measure({ measure, showOptions }: Props) {
                                     )
                                 })}
                             </div>
-                            {isGroup && Array.from({ length: seg.sharedBeams }).map((_, bi) => (
-                                <div key={bi} className="beam-bar" />
-                            ))}
                         </div>
                     )
                 })}

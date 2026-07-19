@@ -8,7 +8,10 @@ out
 # production
 dist
 
-# env files
+# Prisma generated client — regenerated on each machine via prisma generate
+src/generated/
+
+# env files — never commit credentials
 .env
 .env.local
 .env.development.local
