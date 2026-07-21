@@ -1,11 +1,12 @@
 "use client"
 
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { parse } from "./_components/parser"
 import "@/styles/admin.css"
 import { Song } from "@/components/sheet/Song"
 import { toSlug } from "@/lib/slug"
+import { SelectOrNew } from "@/components/ui/SelectOrNew"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -62,6 +63,21 @@ export default function AdminPage() {
     const [album, setAlbum] = useState('')
     const [songKey, setSongKey] = useState('C')
     const [bpm, setBpm] = useState(80)
+
+    const [savedArtists, setArtists] = useState<string[]>([])
+    const [savedAlbums, setAlbums] = useState<string[]>([])
+
+    // Fetch saved artists and albums list.
+    useEffect(() => {
+        fetch("/api/songs")
+            .then(r => r.json())
+            .then((songs: { artist?: string, album?: string }[]) => {
+                const artists = [...new Set(songs.map(s => s.artist).filter(Boolean) as string[])]
+                const albums = [...new Set(songs.map(s => s.album).filter(Boolean) as string[])]
+                setArtists(artists)
+                setAlbums(albums)
+            })
+    }, [])
 
     const handleChange = (text: string) => {
         setRaw(text)
@@ -132,11 +148,11 @@ export default function AdminPage() {
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-artist" className="meta-label">艺术家</label>
-                    <input type="text" id="song-artist" className="meta-input" value={artist} onChange={e => setArtist(e.target.value)} />
+                    <SelectOrNew id="song-artist" options={savedArtists} value={artist} onChange={setArtist} placeholder="选择艺术家" label="艺术家"></SelectOrNew>
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-album" className="meta-label">专辑</label>
-                    <input type="text" id="song-album" className="meta-input" value={album} onChange={e => setAlbum(e.target.value)} />
+                    <SelectOrNew id="song-album" options={savedAlbums} value={album} onChange={setAlbum} placeholder="选择专辑" label="专辑"></SelectOrNew>
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-key" className="meta-label">KEY</label>

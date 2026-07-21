@@ -40,6 +40,35 @@
     padding: 0.37rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
+    width: 100%;
+    max-width: 200px;
+}
+
+.select-or-new {
+    width: 100%;
+}
+
+.new-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.new-input-row .meta-input {
+    flex: 1;
+}
+
+.cancel-new-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    padding: 0 0.25rem;
+}
+
+.cancel-new-btn:hover {
+    color: var(--color-danger);
 }
 
 .content-area {
