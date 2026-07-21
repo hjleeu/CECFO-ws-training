@@ -5,6 +5,7 @@ import { useState } from "react"
 import { parse } from "./_components/parser"
 import "@/styles/admin.css"
 import { Song } from "@/components/sheet/Song"
+import { toSlug } from "@/lib/slug"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -57,7 +58,8 @@ export default function AdminPage() {
     const [parsed, setParsed] = useState<SongType | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [title, setTitle] = useState('')
-    const [subtitle, setSubtitle] = useState('')
+    const [artist, setArtist] = useState('')
+    const [album, setAlbum] = useState('')
     const [songKey, setSongKey] = useState('C')
     const [bpm, setBpm] = useState(80)
 
@@ -92,7 +94,9 @@ export default function AdminPage() {
         const song = {
             ...parsed,
             title,
-            subtitle,
+            slug: toSlug(title),
+            artist,
+            album,
             key: songKey,
             bpm
         }
@@ -122,8 +126,12 @@ export default function AdminPage() {
                     <input type="text" id="song-title" className="meta-input" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
                 <div className="meta-group">
-                    <label htmlFor="song-subtitle" className="meta-label">副标题</label>
-                    <input type="text" id="song-subtitle" className="meta-input" value={subtitle} onChange={e => setSubtitle(e.target.value)} />
+                    <label htmlFor="song-artist" className="meta-label">艺术家</label>
+                    <input type="text" id="song-artist" className="meta-input" value={artist} onChange={e => setArtist(e.target.value)} />
+                </div>
+                <div className="meta-group">
+                    <label htmlFor="song-album" className="meta-label">专辑</label>
+                    <input type="text" id="song-album" className="meta-input" value={album} onChange={e => setAlbum(e.target.value)} />
                 </div>
                 <div className="meta-group">
                     <label htmlFor="song-key" className="meta-label">KEY</label>
@@ -160,7 +168,7 @@ export default function AdminPage() {
                     }
                 </div>
             </div>
-            <button disabled={!parsed} className="save-btn" onClick={handleSave}>录入到数据库</button>
+            <button disabled={!parsed} className="save-btn" onClick={handleSave}>保存数据库</button>
         </div>
     )
 }

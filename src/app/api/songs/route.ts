@@ -14,7 +14,9 @@ export async function POST(request: Request) {
   const song = await prisma.song.create({
     data: {
       title:    body.title,
-      subtitle: body.subtitle ?? '',
+      slug:     body.slug,
+      artist:   body.artist ?? null,
+      album:    body.album ?? null,
       key:      body.key,
       bpm:      body.bpm,
       sections: body.sections,

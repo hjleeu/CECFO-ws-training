@@ -22,7 +22,9 @@ export interface Section {
 
 export interface Song {
     title: string
-    subtitle: string
+    slug: string
+    artist?: string
+    album?: string
     key: string
     bpm: number
     sections: Section[]

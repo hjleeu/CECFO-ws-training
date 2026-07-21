@@ -33,6 +33,7 @@
 
 .meta-label {
     font-size: 0.99rem;
+    text-wrap: nowrap;
 }
 
 .meta-input {
