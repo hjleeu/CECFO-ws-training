@@ -1,6 +1,6 @@
 "use client"
 
-import { Song as SongType, Section as SectionType, ShowOptions } from "@/types/MusicNotation"
+import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
 import { useState } from "react"
 import { parse } from "./_components/parser"
 import "@/styles/admin.css"
@@ -108,10 +108,15 @@ export default function AdminPage() {
                 body: JSON.stringify(song),
             })
 
-            if (!res.ok) throw new Error('Failed to save')
+            const data = await res.json()
 
-            const saved = await res.json()
-            alert(`Saved: ${saved.title} (id: ${saved.id})`)
+            if (!res.ok) {
+                console.error("API error:", data)
+                alert(`Failed to save: ${JSON.stringify(data)}`)
+                return
+            }
+
+            alert(`Saved: ${data.title} (slug: ${data.slug})`)
         } catch (e) {
             alert((e as Error).message)
         }

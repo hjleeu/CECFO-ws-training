@@ -9,19 +9,27 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json()
+  try {
+    const body = await request.json()
 
-  const song = await prisma.song.create({
-    data: {
-      title:    body.title,
-      slug:     body.slug,
-      artist:   body.artist ?? null,
-      album:    body.album ?? null,
-      key:      body.key,
-      bpm:      body.bpm,
-      sections: body.sections,
-    }
-  })
+    const song = await prisma.song.create({
+      data: {
+        title:    body.title,
+        slug:     body.slug,
+        artist:   body.artist ?? null,
+        album:    body.album ?? null,
+        key:      body.key,
+        bpm:      body.bpm,
+        sections: body.sections,
+      }
+    })
 
-  return NextResponse.json(song, { status: 201 })
+    return NextResponse.json(song, { status: 201 })
+  } catch (e) {
+    console.log("Db error:", e)
+    return NextResponse.json(
+      { error: (e as Error).message },
+      { status: 500 }
+    )
+  }
 }
