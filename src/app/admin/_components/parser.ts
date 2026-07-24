@@ -1,55 +1,114 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
 import { Measure, Note, Row, Section, Song } from "@/types/MusicNotation";
+import { raw } from "@prisma/client/runtime/client";
+
+interface ParsedNote {
+  note: string
+  dotted?: boolean
+  chord?: string
+  bracketStart?: boolean
+  bracketEnd?: boolean
+  bracketNumber?: number
+}
 
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
   const result: string[] = []
 
   // Match a full jianpu token.
-  const NOTE_REGEX = /(\[[^\]]+\])?([0-7][',]*\/{0,2}|-)/g
+  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([0-7][',]*\/{0,2}\.?|-))/g
   let match
   while ((match = NOTE_REGEX.exec(raw)) !== null) {
-    const chord = match[1] ?? undefined
-    const note = match[2]
-    if (chord) {
-      result.push(`${chord}${note}`)
-    } else {
-      result.push(note)
-    }
+    result.push(match[0])
   }
   return result
 }
 
-function parseNotes(raw: string): { note: string, chord?: string }[] {
-  const tokens = toToken(raw)
-  const result: { note: string, chord?: string }[] = []
+function parseNotes(raw: string): ParsedNote[] {
+  const expanded = raw.replace(
+    /\((\d+):\s*([^)]+)\)/g,
+    (_, num, inner) => `__BS${num}__ ${inner.trim()} __BE__`
+  ).replace(
+    /\(([^)]+)\)/g,
+    (_, inner) => `__BS__ ${inner.trim()} __BE__`
+  )
+
+  const tokens = toToken(expanded)
+  const result: ReturnType<typeof parseNotes> = []
+  let inBracket = false
+  let bracketStart = false
+  let bracketNumber: number | undefined
   let pendingChord: string | undefined
 
-  for (const t of tokens) {
+  for (let t of tokens) {
+    if (/^__BS/.test(t)) {
+      inBracket    = true
+      bracketStart = true
+      const numMatch = t.match(/^__BS(\d+)__$/)
+      bracketNumber = numMatch ? parseInt(numMatch[1]) : undefined
+      continue
+    }
+
+    if (t === '__BE__') {
+      if (result.length > 0) result[result.length - 1].bracketEnd = true
+      inBracket    = false
+      bracketStart = false
+      bracketNumber = undefined
+      continue
+    }
+
     if (t.startsWith('[') && t.endsWith(']')) {
       pendingChord = t.slice(1, -1)
       continue
     }
 
+    let isDotted = false
+    if (t.includes('.')) {
+      isDotted = true
+      t = t.replace('.', '')
+    }
+
     if (t.startsWith('[')) {
-      const closeBracket = t.indexOf(']')
-      pendingChord = t.slice(1, closeBracket)
-      const note = t.slice(closeBracket + 1)
-      result.push({ note, chord: pendingChord })
-      pendingChord = undefined
+      const close = t.indexOf(']')
+      pendingChord = t.slice(1, close)
+      const note = t.slice(close + 1)
+      result.push({
+        note,
+        chord:         pendingChord,
+        dotted:        isDotted || undefined,
+        bracketStart:  bracketStart || undefined,
+        bracketNumber: bracketStart ? bracketNumber : undefined,
+      })
+      pendingChord  = undefined
+      bracketStart  = false
       continue
     }
 
-    result.push({ note: t, chord: pendingChord })
+    result.push({
+      note: t,
+      chord: pendingChord,
+      dotted: isDotted || undefined,
+      bracketStart: bracketStart || undefined,
+      bracketNumber: bracketStart ? bracketNumber : undefined
+    })
     pendingChord = undefined
+    bracketStart = false
   }
 
   return result
 }
 
 function parseLyrics(raw: string): string[] {
-  return [...raw.replace(/\s+/g, '')].filter(Boolean)
+  const LYRIC_REGEX = /([^\s|，,。!！?？;；]+)([，,。!！?？;；]*)/g
+  const tokens: string[] = []
+  let match
+
+  while ((match = LYRIC_REGEX.exec(raw)) !== null) {
+      tokens.push(match[1] + match[2])
+  }
+
+  return tokens
 }
 
 
@@ -58,14 +117,12 @@ export function parse(raw: string): Song {
 
   if (!lines.length) throw new Error('Empty input')
 
-  // collect sections
   const sections: Section[] = []
   let currentLabel  = ''
   let currentLines: string[] = []
 
   for (const line of lines) {
     if (isSectionLabel(line)) {
-      // save previous section if exists
       if (currentLabel && currentLines.length) {
         sections.push(parseSection(currentLabel, currentLines))
         currentLines = []
@@ -76,7 +133,6 @@ export function parse(raw: string): Song {
     }
   }
 
-  // push last section
   if (currentLabel && currentLines.length) {
     sections.push(parseSection(currentLabel, currentLines))
   }
@@ -84,10 +140,11 @@ export function parse(raw: string): Song {
   if (!sections.length) throw new Error('第一行应是段落label 例如 [Verse 1]')
 
   return {
-    title:    '',
-    subtitle: '',
-    key:      'C',
-    bpm:      80,
+    title: '',
+    slug: '',
+    key: '',
+    bpm: 0,
+    timeSignature: '',
     sections,
   }
 }
@@ -125,10 +182,17 @@ function parseSection(label: string, lines: string[]): Section {
       if (parsedNotes.length !== lyrics.length)
         throw new Error(`[${label}] Row ${i / 2 + 1}, measure ${j + 1}: notes count doesn't match lyrics count`)
 
-      const noteItems: Note[] = parsedNotes.map(({ note: n, chord }, k) => {
-        const char = lyrics[k] !== '-' ? lyrics[k] : ''
-        const py   = char ? pinyin(char, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
-        return { note: n as Jianpu | '-', char, pinyin: py, chord }
+      const noteItems: Note[] = parsedNotes.map(({ note: n, dotted, chord, bracketStart, bracketEnd, bracketNumber }, k) => {
+        const rawChar = lyrics[k] ?? ''
+
+        const cleanChar = rawChar.replace(/[，,。!！?？;；]+$/g, '')
+
+        const punctMatch= rawChar.match(/[，,。!！?？;；]+$/)
+        const punct = punctMatch ? punctMatch[0] : ''
+        
+        const char = cleanChar !== '-' ? cleanChar : ''
+        const py   = cleanChar ? pinyin(cleanChar, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
+        return { note: n as Jianpu | '-', dotted, char, punct: punct || undefined, pinyin: py, chord, bracketStart, bracketEnd, bracketNumber }
       })
 
       return { notes: noteItems }

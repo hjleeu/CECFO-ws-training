@@ -11,7 +11,6 @@ export function Measure({ measure, showOptions }: Props) {
     const durations = measure.notes.map(n => parseJianpu(n.note).duration)
     const beamGroups = computeBeamGroups(durations)
 
-    // build a map: noteIndex → { sharedBeams, extraBeams }
     const beamMap = new Map<number, { shared: number, extra: number }>()
 
     for (const group of beamGroups) {
@@ -24,22 +23,19 @@ export function Measure({ measure, showOptions }: Props) {
         }
     }
 
-    // group notes into beam segments for rendering
     const segments: { notes: number[], sharedBeams: number }[] = []
-    let currentSegment: number[] | null = null
-    let currentMin = 0
 
     for (const group of beamGroups) {
         if (group.start === group.end) {
-            if (currentSegment) { segments.push({ notes: currentSegment, sharedBeams: currentMin }); currentSegment = null }
             segments.push({ notes: [group.start], sharedBeams: 0 })
         } else {
-            if (currentSegment) { segments.push({ notes: currentSegment, sharedBeams: currentMin }); currentSegment = null }
-            segments.push({ notes: Array.from({ length: group.end - group.start + 1 }, (_, k) => group.start + k), sharedBeams: group.sharedBeams })
+            segments.push({
+                notes: Array.from({ length: group.end - group.start + 1 }, (_, k) => group.start + k),
+                sharedBeams: group.sharedBeams,
+            })
         }
     }
 
-    // fill in quarter notes (duration 0) as solo segments
     const allSegmentNotes = new Set(segments.flatMap(s => s.notes))
     const finalSegments: { notes: number[], sharedBeams: number }[] = []
     let si = 0
@@ -54,14 +50,53 @@ export function Measure({ measure, showOptions }: Props) {
         }
     }
 
+    interface BracketSpan {
+        startIndex: number
+        endIndex: number
+        number?: number
+    }
+
+    const bracketSpans: BracketSpan[] = []
+    let currentStart: number | null = null
+    let currentNum: number | undefined = undefined
+
+    measure.notes.forEach((n, idx) => {
+        if (n.bracketStart) {
+            currentStart = idx
+            currentNum = n.bracketNumber
+        }
+        if (n.bracketEnd && currentStart !== null) {
+            bracketSpans.push({
+                startIndex: currentStart,
+                endIndex: idx,
+                number: currentNum,
+            })
+            currentStart = null
+            currentNum = undefined
+        }
+    })
+    
     return (
         <div className="measure">
             <div className="measure-notes">
+                {bracketSpans.map((b, i) => (
+                    <div
+                        key={i}
+                        className="bracket"
+                        style={{
+                            left: `calc((${b.startIndex} + 0.5) * var(--note-width, 2.5rem))`,
+                            width: `calc((${b.endIndex - b.startIndex}) * var(--note-width, 2.5rem))`,
+                        }}
+                    >{b.number !== undefined && (
+                        <span className="bracket-number">{b.number}</span>
+                    )}</div>
+                ))}
+
                 {finalSegments.map((seg, si) => {
                     const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
 
                     return (
-                        <div key={si} className={isGroup ? 'beam-group' : ''}>
+                        <div key={si} className={isGroup ? 'beam-group' : ''} style={{ position: 'relative' }}>
                             {isGroup && (
                                 <div className="beam-bars">
                                     {Array.from({ length: seg.sharedBeams }).map((_, bi) => (

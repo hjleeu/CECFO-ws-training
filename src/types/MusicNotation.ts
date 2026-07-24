@@ -2,9 +2,14 @@ import type { Jianpu } from "./Jianpu";
 
 export interface Note {
     note: Jianpu | '-'
+    dotted?: boolean
     char: string
+    punct?: string
     pinyin: string
     chord?: string
+    bracketStart?: boolean
+    bracketEnd?: boolean
+    bracketNumber?: number
 }
 
 export interface Measure {
@@ -27,6 +32,7 @@ export interface Song {
     album?: string
     key: string
     bpm: number
+    timeSignature: string
     sections: Section[]
 }
 

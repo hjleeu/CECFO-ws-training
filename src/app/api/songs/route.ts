@@ -20,6 +20,7 @@ export async function POST(request: Request) {
         album:    body.album ?? null,
         key:      body.key,
         bpm:      body.bpm,
+        timeSignature: body.timeSignature,
         sections: body.sections,
       }
     })

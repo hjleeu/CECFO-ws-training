@@ -28,7 +28,10 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                         ))}
                     </div>
 
-                    <span className="note">{isRest ? '-' : base}</span>
+                    <div className="note-digit-row">
+                        <span className="note">{isRest ? '-' : base}</span>
+                        {note.dotted && <span className="augmentation-dot">•</span>}
+                    </div>
 
                     <div className="note-duration">
                         {Array.from({ length: barsToDraw }).map((_, i) => (
@@ -47,7 +50,10 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                 <span className="pinyin">{isRest ? '' : note.pinyin}</span>
             )}
             {showOptions.lyrics && (
-                <span className="lyric">{isRest ? '' : note.char}</span>
+                <div className="lyric-container">
+                    <span className="lyric">{isRest ? '' : note.char}</span>
+                    {note.punct && <span className="lyric-punct">{note.punct}</span>}
+                </div>
             )}
         </div>
     )

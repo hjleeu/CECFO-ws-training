@@ -1,7 +1,7 @@
 "use client"
 
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { parse } from "./_components/parser"
 import "@/styles/admin.css"
 import { Song } from "@/components/sheet/Song"
@@ -28,7 +28,7 @@ function format(raw: string): string {
         if (isNoteLine) {
             return line.split('|').map(col => {
                 const tokens: string[] = []
-                const TOKEN = /(\[[^\]]+\])?([0-7][',]*\/{0,2}|-)/g
+                const TOKEN = /(\[[^\]]+\])?([0-7][',]*\/{0,2}\.?|-)/g
                 let match
                 while ((match = TOKEN.exec(col)) !== null) {
                     const chord = match[1] ?? ''
@@ -43,12 +43,10 @@ function format(raw: string): string {
         }
 
         if (isLyricLine) {
-            return line.split('|').map(col =>
-                [...col.trim().replace(/\s+/g, '')].join(' ')
-            ).filter((col, i, arr) => {
-                if (i === arr.length - 1 && col.trim() === '') return false
-                return true
-            }).join(" | ")
+            return line.split('|').map(col => {
+                const tokens = col.match(/[\u4e00-\u9fff\a-zA-Z0-9—-][，,。!！?？;；]*/g) || []
+                return tokens.join(' ')
+            }).filter((col, i, arr) => !(i === arr.length - 1 && col.trim() === '')).join(" | ")
         }
         return line
     }).join('\n')
@@ -63,6 +61,7 @@ export default function AdminPage() {
     const [album, setAlbum] = useState('')
     const [songKey, setSongKey] = useState('C')
     const [bpm, setBpm] = useState(80)
+    const [timeSignature, setTimeSignature] = useState("4/4")
 
     const [savedArtists, setArtists] = useState<string[]>([])
     const [savedAlbums, setAlbums] = useState<string[]>([])
@@ -78,6 +77,20 @@ export default function AdminPage() {
                 setAlbums(albums)
             })
     }, [])
+
+    const songToPreview = useMemo<SongType | null>(() => {
+        if (!parsed) return null
+        return {
+            ...parsed,
+            title,
+            slug: toSlug(title),
+            artist,
+            album,
+            key: songKey,
+            bpm,
+            timeSignature
+        }
+    }, [parsed, title, artist, album, songKey, bpm, timeSignature])
 
     const handleChange = (text: string) => {
         setRaw(text)
@@ -105,23 +118,13 @@ export default function AdminPage() {
     }
 
     const handleSave = async () => {
-        if (!parsed) return
-
-        const song = {
-            ...parsed,
-            title,
-            slug: toSlug(title),
-            artist,
-            album,
-            key: songKey,
-            bpm
-        }
+        if (!songToPreview) return
 
         try {
             const res = await fetch('/api/songs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(song),
+                body: JSON.stringify(songToPreview),
             })
 
             const data = await res.json()
@@ -171,6 +174,10 @@ export default function AdminPage() {
                         onChange={e => setBpm(parseInt(e.target.value))}
                     />
                 </div>
+                <div className="meta-group">
+                    <label htmlFor="song-time-sig" className="meta-label">拍号</label>
+                    <input type="text" id="song-time-sig" className="meta-input" value={timeSignature} onChange={e => setTimeSignature(e.target.value)} />
+                </div>
             </div>
             {error && <p className="error-msg">{error}</p>}
             <div className="content-area">
@@ -183,13 +190,13 @@ export default function AdminPage() {
                     />
                 </div>
                 <div className="preview-area">
-                    {parsed
-                        ? <Song song={parsed} showOptions={DEFAULT_SHOW}></Song>
+                    {songToPreview
+                        ? <Song song={songToPreview} showOptions={DEFAULT_SHOW}></Song>
                         : <p>输入来显示预览</p>
                     }
                 </div>
             </div>
-            <button disabled={!parsed} className="save-btn" onClick={handleSave}>保存数据库</button>
+            <button disabled={!songToPreview} className="save-btn" onClick={handleSave}>保存数据库</button>
         </div>
     )
 }
