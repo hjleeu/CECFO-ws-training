@@ -23,7 +23,7 @@ export function Note({ note, showOptions, extraBeams }: Props) {
             {showOptions.jianpu && (
                 <div className="note-wrapper">
                     <div className="dots-above">
-                        {dotAbove && Array.from({ length: dotCount }).map((_, i) => (
+                        {dotAbove && Array.from({ length: Math.min(2, dotCount) }).map((_, i) => (
                             <span key={i} className="octave-dot">·</span>
                         ))}
                     </div>
@@ -37,7 +37,7 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                     </div>
 
                     <div className="dots-below">
-                        {dotBelow && Array.from({ length: dotCount }).map((_, i) => (
+                        {dotBelow && Array.from({ length: Math.min(2, dotCount) }).map((_, i) => (
                             <span key={i} className="octave-dot">·</span>
                         ))}
                     </div>
