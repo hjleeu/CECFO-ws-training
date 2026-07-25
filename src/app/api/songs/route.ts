@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         key:      body.key,
         bpm:      body.bpm,
         timeSignature: body.timeSignature,
-        sections: body.sections,
+        measures: body.measures,
       }
     })
 

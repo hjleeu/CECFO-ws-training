@@ -84,8 +84,8 @@ export function Measure({ measure, showOptions }: Props) {
                         key={i}
                         className="bracket"
                         style={{
-                            left: `calc((${b.startIndex} + 0.5) * var(--note-width, 2.5rem))`,
-                            width: `calc((${b.endIndex - b.startIndex}) * var(--note-width, 2.5rem))`,
+                            left: `calc((${b.startIndex} + 0.73) * var(--note-width))`,
+                            width: `calc((${b.endIndex - b.startIndex}) * var(--note-width))`,
                         }}
                     >{b.number !== undefined && (
                         <span className="bracket-number">{b.number}</span>

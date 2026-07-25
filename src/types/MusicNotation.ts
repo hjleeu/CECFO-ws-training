@@ -13,16 +13,9 @@ export interface Note {
 }
 
 export interface Measure {
+    id: string
     notes: Note[]
-}
-
-export interface Row {
-    measures: Measure[]
-}
-
-export interface Section {
-    label: string
-    rows: Row[]
+    sectionLabel?: string
 }
 
 export interface Song {
@@ -33,7 +26,7 @@ export interface Song {
     key: string
     bpm: number
     timeSignature: string
-    sections: Section[]
+    measures: Measure[]
 }
 
 export interface ShowOptions {

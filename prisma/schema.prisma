@@ -22,7 +22,7 @@ model Song {
   key           String
   bpm           Int
   timeSignature String
-  sections      Json
+  measures      Json
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

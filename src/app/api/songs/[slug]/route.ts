@@ -36,7 +36,7 @@ export async function PUT(request: Request, { params }: Props) {
                 key: body.key,
                 bpm: body.bpm,
                 timeSignature: body.timeSignature,
-                sections: body.sections
+                measures: body.measures
             }
         })
         return NextResponse.json(song)

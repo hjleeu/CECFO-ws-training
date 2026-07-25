@@ -1,6 +1,6 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
-import { Measure, Note, Row, Section, Song } from "@/types/MusicNotation";
+import { Measure, Note, Song } from "@/types/MusicNotation";
 
 interface ParsedNote {
   note: string
@@ -110,44 +110,6 @@ function parseLyrics(raw: string): string[] {
   return tokens
 }
 
-
-export function parse(raw: string): Song {
-  const lines = raw.trim().split('\n').map(l => l.trim())
-
-  if (!lines.length) throw new Error('Empty input')
-
-  const sections: Section[] = []
-  let currentLabel  = ''
-  let currentLines: string[] = []
-
-  for (const line of lines) {
-    if (isSectionLabel(line)) {
-      if (currentLabel && currentLines.length) {
-        sections.push(parseSection(currentLabel, currentLines))
-        currentLines = []
-      }
-      currentLabel = line.slice(1, -1).trim()
-    } else {
-      if (line) currentLines.push(line)
-    }
-  }
-
-  if (currentLabel && currentLines.length) {
-    sections.push(parseSection(currentLabel, currentLines))
-  }
-
-  if (!sections.length) throw new Error('第一行应是段落label 例如 [Verse 1]')
-
-  return {
-    title: '',
-    slug: '',
-    key: '',
-    bpm: 0,
-    timeSignature: '',
-    sections,
-  }
-}
-
 const CHORD_PATTERN = /^[A-G][#b]?(m|maj|min|dim|aug|sus)?[0-9]?$/
 
 function isSectionLabel(line: string): boolean {
@@ -158,47 +120,103 @@ function isSectionLabel(line: string): boolean {
   return !isChord
 }
 
-function parseSection(label: string, lines: string[]): Section {
-  if (lines.length % 2 !== 0)
-    throw new Error(`[${label}]: needs exactly 2 lines per row (notes, lyrics)`)
+export function parse(raw: string): Song {
+  const lines = raw.trim().split('\n').map(l => l.trim())
 
-  const rows: Row[] = []
+  if (!lines.length) throw new Error('Empty input')
 
-  for (let i = 0; i < lines.length; i += 2) {
-    const noteLine  = lines[i]
-    const lyricLine = lines[i + 1]
+  const measures: Measure[] = []
+  let currentLabel: string | undefined = undefined
+  let pendingNoteLine: string | null = null
 
-    const noteCols  = noteLine.split('|').map(s => s.trim()).filter(Boolean)
-    const lyricCols = lyricLine.split('|').map(s => s.trim()).filter(Boolean)
+  let measureCount = 0
 
-    if (noteCols.length !== lyricCols.length)
-      throw new Error(`[${label}] Row ${i / 2 + 1}: note / lyric columns must match`)
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
 
-    const measures: Measure[] = noteCols.map((noteCol, j) => {
-      const parsedNotes = parseNotes(noteCol)
-      const lyrics      = parseLyrics(lyricCols[j])
+    // Skip empty lines.
+    if (!line) continue
 
-      if (parsedNotes.length !== lyrics.length)
-        throw new Error(`[${label}] Row ${i / 2 + 1}, measure ${j + 1}: notes count doesn't match lyrics count`)
+    if (isSectionLabel(line)) {
+      currentLabel = line.slice(1, -1).trim()
+      continue
+    }
 
-      const noteItems: Note[] = parsedNotes.map(({ note: n, dotted, chord, bracketStart, bracketEnd, bracketNumber }, k) => {
-        const rawChar = lyrics[k] ?? ''
+    if (pendingNoteLine === null) {
+      pendingNoteLine = line
+    } else {
+      const noteLine = pendingNoteLine
+      const lyricLine = line
 
-        const cleanChar = rawChar.replace(/[，,。!！?？;；]+$/g, '')
+      const noteCols = noteLine.split('|').map(s => s.trim()).filter(Boolean)
+      const lyricCols = lyricLine.split('|').map(s => s.trim()).filter(Boolean)
 
-        const punctMatch= rawChar.match(/[，,。!！?？;；]+$/)
-        const punct = punctMatch ? punctMatch[0] : ''
-        
-        const char = cleanChar !== '-' ? cleanChar : ''
-        const py   = cleanChar ? pinyin(cleanChar, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
-        return { note: n as Jianpu | '-', dotted, char, punct: punct || undefined, pinyin: py, chord, bracketStart, bracketEnd, bracketNumber }
+      if (noteCols.length !== lyricCols.length) {
+        throw new Error(`Column mismatch at "${noteLine}". Notes / lyric columns must match.`)
+      }
+
+      noteCols.forEach((noteCol, j) => {
+        const parsedNotes = parseNotes(noteCol)
+        const lyrics = parseLyrics(lyricCols[j])
+
+        if (parsedNotes.length !== lyrics.length) {
+          throw new Error(`Measure length mismatch. Notes count doesn't match lyrics count in: "${noteCol}"`)
+        }
+
+        const noteItems: Note[] = parsedNotes.map(({ note: n, dotted, chord, bracketStart, bracketEnd, bracketNumber }, k) => {
+          const rawChar = lyrics[k] ?? ''
+          const cleanChar = rawChar.replace(/[，,。!！?？;；]+$/g, '')
+          const punctMatch= rawChar.match(/[，,。!！?？;；]+$/)
+          const punct = punctMatch ? punctMatch[0] : ''
+
+          const char = cleanChar !== '-' ? cleanChar : ''
+          const py   = cleanChar ? pinyin(cleanChar, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
+          return {
+            note: n as Jianpu | '-',
+            dotted,
+            char,
+            punct: punct || undefined,
+            pinyin: py,
+            chord,
+            bracketStart,
+            bracketEnd,
+            bracketNumber
+          }
+        })
+
+        const newMeasure: Measure = {
+          id: `m-${measureCount++}`, // UID.
+          sectionLabel: undefined,
+          notes: noteItems
+        }
+
+        if (currentLabel) {
+          newMeasure.sectionLabel = currentLabel
+          currentLabel = undefined // Reset for the next measure.
+        }
+
+        measures.push(newMeasure)
       })
 
-      return { notes: noteItems }
-    })
-
-    rows.push({ measures })
+      pendingNoteLine = null
+    }
   }
 
-  return { label, rows }
+  // If a note line has not a lyric line.
+  if (pendingNoteLine !== null) {
+    throw new Error(`Missing lyric line for notes: "${pendingNoteLine}"`)
+  }
+
+  if (measures.length === 0) {
+    throw new Error('第一行应是段落label 例如 [Verse 1]')
+  }
+
+  return {
+    title: '',
+    slug: '',
+    key: '',
+    bpm: 0,
+    timeSignature: '',
+    measures
+  }
 }
