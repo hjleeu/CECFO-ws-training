@@ -12,7 +12,7 @@ export function Song({ song, showOptions }: Props) {
             <div className="song-header">
                 <h2 className="song-title">{song.title}</h2>
                 {(song.artist || song.album) && (
-                    <p className="song-artist">
+                    <p className="song-meta">
                         {song.artist}
                         {song.artist && song.album ? " • " : ""}
                         {song.album}

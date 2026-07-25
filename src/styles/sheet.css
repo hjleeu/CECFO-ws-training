@@ -1,3 +1,17 @@
+.song-title {
+    color: var(--color-text);
+    font-family: var(--font-chinese);
+    text-align: center;
+    font-size: 1.66rem;
+}
+
+.song-meta {
+    color: var(--color-muted);
+    font-family: var(--font-chinese);
+    text-align: center;
+    font-size: 1.37rem;
+}
+
 .section {
     user-select: none;
     font-family: var(--font-chinese);
@@ -19,6 +33,9 @@
     align-items: flex-start;
     margin-top: 1.52rem;
     margin-bottom: 1rem;
+    justify-content: space-between;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .barline {
@@ -29,11 +46,16 @@
     margin-top: 2.5rem;
     opacity: 0.7;
     line-height: 1;
+    flex-shrink: 0;
+    padding: 0 0.52rem;
 }
 
 .measure {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    flex: 1;
 }
 
 .note-column {
@@ -45,7 +67,7 @@
 .chord {
     font-family: var(--font-mono);
     color: var(--color-accent);
-    text-transform: capitalize;
+    text-transform: none;
     font-size: 0.99rem;
     font-weight: 600;
     line-height: 1.2;
@@ -58,6 +80,10 @@
     display: flex;
     align-items: flex-start;
     position: relative;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 0.52rem;
+    box-sizing: border-box;
 }
 
 .bracketed {

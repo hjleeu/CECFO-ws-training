@@ -15,6 +15,27 @@
     margin: 0;
 }
 
+.load-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.load-area select {
+  width: 375px;
+}
+
+.editing-badge {
+  font-size: 0.88rem;
+  color: var(--color-accent);
+  font-family: var(--font-chinese);
+  padding: 0.25rem 0.75rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+
 .meta-area {
     display: flex;
     gap: 1.5rem;
@@ -75,16 +96,18 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+    align-items: stretch;
 }
 
 .input-area {
     display: flex;
     flex-direction: column;
+    min-height: 520px;
 }
 
 .input-area > textarea {
     width: 100%;
-    height: 375px;
+    height: 100%;
     font-family: var(--font-mono);
     font-size: 0.99rem;
     line-height: 1.5;
@@ -93,10 +116,11 @@
     border-radius: var(--radius-md);
     background: var(--color-surface);
     color: var(--color-text);
-    resize: vertical;
+    resize: none;
     outline: none;
     transition: border-color var(--transition), box-shadow var(--transition);
     box-shadow: var(--shadow-sm);
+    white-space: pre;
 }
 
 .input-area > textarea:focus {
@@ -110,14 +134,11 @@
     border-radius: var(--radius-md);
     padding: 1.25rem;
     box-shadow: var(--shadow-md);
-    overflow-x: auto;
+    overflow: auto;
 }
 
-.preview-area p {
-    color: var(--color-muted);
-    font-family: var(--font-chinese);
-    text-align: center;
-    font-style: italic;
+.preview-area > * {
+    zoom: 0.52;
 }
 
 .save-btn {
@@ -161,12 +182,12 @@
     border-left: 4px solid var(--color-danger);
 }
 
-@media (max-width: 666px) {
+@media (max-width: 768px) {
     .container > div {
         grid-template-columns: 1fr;
     }
 
-    .input-area > textarea {
-        height: 300px;
+    .input-area {
+        min-height: 375px;
     }
 }
