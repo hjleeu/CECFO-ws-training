@@ -48,7 +48,7 @@ function format(raw: string): string {
                 // - Optional chord/bracket prefix: [C] or [1.
                 // - Note digit 0-7, rest, or dash '-'
                 // - Octave dots/apostrophes/commas (',), duration dot (.), beat slashes (/)
-                const NOTE_TOKEN_REGEX = /(\[[^\]]+\]?)?([0-7]['`,]*\.?\/{0,2}\.?|-)/g
+                const NOTE_TOKEN_REGEX = /(\[[^\]]+\]?)?([#b=]?[0-7][',]*\.?\/{0,2}\^?\.?|-)/g
                 const tokens: string[] = []
                 let match: RegExpExecArray | null
 

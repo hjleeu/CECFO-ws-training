@@ -10,7 +10,13 @@ interface Props {
 export function Note({ note, showOptions, extraBeams }: Props) {
     const raw = note.note
     const isRest = raw === '-'
-    const { base, octave, duration } = parseJianpu(raw)
+    const { accidental, base, octave, duration, fermata } = parseJianpu(raw)
+
+    const ACCIDENTAL_SYMBOL: Record<string, string> = {
+        '#': '♯',
+        'b': '♭',
+        '=': '♮',
+    }
 
     const dotAbove = octave.startsWith("'")
     const dotBelow = octave.startsWith(",")
@@ -22,6 +28,7 @@ export function Note({ note, showOptions, extraBeams }: Props) {
         <div className="notation">
             {showOptions.jianpu && (
                 <div className="note-wrapper">
+                    <span className="fermata">{fermata ? '𝄐' : ''}</span>
                     <div className="dots-above">
                         {dotAbove && Array.from({ length: Math.min(2, dotCount) }).map((_, i) => (
                             <span key={i} className="octave-dot">·</span>
@@ -29,6 +36,7 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                     </div>
 
                     <div className="note-digit-row">
+                        {accidental && (<span className="accidental">{ACCIDENTAL_SYMBOL[accidental]}</span>)}
                         <span className="note">{isRest ? '-' : base}</span>
                         {note.dotted && <span className="augmentation-dot">•</span>}
                     </div>

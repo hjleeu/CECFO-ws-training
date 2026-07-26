@@ -26,11 +26,15 @@ export function computeBeamGroups(durations: number[]): BeamGroup[] {
 }
 
 export function parseJianpu(raw: string) {
-  const match = raw.match(/^([0-7]?)([',]*)(\/{0,2})$/)
-  if (!match) return { base: raw, octave: '', duration: 0 }
+  if (raw === '-') return { accidental: '', base: '-', octave: '', duration: 0, fermata: false }
+
+  const match = raw.match(/^([#b=]?)([0-7]?)([',]*)(\/{0,2})(\^?)$/)
+  if (!match) return { accidental: '', base: raw, octave: '', duration: 0, fermata: false }
   return {
-    base: match[1],
-    octave: match[2],
-    duration: match[3].length
+    accidental: match[1],
+    base: match[2],
+    octave: match[3],
+    duration: match[4].length,
+    fermata: match[5] === '^'
   }
 }

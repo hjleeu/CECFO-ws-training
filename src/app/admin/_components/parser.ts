@@ -16,7 +16,7 @@ function toToken(raw: string): string[] {
   const result: string[] = []
 
   // Match a full jianpu token.
-  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([0-7][',]*\/{0,2}\.?|-))/g
+  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([#b=]?[0-7][',]*\/{0,2}\^?|-))/g
   let match
   while ((match = NOTE_REGEX.exec(raw)) !== null) {
     result.push(match[0])

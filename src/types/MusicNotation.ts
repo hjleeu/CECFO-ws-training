@@ -3,6 +3,7 @@ import type { Jianpu } from "./Jianpu";
 export interface Note {
     note: Jianpu | '-'
     dotted?: boolean
+    fermata?: boolean
     char: string
     punct?: string
     pinyin: string
