@@ -26,7 +26,7 @@ function format(raw: string): string {
 
         // 1. Keep empty lines and section headers like [verse] or [chorus] as-is
         if (!trimmed) return line
-        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !/\d/.test(trimmed)) {
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
             return line
         }
 
@@ -45,10 +45,11 @@ function format(raw: string): string {
                 }
 
                 // Token regex matching:
+                // - Optional repeat brackets: e.g., (1: or )
                 // - Optional chord/bracket prefix: [C] or [1.
                 // - Note digit 0-7, rest, or dash '-'
                 // - Octave dots/apostrophes/commas (',), duration dot (.), beat slashes (/)
-                const NOTE_TOKEN_REGEX = /(\[[^\]]+\]?)?([#b=]?[0-7][',]*\.?\/{0,2}\^?\.?|-)/g
+                const NOTE_TOKEN_REGEX = /\([^)]+\)|(\[[^\]]+\]?)?([#b=]?[0-7][',]*\.?\/{0,2}\^?\.?|-)/g
                 const tokens: string[] = []
                 let match: RegExpExecArray | null
 
@@ -174,6 +175,19 @@ export default function AdminPage() {
         setRaw(songToRaw(data))
     }
 
+    const handleClear = () => {
+        setEditingSlug(null)
+        setTitle('')
+        setArtist('')
+        setAlbum('')
+        setSongKey('C')
+        setBpm(80)
+        setTimeSignature("4/4")
+        setRaw('')
+        setParsed(null)
+        setError(null)
+    }
+
     const handleSave = async () => {
         if (!songToPreview) return
 
@@ -219,6 +233,7 @@ export default function AdminPage() {
                 {editingSlug && (
                     <span className="editing-badge">编辑中: {title}</span>
                 )}
+                <button className="cancel-new-btn" onClick={handleClear}>清空 / 新建</button>
             </div>
             <div className="meta-area">
                 <div className="meta-group">

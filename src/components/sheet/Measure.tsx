@@ -8,14 +8,21 @@ interface Props {
 }
 
 export function Measure({ measure, showOptions }: Props) {
-    const durations = measure.notes.map(n => parseJianpu(n.note).duration)
-    const beamGroups = computeBeamGroups(durations)
+    const parsedNote = measure.notes.map(n => {
+        const parsed = parseJianpu(n.note)
+        return {
+            ...parsed,
+            dotted: n.dotted || parsed.dotted
+        }
+    })
+
+    const beamGroups = computeBeamGroups(parsedNote)
 
     const beamMap = new Map<number, { shared: number, extra: number }>()
 
     for (const group of beamGroups) {
         for (let i = group.start; i <= group.end; i++) {
-            const noteDuration = durations[i]
+            const noteDuration = parsedNote[i].duration
             beamMap.set(i, {
                 shared: group.start === group.end ? 0 : group.sharedBeams,
                 extra: group.start === group.end ? noteDuration : noteDuration - group.sharedBeams

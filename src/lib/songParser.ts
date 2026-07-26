@@ -1,14 +1,14 @@
-import { Song, Section, Row, Measure, Note } from "@/types/MusicNotation"
+import { Song, Measure, Note } from "@/types/MusicNotation"
 
 /**
- * Formats a Note object into its notation string (e.g., "1", "3/2/", "5.", "1'", "[C]1")
+ * Formats a Note object into its notation string (e.g., "1", "3//", "5.", "1'", "[C]1")
  */
 function formatNoteNotation(note: Note): string {
   let result = ''
 
-  // Repeat bracket start: [1.
+  // Repeat bracket start: (1: or (
   if (note.bracketStart) {
-    result += `[${note.bracketNumber ? note.bracketNumber + '.' : ''}`
+    result += note.bracketNumber ? `(${note.bracketNumber}: ` : '('
   }
 
   // Chord label: [C]
@@ -24,9 +24,9 @@ function formatNoteNotation(note: Note): string {
     result += '.'
   }
 
-  // Repeat bracket end: ]
+  // Repeat bracket end: )
   if (note.bracketEnd) {
-    result += ']'
+    result += ')'
   }
 
   return result
@@ -36,7 +36,7 @@ function formatNoteNotation(note: Note): string {
  * Formats a Note object into its lyric character + punctuation (e.g., "轻", "听，", "-")
  */
 function formatNoteLyric(note: Note): string {
-  const char = note.note != '-' ? note.char : '-'
+  const char = note.note !== '-' ? (note.char || '') : '-'
   const punct = note.punct ?? ''
   return `${char}${punct}`
 }
@@ -45,36 +45,48 @@ function formatNoteLyric(note: Note): string {
  * Converts a structured Song object back into your exact 2-line raw text format.
  */
 export function songToRaw(song: Song): string {
-  if (!song.sections || song.sections.length === 0) return ''
+  if (!song.measures || song.measures.length === 0) return ''
 
-  return song.sections
-    .map((section: Section) => {
-      // 1. Section Header: [verse], [chorus], etc.
-      const header = `[${section.label}]`
+  let rawText = ''
+  let currentLineMeasures: Measure[] = []
 
-      // 2. Process Rows into alternating Notation and Lyric lines
-      const rowsText = section.rows
-        .map((row: Row) => {
-          // Line 1: Notation line (measures joined by '|' with trailing '|')
-          const notationLine =
-            row.measures
-              .map((measure: Measure) =>
-                measure.notes.map(formatNoteNotation).join('')
-              )
-              .join('|') + '|'
+  // Helper function to render a buffered row of measures into two lines (notes + lyrics)
+  const flushRow = () => {
+    if (currentLineMeasures.length === 0) return ''
 
-          // Line 2: Lyrics line (measures joined by ' | ' without trailing '|')
-          const lyricLine = row.measures
-            .map((measure: Measure) =>
-              measure.notes.map(formatNoteLyric).join(' ')
-            )
-            .join(' | ')
+    const notationLine = currentLineMeasures
+      .map(m => m.notes.map(formatNoteNotation).join(' '))
+      .join(' | ') + ' |'
 
-          return `${notationLine}\n${lyricLine}`
-        })
-        .join('\n')
+    const lyricLine = currentLineMeasures
+      .map(m => m.notes.map(formatNoteLyric).join(' '))
+      .join(' | ')
 
-      return `${header}\n${rowsText}`
-    })
-    .join('\n')
+    // Clear the buffer
+    currentLineMeasures = []
+    
+    return `${notationLine}\n${lyricLine}\n\n`
+  }
+
+  for (let i = 0; i < song.measures.length; i++) {
+    const measure = song.measures[i]
+
+    // If we hit a new section label (e.g., "[Chorus]"), flush whatever we have first
+    if (measure.sectionLabel) {
+      rawText += flushRow()
+      rawText += `[${measure.sectionLabel}]\n`
+    }
+
+    currentLineMeasures.push(measure)
+
+    // Chunk formatting: Force a line break every 4 measures so the text is readable
+    if (currentLineMeasures.length === 4) {
+      rawText += flushRow()
+    }
+  }
+
+  // Flush any remaining measures at the end of the song
+  rawText += flushRow()
+
+  return rawText.trim()
 }

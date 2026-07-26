@@ -16,7 +16,7 @@ function toToken(raw: string): string[] {
   const result: string[] = []
 
   // Match a full jianpu token.
-  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([#b=]?[0-7][',]*\/{0,2}\^?|-))/g
+  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
   while ((match = NOTE_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -170,7 +170,7 @@ export function parse(raw: string): Song {
           const punct = punctMatch ? punctMatch[0] : ''
 
           const char = cleanChar !== '-' ? cleanChar : ''
-          const py   = cleanChar ? pinyin(cleanChar, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
+          const py   = char ? pinyin(char, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
           return {
             note: n as Jianpu | '-',
             dotted,
