@@ -1,5 +1,6 @@
-services:
+version: "3.8"
 
+services:
   db:
     image: postgres:16-alpine
     container_name: worship-db
@@ -17,6 +18,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+     - app-network
+  web:
+    build: .
+    container_name: worship-app
+    restart: unless-stopped
+    ports:
+     - "3000:3000"
+    enviroment:
+     - DATABASE_URL:postgresql://worship:worship@db:5432/worship?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+     - app-network
+     - cloudflared
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
+  cloudflared:
+    external: true

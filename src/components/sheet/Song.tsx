@@ -18,7 +18,6 @@ export function Song({ song, showOptions }: Props) {
             <div className="measures-container">
                 {song.measures?.map((measure, index) => {
                     const hasSectionLabel = Boolean(measure.sectionLabel)
-                    const noteCount = measure.notes.length || 1
 
                     return (
                         <div key={measure.id || index} className="measure-wrapper">

@@ -1,4 +1,4 @@
-import { Song } from "@/components/sheet/Song"
+import { SongView } from "@/components/sheet/SongView"
 import { prisma } from "@/lib/prisma"
 import { Song as SongType } from "@/types/MusicNotation"
 
@@ -6,7 +6,7 @@ interface Props {
     params: Promise<{ slug: string }>
 }
 
-const DEFAULT_SHOW = {
+const SHOW_OPTION = {
     chords: true,
     jianpu: true,
     lyrics: true,
@@ -25,6 +25,6 @@ export default async function SongsPage({ params }: Props) {
     const song = raw as unknown as SongType
 
     return (
-        <Song song={song} showOptions={DEFAULT_SHOW}></Song>
+        <SongView song={song}></SongView>
     )
 }

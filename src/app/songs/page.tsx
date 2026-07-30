@@ -6,12 +6,12 @@ export default async function SongsPage() {
     })
 
     return (
-        <ul>
-            {songs.map(song => (
-                <li key={song.id}>
-                    {song.title}
-                </li>
+        <div>
+            {songs.map(s => (
+                <span style={{display: "block"}}>
+                    <a href={`songs/${s.slug}`}>{s.title} | {s.artist} - {s.album}</a>
+                </span>
             ))}
-        </ul>
+        </div>
     )
 }

@@ -1,0 +1,28 @@
+{
+    "name": "CECFO Worship",
+    "short_name": "CECFO敬拜",
+    "description": "Worship training sheets with jianpu notation",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#F4F3EE",
+    "theme_color": "#1F2B1F",
+    "icons": [
+        {
+            "src": "/icons/cecfo-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/cecfo-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/cecfo-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
