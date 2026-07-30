@@ -26,8 +26,8 @@ services:
     restart: unless-stopped
     ports:
      - "3000:3000"
-    enviroment:
-     - DATABASE_URL:postgresql://worship:worship@db:5432/worship?schema=public
+    environment:
+     - DATABASE_URL=postgresql://worship:worship@db:5432/worship?schema=public
     depends_on:
       db:
         condition: service_healthy
