@@ -2,6 +2,8 @@ import { SongView } from "@/components/sheet/SongView"
 import { prisma } from "@/lib/prisma"
 import { Song as SongType } from "@/types/MusicNotation"
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
     params: Promise<{ slug: string }>
 }
