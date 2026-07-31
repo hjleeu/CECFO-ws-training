@@ -16,7 +16,7 @@ function toToken(raw: string): string[] {
   const result: string[] = []
 
   // Match a full jianpu token.
-  const NOTE_REGEX = /(__BS\d*__|__BE__|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const NOTE_REGEX = /(__BS\d*__|__BE__|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
   while ((match = NOTE_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -24,8 +24,27 @@ function toToken(raw: string): string[] {
   return result
 }
 
-function parseNotes(raw: string): ParsedNote[] {
-  const expanded = raw.replace(
+function splitMeasures(line: string): string[] {
+  const result: string[] = []
+  let depth = 0
+  let current = ''
+
+  for (const ch of line) {
+    if (ch === '(') depth++
+    if (ch === ')') depth--
+    if (ch === '|' && depth === 0) {
+      result.push(current.trim())
+      current = ''
+    } else {
+      current += ch
+    }
+  }
+  result.push(current.trim())
+  return result.filter(Boolean)
+}
+
+function parseNotes(raw: string): ParsedNote[][] {
+  let processed = raw.replace(
     /\((\d+):\s*([^)]+)\)/g,
     (_, num, inner) => `__BS${num}__ ${inner.trim()} __BE__`
   ).replace(
@@ -33,33 +52,51 @@ function parseNotes(raw: string): ParsedNote[] {
     (_, inner) => `__BS__ ${inner.trim()} __BE__`
   )
 
-  const tokens = toToken(expanded)
-  const result: ReturnType<typeof parseNotes> = []
-  let inBracket = false
-  let bracketStart = false
-  let bracketNumber: number | undefined
-  let pendingChord: string | undefined
+  const tokens = toToken(processed)
+  const measures: ParsedNote[][] = []
+  let currentMeasure: ParsedNote[] = []
+
+  let bracketNumber: number | undefined = undefined
+  let pendingChord: string | undefined = undefined
+  let nextBracketStart = false
+  let nextBracketNumber: number | undefined = undefined
 
   for (let t of tokens) {
+    if (t === '|') {
+      measures.push(currentMeasure)
+      currentMeasure = []
+      continue
+    }
+
     if (/^__BS/.test(t)) {
-      inBracket    = true
-      bracketStart = true
+      nextBracketStart = true
       const numMatch = t.match(/^__BS(\d+)__$/)
-      bracketNumber = numMatch ? parseInt(numMatch[1]) : undefined
+      bracketNumber = numMatch ? parseInt(numMatch[1]): undefined
+      nextBracketNumber = bracketNumber
       continue
     }
 
     if (t === '__BE__') {
-      if (result.length > 0) result[result.length - 1].bracketEnd = true
-      inBracket    = false
-      bracketStart = false
+      if (currentMeasure.length > 0) {
+        currentMeasure[currentMeasure.length - 1].bracketEnd = true
+      } else if (measures.length > 0 && measures[measures.length - 1].length > 0) {
+        const prevMeasure = measures[measures.length - 1]
+        prevMeasure[prevMeasure.length - 1].bracketEnd = true
+      }
       bracketNumber = undefined
+      nextBracketNumber = undefined
       continue
     }
 
-    if (t.startsWith('[') && t.endsWith(']')) {
-      pendingChord = t.slice(1, -1)
-      continue
+    if (t.startsWith('[')) {
+      const close = t.indexOf(']')
+      if (close !== -1) {
+        pendingChord = t.slice(1, close)
+        t = t.slice(close + 1)
+        if (!t) {
+          continue
+        }
+      }
     }
 
     let isDotted = false
@@ -68,34 +105,23 @@ function parseNotes(raw: string): ParsedNote[] {
       t = t.replace('.', '')
     }
 
-    if (t.startsWith('[')) {
-      const close = t.indexOf(']')
-      pendingChord = t.slice(1, close)
-      const note = t.slice(close + 1)
-      result.push({
-        note,
-        chord:         pendingChord,
-        dotted:        isDotted || undefined,
-        bracketStart:  bracketStart || undefined,
-        bracketNumber: bracketStart ? bracketNumber : undefined,
-      })
-      pendingChord  = undefined
-      bracketStart  = false
-      continue
+    const noteItem: ParsedNote = {
+      note: t,
+      dotted: isDotted || undefined,
+      chord: pendingChord,
+      bracketStart: nextBracketStart || undefined,
+      bracketNumber: nextBracketStart ? nextBracketNumber : undefined
     }
 
-    result.push({
-      note: t,
-      chord: pendingChord,
-      dotted: isDotted || undefined,
-      bracketStart: bracketStart || undefined,
-      bracketNumber: bracketStart ? bracketNumber : undefined
-    })
+    currentMeasure.push(noteItem)
     pendingChord = undefined
-    bracketStart = false
+    nextBracketStart = false
+    nextBracketNumber = undefined
   }
 
-  return result
+  measures.push(currentMeasure)
+
+  return measures.filter(m => m.length > 0)
 }
 
 function parseLyrics(raw: string): string[] {
@@ -116,8 +142,7 @@ function isSectionLabel(line: string): boolean {
   const trimmed = line.trim()
   if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return false
   const inner = trimmed.slice(1, -1).trim()
-  const isChord = CHORD_PATTERN.test(inner)
-  return !isChord
+  return !CHORD_PATTERN.test(inner)
 }
 
 export function parse(raw: string): Song {
@@ -148,22 +173,21 @@ export function parse(raw: string): Song {
       const noteLine = pendingNoteLine
       const lyricLine = line
 
-      const noteCols = noteLine.split('|').map(s => s.trim()).filter(Boolean)
-      const lyricCols = lyricLine.split('|').map(s => s.trim()).filter(Boolean)
+      const noteCols = parseNotes(noteLine)
+      const lyricCols = splitMeasures(lyricLine)
 
       if (noteCols.length !== lyricCols.length) {
         throw new Error(`Column mismatch at "${noteLine}". Notes / lyric columns must match.`)
       }
 
       noteCols.forEach((noteCol, j) => {
-        const parsedNotes = parseNotes(noteCol)
         const lyrics = parseLyrics(lyricCols[j])
 
-        if (parsedNotes.length !== lyrics.length) {
-          throw new Error(`Measure length mismatch. Notes count doesn't match lyrics count in: "${noteCol}"`)
+        if (noteCol.length !== lyrics.length) {
+          throw new Error(`Measure length mismatch. Notes count doesn't match lyrics count in measure index "${j}."`)
         }
 
-        const noteItems: Note[] = parsedNotes.map(({ note: n, dotted, chord, bracketStart, bracketEnd, bracketNumber }, k) => {
+        const noteItems: Note[] = noteCol.map((pn, k) => {
           const rawChar = lyrics[k] ?? ''
           const cleanChar = rawChar.replace(/[，,。!！?？;；]+$/g, '')
           const punctMatch= rawChar.match(/[，,。!！?？;；]+$/)
@@ -172,15 +196,15 @@ export function parse(raw: string): Song {
           const char = cleanChar !== '-' ? cleanChar : ''
           const py   = char ? pinyin(char, { toneType: 'symbol', type: 'array' })[0] ?? '' : ''
           return {
-            note: n as Jianpu | '-',
-            dotted,
+            note: pn.note as Jianpu | '-',
+            dotted: pn.dotted,
             char,
             punct: punct || undefined,
             pinyin: py,
-            chord,
-            bracketStart,
-            bracketEnd,
-            bracketNumber
+            chord: pn.chord,
+            bracketStart: pn.bracketStart,
+            bracketEnd: pn.bracketEnd,
+            bracketNumber: pn.bracketNumber
           }
         })
 

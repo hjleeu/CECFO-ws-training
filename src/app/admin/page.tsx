@@ -36,33 +36,31 @@ function format(raw: string): string {
         const isNoteLine = hasNotes || (!hasChinese && line.includes('|'))
 
         if (isNoteLine) {
-            const measures = line.split('|')
+            // Tokenize globally to safely support cross-measure brackets like (5 | 6)
+            const tokenRegex = /(\(\d+:\s*|\(|\)|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+            const tokens: string[] = []
+            let match: RegExpExecArray | null
 
-            const formattedMeasures = measures.map((col, index) => {
-                // Preserve trailing empty measure if line ends with '|'
-                if (index === measures.length - 1 && col.trim() === '') {
-                    return ''
+            while ((match = tokenRegex.exec(line)) !== null) {
+                if (match[0].trim()) {
+                    tokens.push(match[0].trim())
                 }
+            }
 
-                // Token regex matching:
-                // - Optional repeat brackets: e.g., (1: or )
-                // - Optional chord/bracket prefix: [C] or [1.
-                // - Note digit 0-7, rest, or dash '-'
-                // - Octave dots/apostrophes/commas (',), duration dot (.), beat slashes (/)
-                const NOTE_TOKEN_REGEX = /\([^)]+\)|(\[[^\]]+\]?)?([#b=]?[0-7][',]*\.?\/{0,2}\^?\.?|-)/g
-                const tokens: string[] = []
-                let match: RegExpExecArray | null
-
-                while ((match = NOTE_TOKEN_REGEX.exec(col)) !== null) {
-                    tokens.push(match[0])
+            let result = ''
+            for (let i = 0; i < tokens.length; i++) {
+                const t = tokens[i]
+                if (t === '|') {
+                    result = result.trimEnd() + ' | '
+                } else if (t === '(' || t.startsWith('(')) {
+                    result += t
+                } else if (t === ')') {
+                    result = result.trimEnd() + ') '
+                } else {
+                    result += t + ' '
                 }
-
-                return tokens.join(' ')
-            })
-
-            const result = formattedMeasures.join(' | ')
-            // Clean up trailing space before final '|'
-            return result.endsWith(' | ') ? result.slice(0, -1) : result
+            }
+            return result.trim()
         }
 
         // 3. Format Lyric line

@@ -234,6 +234,18 @@
     pointer-events: none;
 }
 
+.bracket.bracket-leading {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none;
+}
+
+.bracket.bracket-trailing {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
 .bracket-number {
     position: absolute;
     top: -0.52rem;
