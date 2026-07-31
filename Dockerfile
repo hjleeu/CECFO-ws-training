@@ -2,6 +2,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma.config.ts ./
 RUN npm ci
 
 # 2. Rebuild the source code only when needed
