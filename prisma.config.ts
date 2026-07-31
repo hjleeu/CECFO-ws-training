@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL || "postgresql://worship:worship@worship-db:5432/worship?schema=public",
+    url: "postgresql://worship:worship@worship-db:5432/worship?schema=public",
   },
 });
