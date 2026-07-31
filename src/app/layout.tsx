@@ -1,10 +1,15 @@
+import { Navbar } from '@/components/ui/Navbar'
 import './global.css'
+import "@/styles/navbar.css"
 
 export const metadata = {
   title: "CECFO Worship Training",
-  description: "",
-  manifest: "/manifest.json",
-  themeColor: ""
+  description: "Worship training sheets with jianpu notation",
+  manifest: "/manifest.json"
+}
+
+export const viewport = {
+  themeColor: "#F4F3EE"
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,10 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#141A14" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/cecfo-192.png" />
         <script src="/register-sw.js" defer />
       </head>
-      <body>{children}</body>
+      <body>
+        <Navbar></Navbar>
+        {children}
+      </body>
     </html>
   )
 }

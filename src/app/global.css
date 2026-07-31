@@ -27,3 +27,6 @@
 
   --transition: 0.3s ease;
 }
+
+[data-theme="dark"]  { color-scheme: dark; }
+[data-theme="light"] { color-scheme: light; }
