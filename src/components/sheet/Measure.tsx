@@ -79,42 +79,45 @@ export function Measure({ measure, showOptions }: Props) {
     }
 
     const bracketSpans: BracketSpan[] = []
-    let currentStart: number | null = null
-    let currentNum: number | undefined = undefined
+    const spanStack: { startIndex: number, number?: number, isLeading?: boolean }[] = []
 
     measure.notes.forEach((n, idx) => {
         if (n.bracketStart) {
-            currentStart = idx
-            currentNum = n.bracketNumber
+            if (n.isLeading) {
+                spanStack.push({
+                    startIndex: -1,
+                    isLeading: true,
+                    number: n.bracketNumber
+                })
+            } else {
+                spanStack.push({ startIndex: idx, number: n.bracketNumber })
+            }
         }
         if (n.bracketEnd) {
-            if (currentStart !== null) {
+            const top = spanStack.pop()
+            if (top) {
                 bracketSpans.push({
-                    startIndex: currentStart,
+                    startIndex: top.startIndex === -1 ? 0 : top.startIndex,
                     endIndex: idx,
-                    number: currentNum,
-                })
-                currentStart = null
-                currentNum = undefined
-            } else {
-                bracketSpans.push({
-                    startIndex: 0,
-                    endIndex: idx,
-                    number: n.bracketNumber,
-                    isLeading: true
+                    number: top.number,
+                    isLeading: top.isLeading
                 })
             }
         }
-    })
 
-    if (currentStart !== null) {
-        bracketSpans.push({
-            startIndex: currentStart,
-            endIndex: measure.notes.length - 1,
-            number: currentNum,
-            isTrailing: true
-        })
-    }
+        if (n.isTrailing && !n.bracketEnd) {
+            if (spanStack.length > 0) {
+                const top = spanStack[spanStack.length - 1]
+                bracketSpans.push({
+                    startIndex: top.startIndex,
+                    endIndex: measure.notes.length - 1,
+                    number: top.number,
+                    isTrailing: true
+                })
+                spanStack.pop()
+            }
+        }
+    })
 
     useEffect(() => {
         const container = containerRef.current

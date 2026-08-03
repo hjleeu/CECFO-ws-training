@@ -11,6 +11,8 @@ export interface Note {
     bracketStart?: boolean
     bracketEnd?: boolean
     bracketNumber?: number
+    isLeading?: boolean
+    isTrailing?: boolean
 }
 
 export interface Measure {
