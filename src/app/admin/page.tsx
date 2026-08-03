@@ -95,7 +95,7 @@ export default function AdminPage() {
     const [artist, setArtist] = useState('')
     const [album, setAlbum] = useState('')
     const [songKey, setSongKey] = useState('C')
-    const [bpm, setBpm] = useState(80)
+    const [bpm, setBpm] = useState(73)
     const [timeSignature, setTimeSignature] = useState("4/4")
 
     const [savedArtists, setArtists] = useState<string[]>([])
@@ -143,18 +143,18 @@ export default function AdminPage() {
         }
     }
 
-    const handleBlur = () => {
-        const formatted = format(raw)
-        setRaw(formatted)
-        try {
-            const result = parse(formatted)
-            setParsed(result)
-            setError(null)
-        } catch (e) {
-            setParsed(null)
-            setError((e as Error).message)
-        }
-    }
+    // const handleBlur = () => {
+    //     const formatted = format(raw)
+    //     setRaw(formatted)
+    //     try {
+    //         const result = parse(formatted)
+    //         setParsed(result)
+    //         setError(null)
+    //     } catch (e) {
+    //         setParsed(null)
+    //         setError((e as Error).message)
+    //     }
+    // }
 
     const handleLoad = async (slug: string) => {
         if (!slug) return
@@ -179,7 +179,7 @@ export default function AdminPage() {
         setArtist('')
         setAlbum('')
         setSongKey('C')
-        setBpm(80)
+        setBpm(73)
         setTimeSignature("4/4")
         setRaw('')
         setParsed(null)
@@ -275,7 +275,7 @@ export default function AdminPage() {
                         spellCheck="false"
                         value={raw}
                         onChange={e => handleChange(e.target.value)}
-                        onBlur={handleBlur}
+                        // onBlur={handleBlur}
                     />
                 </div>
                 <div className="preview-area">

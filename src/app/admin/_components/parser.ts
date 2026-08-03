@@ -9,16 +9,17 @@ interface ParsedNote {
   bracketStart?: boolean
   bracketEnd?: boolean
   bracketNumber?: number
+  isLeading?: boolean
+  isTrailing?: boolean
 }
 
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  // Match a full jianpu token.
-  const NOTE_REGEX = /(__BS\d*__|__BE__|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const TOKEN_REGEX = /(\||__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
-  while ((match = NOTE_REGEX.exec(raw)) !== null) {
+  while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
   }
   return result
@@ -44,47 +45,73 @@ function splitMeasures(line: string): string[] {
 }
 
 function parseNotes(raw: string): ParsedNote[][] {
-  let processed = raw.replace(
-    /\((\d+):\s*([^)]+)\)/g,
-    (_, num, inner) => `__BS${num}__ ${inner.trim()} __BE__`
-  ).replace(
-    /\(([^)]+)\)/g,
-    (_, inner) => `__BS__ ${inner.trim()} __BE__`
-  )
-
-  const tokens = toToken(processed)
+  const tokens = toToken(raw)
   const measures: ParsedNote[][] = []
   let currentMeasure: ParsedNote[] = []
 
-  let bracketNumber: number | undefined = undefined
-  let pendingChord: string | undefined = undefined
-  let nextBracketStart = false
-  let nextBracketNumber: number | undefined = undefined
+  interface BracketState {
+    number?: number
+    startNote?: ParsedNote
+  }
+  const bracketStack: BracketState[] = []
 
-  for (let t of tokens) {
+  let pendingChord: string | undefined = undefined
+  let pendingBracketStart = false
+  let pendingBracketNumber: number | undefined = undefined
+  let currentIsLeading = false
+
+  for (let i = 0; i < tokens.length; i++) {
+    let t = tokens[i]
+
     if (t === '|') {
+      if (bracketStack.length > 0 && currentMeasure.length > 0) {
+        currentMeasure[currentMeasure.length - 1].isTrailing = true
+      }
+      
       measures.push(currentMeasure)
       currentMeasure = []
+      currentIsLeading = bracketStack.length > 0
       continue
     }
 
-    if (/^__BS/.test(t)) {
-      nextBracketStart = true
-      const numMatch = t.match(/^__BS(\d+)__$/)
-      bracketNumber = numMatch ? parseInt(numMatch[1]): undefined
-      nextBracketNumber = bracketNumber
-      continue
-    }
+    if (/^__BS/.test(t) || t.startsWith('(')) {
+      let num: number | undefined = undefined
+      const bsMatch = t.match(/^__BS(\d+)__$/)
+      const parenMatch = t.match(/\((\d+):/)
 
-    if (t === '__BE__') {
-      if (currentMeasure.length > 0) {
-        currentMeasure[currentMeasure.length - 1].bracketEnd = true
-      } else if (measures.length > 0 && measures[measures.length - 1].length > 0) {
-        const prevMeasure = measures[measures.length - 1]
-        prevMeasure[prevMeasure.length - 1].bracketEnd = true
+      if (bsMatch) {
+        num = parseInt(bsMatch[1], 10)
+      } else if (parenMatch) {
+        num = parseInt(parenMatch[1], 10)
       }
-      bracketNumber = undefined
-      nextBracketNumber = undefined
+      bracketStack.push({ number: num })
+      pendingBracketStart = true
+      pendingBracketNumber = num
+      continue
+    }
+
+    if (t === '__BE__' || t === ')') {
+      if (bracketStack.length > 0) {
+        const active = bracketStack.pop()
+        let lastNote: ParsedNote | undefined = undefined
+
+        if (currentMeasure.length > 0) {
+          lastNote = currentMeasure[currentMeasure.length - 1]
+        } else if (measures.length > 0 && measures[measures.length - 1].length > 0) {
+          const prev = measures[measures.length - 1]
+          lastNote = prev[prev.length - 1]
+        }
+
+        if (lastNote) {
+          if (active?.startNote === lastNote) {
+            lastNote.bracketStart = undefined
+            lastNote.bracketNumber = undefined
+          } else {
+            lastNote.bracketEnd = true
+          }
+        }
+        currentIsLeading = false
+      }
       continue
     }
 
@@ -105,18 +132,34 @@ function parseNotes(raw: string): ParsedNote[][] {
       t = t.replace('.', '')
     }
 
+
+    const noteIsLeading = currentIsLeading && currentMeasure.length === 0
+
     const noteItem: ParsedNote = {
       note: t,
       dotted: isDotted || undefined,
       chord: pendingChord,
-      bracketStart: nextBracketStart || undefined,
-      bracketNumber: nextBracketStart ? nextBracketNumber : undefined
+      bracketStart: pendingBracketStart || undefined,
+      bracketEnd: undefined,
+      bracketNumber: pendingBracketStart ? pendingBracketNumber : undefined,
+      isLeading: noteIsLeading || undefined
+    }
+
+    if (pendingBracketStart && bracketStack.length > 0) {
+      bracketStack[bracketStack.length - 1].startNote = noteItem
     }
 
     currentMeasure.push(noteItem)
+
+    // Reset.
     pendingChord = undefined
-    nextBracketStart = false
-    nextBracketNumber = undefined
+    pendingBracketStart = false
+    pendingBracketNumber = undefined
+    currentIsLeading = false
+  }
+
+  if (bracketStack.length && currentMeasure.length > 0) {
+    currentMeasure[currentMeasure.length - 1].isTrailing = true
   }
 
   measures.push(currentMeasure)
@@ -204,7 +247,9 @@ export function parse(raw: string): Song {
             chord: pn.chord,
             bracketStart: pn.bracketStart,
             bracketEnd: pn.bracketEnd,
-            bracketNumber: pn.bracketNumber
+            bracketNumber: pn.bracketNumber,
+            isLeading: pn.isLeading,
+            isTrailing: pn.isTrailing
           }
         })
 

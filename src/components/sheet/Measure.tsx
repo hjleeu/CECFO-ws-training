@@ -1,6 +1,7 @@
 import { computeBeamGroups, parseJianpu } from '@/lib/jianpu'
 import type { Measure as MeasureProps, ShowOptions } from '../../types/MusicNotation'
 import { Note } from './Note'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
     measure: MeasureProps
@@ -15,7 +16,20 @@ interface BracketSpan {
     isTrailing?: boolean
 }
 
+interface BracketRect {
+    x1: number
+    x2: number
+    containerWidth: number
+    number?: number
+    isLeading?: boolean
+    isTrailing?: boolean
+}
+
 export function Measure({ measure, showOptions }: Props) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const noteRefs = useRef<(HTMLDivElement | null)[]>([])
+    const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
+
     const parsedNote = measure.notes.map(n => {
         const parsed = parseJianpu(n.note)
         return {
@@ -25,7 +39,6 @@ export function Measure({ measure, showOptions }: Props) {
     })
 
     const beamGroups = computeBeamGroups(parsedNote)
-
     const beamMap = new Map<number, { shared: number, extra: number }>()
 
     for (const group of beamGroups) {
@@ -102,31 +115,141 @@ export function Measure({ measure, showOptions }: Props) {
             isTrailing: true
         })
     }
-    
+
+    useEffect(() => {
+        const container = containerRef.current
+        if (!container || bracketSpans.length === 0) return
+
+        const updateRects = () => {
+            requestAnimationFrame(() => {
+                const containerRect = container.getBoundingClientRect()
+                const containerWidth = container.clientWidth
+
+                const rects: BracketRect[] = bracketSpans.map(b => {
+                    const startEl = noteRefs.current[b.startIndex]
+                    const endEl = noteRefs.current[b.endIndex]
+
+                    const x1 = startEl
+                        ? startEl.getBoundingClientRect().left - containerRect.left + startEl.getBoundingClientRect().width * 0.5
+                        : 0
+
+                    const x2 = endEl
+                        ? endEl.getBoundingClientRect().left - containerRect.left + endEl.getBoundingClientRect().width * 0.5
+                        : containerWidth
+
+                    return {
+                        x1,
+                        x2,
+                        containerWidth,
+                        number: b.number,
+                        isLeading: b.isLeading,
+                        isTrailing: b.isTrailing
+                    }
+                })
+
+                setBracketRects(rects)
+            })
+        }
+
+        // Initial calculation on load.
+        updateRects()
+
+        const resizeObserver = new ResizeObserver(() => {
+            updateRects()
+        })
+
+        resizeObserver.observe(container)
+        window.addEventListener("resize", updateRects)
+
+        return () => {
+            resizeObserver.disconnect()
+            window.removeEventListener("resize", updateRects)
+        }
+
+    }, [measure.notes, showOptions])
+
     return (
         <div className="measure">
-            <div className="measure-notes">
-                {bracketSpans.map((b, i) => {
-                    const spanLength = b.endIndex - b.startIndex + 1
-                    return (
-                        <div
-                            key={i}
-                            className={`bracket ${b.isLeading ? "bracket-leading" : ''} ${b.isTrailing ? "bracket-trailing": ''}`}
-                            style={{
-                                left: `calc(${b.startIndex} * var(--note-width) + 0.99rem)`,
-                                width: `calc((${spanLength}) * var(--note-width) - 0.52rem)`,
-                            }}
-                        >{b.number !== undefined && !b.isLeading && (
-                            <span className="bracket-number">{b.number}</span>
-                        )}</div>
-                    )
-                })}
+            <div className="measure-notes" ref={containerRef} style={{ position: "relative" }}>
+                {bracketRects.length > 0 && (
+                    <svg
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            overflow: "visible",
+                            pointerEvents: "none",
+                            zIndex: 2
+                        }}
+                    >
+                        {bracketRects.map((b, i) => {
+                            const startX = b.isLeading ? 0 : b.x1
+                            const endX = b.isTrailing ? b.containerWidth : b.x2
+                            const cx = (startX + endX) / 2
+                            const y = 37
+                            const h = 15
+
+                            const cornerRadius = 15
+
+                            const d = (b.isLeading && b.isTrailing
+                            ? `
+                                M ${startX} ${y - h}
+                                L ${endX} ${y - h}
+                            `
+                            : b.isLeading
+                            ? `
+                                M ${startX} ${y - h}
+                                L ${endX - cornerRadius} ${y - h}
+                                Q ${endX} ${y - h} ${endX} ${y - h + cornerRadius}
+                                L ${endX} ${y}
+                            `
+                            : b.isTrailing
+                            ? `
+                                M ${startX} ${y}
+                                L ${startX} ${y - h + cornerRadius}
+                                Q ${startX} ${y - h} ${startX + cornerRadius} ${y - h}
+                                L ${endX} ${y - h}
+                            `
+                            : `
+                                M ${startX} ${y}
+                                L ${startX} ${y - h + cornerRadius}
+                                Q ${startX} ${y - h} ${startX + cornerRadius} ${y - h}
+                                L ${endX - cornerRadius} ${y - h}
+                                Q ${endX} ${y - h} ${endX} ${y - h + cornerRadius}
+                                L ${endX} ${y}
+                            `).trim().replace(/\s+/g, ' ')
+
+                            return (
+                                <g key={i}>
+                                    <path
+                                        d={d}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                    ></path>
+                                    {b.number !== undefined && !b.isLeading && (
+                                        <text
+                                            x={cx}
+                                            y={y - h - 3}
+                                            textAnchor="middle"
+                                            fontSize="10"
+                                            fontFamily="monospace"
+                                            fill="currentColor"
+                                        >{b.number}</text>
+                                    )}
+                                </g>
+                            )
+                        })}
+                    </svg>
+                )}
 
                 {finalSegments.map((seg, si) => {
                     const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
 
                     return (
-                        <div key={si} className={isGroup ? 'beam-group' : ''} style={{ position: 'relative' }}>
+                        <div key={si} className={isGroup ? "beam-group" : ''} style={{ position: "relative" }}>
                             {isGroup && (
                                 <div className="beam-bars">
                                     {Array.from({ length: seg.sharedBeams }).map((_, bi) => (
@@ -138,7 +261,7 @@ export function Measure({ measure, showOptions }: Props) {
                                 {seg.notes.map((ni, k) => {
                                     const extra = beamMap.get(ni)?.extra ?? 0
                                     return (
-                                        <div key={k} className="note-column">
+                                        <div key={k} className="note-column" ref={(el: HTMLDivElement | null) => {noteRefs.current[ni] = el}}>
                                             <span className="chord">
                                                 {showOptions.chords && measure.notes[ni].chord
                                                     ? measure.notes[ni].chord : ''}
