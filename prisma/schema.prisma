@@ -23,7 +23,7 @@ model Song {
   bpm           Int
   timeSignature String
   measures      Json
-  brackets      Json
+  brackets      Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
