@@ -8,17 +8,22 @@ export interface Note {
     punct?: string
     pinyin: string
     chord?: string
-    bracketStart?: boolean
-    bracketEnd?: boolean
-    bracketNumber?: number
-    isLeading?: boolean
-    isTrailing?: boolean
 }
 
 export interface Measure {
     id: string
     notes: Note[]
     sectionLabel?: string
+}
+
+export interface BracketSpan {
+    id: string
+    startMeasure: number
+    startNote: number
+    endMeasure: number
+    endNote: number
+    number?: number
+    level: number
 }
 
 export interface Song {
@@ -30,6 +35,7 @@ export interface Song {
     bpm: number
     timeSignature: string
     measures: Measure[]
+    brackets: BracketSpan[]
 }
 
 export interface ShowOptions {

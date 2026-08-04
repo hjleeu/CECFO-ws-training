@@ -1,23 +1,26 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
-import { Measure, Note, Song } from "@/types/MusicNotation";
+import { BracketSpan, Measure, Note, Song } from "@/types/MusicNotation";
 
 interface ParsedNote {
   note: string
   dotted?: boolean
   chord?: string
-  bracketStart?: boolean
-  bracketEnd?: boolean
-  bracketNumber?: number
-  isLeading?: boolean
-  isTrailing?: boolean
+}
+
+ interface OpenBracket {
+  id: string
+  number?: number
+  startMeasure: number
+  startNote: number
+  level: number
 }
 
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  const TOKEN_REGEX = /(\||__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const TOKEN_REGEX = /(\||~|__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
   while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -44,127 +47,146 @@ function splitMeasures(line: string): string[] {
   return result.filter(Boolean)
 }
 
-function parseNotes(raw: string): ParsedNote[][] {
+function parseNotes(raw: string, measureOffset: number): { measures: ParsedNote[][], brackets: BracketSpan[] } {
   const tokens = toToken(raw)
   const measures: ParsedNote[][] = []
+  const brackets: BracketSpan[] = []
   let currentMeasure: ParsedNote[] = []
+  const bracketStack: OpenBracket[] = []
 
-  interface BracketState {
-    number?: number
-    startNote?: ParsedNote
+  let bracketCounter = 0
+  let measureCounter = measureOffset
+  let currentLevel = 0
+  let pendingChord : string | undefined
+  let noteIndex = 0
+
+  let tieStart: { measure: number, note: number } | null = null
+
+  function pushNote(raw: string) {
+    let t = raw
+    let dotted = false
+    if (t.includes('.')) {
+      dotted = true
+      t = t.replace('.', '')
+    }
+    currentMeasure.push({ note: t, dotted: dotted || undefined, chord: pendingChord })
+    pendingChord = undefined
+    noteIndex++
   }
-  const bracketStack: BracketState[] = []
 
-  let pendingChord: string | undefined = undefined
-  let pendingBracketStart = false
-  let pendingBracketNumber: number | undefined = undefined
-  let currentIsLeading = false
+  function closeTie() {
+    if (tieStart === null) return
+    brackets.push({
+      id: `b-${bracketCounter++}`,
+      startMeasure: tieStart.measure,
+      startNote: tieStart.note,
+      endMeasure: measureCounter,
+      endNote: noteIndex - 1,
+      number: undefined,
+      level: currentLevel
+    })
+    tieStart = null
+  }
 
   for (let i = 0; i < tokens.length; i++) {
     let t = tokens[i]
 
+    // Barline.
     if (t === '|') {
-      if (bracketStack.length > 0 && currentMeasure.length > 0) {
-        currentMeasure[currentMeasure.length - 1].isTrailing = true
-      }
-      
       measures.push(currentMeasure)
       currentMeasure = []
-      currentIsLeading = bracketStack.length > 0
+      measureCounter++
+      noteIndex = 0
       continue
     }
 
-    if (/^__BS/.test(t) || t.startsWith('(')) {
-      let num: number | undefined = undefined
-      const bsMatch = t.match(/^__BS(\d+)__$/)
-      const parenMatch = t.match(/\((\d+):/)
+    // Tie.
+    if (t === '~') {
+      const next = tokens[i + 1]
+      if (!next) continue
 
-      if (bsMatch) {
-        num = parseInt(bsMatch[1], 10)
-      } else if (parenMatch) {
-        num = parseInt(parenMatch[1], 10)
+      if (tieStart === null) {
+        tieStart = { measure: measureCounter, note: noteIndex - 1}
+      } else {
+        closeTie()
+        tieStart = { measure: measureCounter, note: noteIndex - 1}
       }
-      bracketStack.push({ number: num })
-      pendingBracketStart = true
-      pendingBracketNumber = num
       continue
     }
 
+    // Open bracket.
+    if (/^__BS/.test(t) || /^\(\d+:/.test(t) || t === '(') {
+      const numMatch = t.match(/(\d+)/)
+      const num = numMatch ? parseInt(numMatch[1]) : undefined
+
+      bracketStack.push({
+        id: `b-${bracketCounter++}`,
+        number: num,
+        startMeasure: measureCounter,
+        startNote: noteIndex,
+        level: currentLevel++
+      })
+      continue
+    }
+
+    // Close bracket.
     if (t === '__BE__' || t === ')') {
-      if (bracketStack.length > 0) {
-        const active = bracketStack.pop()
-        let lastNote: ParsedNote | undefined = undefined
-
-        if (currentMeasure.length > 0) {
-          lastNote = currentMeasure[currentMeasure.length - 1]
-        } else if (measures.length > 0 && measures[measures.length - 1].length > 0) {
-          const prev = measures[measures.length - 1]
-          lastNote = prev[prev.length - 1]
-        }
-
-        if (lastNote) {
-          if (active?.startNote === lastNote) {
-            lastNote.bracketStart = undefined
-            lastNote.bracketNumber = undefined
-          } else {
-            lastNote.bracketEnd = true
-          }
-        }
-        currentIsLeading = false
+      const open = bracketStack.pop()
+      if (open) {
+        currentLevel--
+        brackets.push({
+          id: open.id,
+          startMeasure: open.startMeasure,
+          startNote: open.startNote,
+          endMeasure: measureCounter,
+          endNote: noteIndex - 1, // Last note pushed.
+          number: open.number,
+          level: open.level
+        })
       }
       continue
     }
 
+    // Chord.
     if (t.startsWith('[')) {
       const close = t.indexOf(']')
       if (close !== -1) {
         pendingChord = t.slice(1, close)
-        t = t.slice(close + 1)
-        if (!t) {
+        const rest = t.slice(close + 1)
+        if (!rest) {
           continue
         }
+        pushNote(rest)
+        if (tokens[i + 1] !== '~') closeTie()
       }
+      continue
     }
 
-    let isDotted = false
-    if (t.includes('.')) {
-      isDotted = true
-      t = t.replace('.', '')
-    }
+    pushNote(t)
 
-
-    const noteIsLeading = currentIsLeading && currentMeasure.length === 0
-
-    const noteItem: ParsedNote = {
-      note: t,
-      dotted: isDotted || undefined,
-      chord: pendingChord,
-      bracketStart: pendingBracketStart || undefined,
-      bracketEnd: undefined,
-      bracketNumber: pendingBracketStart ? pendingBracketNumber : undefined,
-      isLeading: noteIsLeading || undefined
-    }
-
-    if (pendingBracketStart && bracketStack.length > 0) {
-      bracketStack[bracketStack.length - 1].startNote = noteItem
-    }
-
-    currentMeasure.push(noteItem)
-
-    // Reset.
-    pendingChord = undefined
-    pendingBracketStart = false
-    pendingBracketNumber = undefined
-    currentIsLeading = false
+    if (tokens[i + 1] !== '~') closeTie()
   }
 
-  if (bracketStack.length && currentMeasure.length > 0) {
-    currentMeasure[currentMeasure.length - 1].isTrailing = true
+  while (bracketStack.length > 0) {
+    const open = bracketStack.pop()!
+    currentLevel--
+    brackets.push({
+      id: open.id,
+      startMeasure: open.startMeasure,
+      startNote: open.startNote,
+      endMeasure: measureCounter,
+      endNote: noteIndex - 1,
+      number: open.number,
+      level: open.level
+    })
   }
 
   measures.push(currentMeasure)
 
-  return measures.filter(m => m.length > 0)
+  return {
+    measures: measures.filter(m => m.length > 0),
+    brackets
+  }
 }
 
 function parseLyrics(raw: string): string[] {
@@ -194,14 +216,12 @@ export function parse(raw: string): Song {
   if (!lines.length) throw new Error('Empty input')
 
   const measures: Measure[] = []
+  const allBrackets: BracketSpan[] = []
   let currentLabel: string | undefined = undefined
   let pendingNoteLine: string | null = null
-
   let measureCount = 0
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-
+  for (const line of lines) {
     // Skip empty lines.
     if (!line) continue
 
@@ -215,13 +235,16 @@ export function parse(raw: string): Song {
     } else {
       const noteLine = pendingNoteLine
       const lyricLine = line
+      pendingNoteLine = null
 
-      const noteCols = parseNotes(noteLine)
+      const { measures: noteCols, brackets } = parseNotes(noteLine, measureCount)
       const lyricCols = splitMeasures(lyricLine)
 
       if (noteCols.length !== lyricCols.length) {
         throw new Error(`Column mismatch at "${noteLine}". Notes / lyric columns must match.`)
       }
+
+      allBrackets.push(...brackets)
 
       noteCols.forEach((noteCol, j) => {
         const lyrics = parseLyrics(lyricCols[j])
@@ -244,30 +267,23 @@ export function parse(raw: string): Song {
             char,
             punct: punct || undefined,
             pinyin: py,
-            chord: pn.chord,
-            bracketStart: pn.bracketStart,
-            bracketEnd: pn.bracketEnd,
-            bracketNumber: pn.bracketNumber,
-            isLeading: pn.isLeading,
-            isTrailing: pn.isTrailing
+            chord: pn.chord
           }
         })
 
         const newMeasure: Measure = {
-          id: `m-${measureCount++}`, // UID.
-          sectionLabel: undefined,
+          id: `m-${measureCount}`, // UID.
+          sectionLabel: currentLabel,
           notes: noteItems
         }
 
         if (currentLabel) {
-          newMeasure.sectionLabel = currentLabel
           currentLabel = undefined // Reset for the next measure.
         }
 
         measures.push(newMeasure)
+        measureCount++
       })
-
-      pendingNoteLine = null
     }
   }
 
@@ -286,6 +302,7 @@ export function parse(raw: string): Song {
     key: '',
     bpm: 0,
     timeSignature: '',
-    measures
+    measures,
+    brackets: allBrackets
   }
 }
