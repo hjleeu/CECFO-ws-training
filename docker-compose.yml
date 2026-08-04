@@ -18,17 +18,32 @@ services:
       retries: 5
     networks:
      - app-network
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: npx prisma migrate deploy
+    environment:
+     DATABASE_URL: postgresql://worship:worship@db:5432/worship
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      -app-network
   web:
-    build: .
+    build:
+      context: .
+      target: runner
     container_name: worship-app
     restart: unless-stopped
     ports:
      - "3000:3000"
     environment:
-     - DATABASE_URL=postgresql://worship:worship@db:5432/worship?schema=public
+     - DATABASE_URL=postgresql://worship:worship@db:5432/worship
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
      - app-network
      - cloudflared
