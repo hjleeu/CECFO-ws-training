@@ -61,8 +61,11 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                             {showOptions.pinyin && lyric.pinyin && (
                                 <span className="pinyin">{lyric.pinyin}</span>
                             )}
-                            <span className="char">
+                            <span className="lyric">
                                 {typeof lyric === 'string' ? lyric : lyric.char}
+                                {typeof lyric !== 'string' && lyric.punct && (
+                                    <span className="lyric-punct">{lyric.punct}</span>
+                                )}
                             </span>
                         </div>
                     ))}
