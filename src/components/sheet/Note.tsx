@@ -54,17 +54,20 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                     </div>
                 </div>
             )}
-            <div className="lyrics">
-                {showOptions.lyrics && note.lyrics.map((lyric, i) => (
-                    <div key={i} className="lyric-row">
-                        {showOptions.pinyin && (
-                            <span className="pinyin">{lyric.pinyin}</span>
-                        )}
-                        <span className="lyric">{isRest ? '' : lyric.char}</span>
-                        {lyric.punct && <span className="lyric-punct">{lyric.punct}</span>}
-                    </div>
-                ))}
-            </div>
+            {showOptions.lyrics && note?.lyrics && note.lyrics.length > 0 && (
+                <div className="lyrics">
+                    {note.lyrics.map((lyric, i) => (
+                        <div key={i} className="lyric-row">
+                            {showOptions.pinyin && lyric.pinyin && (
+                                <span className="pinyin">{lyric.pinyin}</span>
+                            )}
+                            <span className="char">
+                                {typeof lyric === 'string' ? lyric : lyric.char}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
