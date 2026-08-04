@@ -17,7 +17,7 @@ export function Song({ song, showOptions }: Props) {
       </div>
       <div className="measures-container">
         {song.measures?.map((measure, index) => (
-          <div key={measure.id || index} className={`measure-wrapper${measure.sectionLabel ? ' has-section-label' : ''}`}>
+          <div key={measure.id || index} className={`measure-wrapper${measure.sectionLabel ? ' has-section-label' : ''}`} style={{ flexGrow: measure.notes.length, flexBasis: 0 }}>
             {measure.sectionLabel && (
               <div className="measure-section-label">
                 {measure.sectionLabel}
