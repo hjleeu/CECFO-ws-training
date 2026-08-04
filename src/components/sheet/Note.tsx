@@ -54,15 +54,17 @@ export function Note({ note, showOptions, extraBeams }: Props) {
                     </div>
                 </div>
             )}
-            {showOptions.pinyin && (
-                <span className="pinyin">{isRest ? '' : note.pinyin}</span>
-            )}
-            {showOptions.lyrics && (
-                <div className="lyric-container">
-                    <span className="lyric">{isRest ? '' : note.char}</span>
-                    {note.punct && <span className="lyric-punct">{note.punct}</span>}
-                </div>
-            )}
+            <div className="lyrics">
+                {showOptions.lyrics && note.lyrics.map((lyric, i) => (
+                    <div key={i} className="lyric-row">
+                        {showOptions.pinyin && (
+                            <span className="pinyin">{lyric.pinyin}</span>
+                        )}
+                        <span className="lyric">{isRest ? '' : lyric.char}</span>
+                        {lyric.punct && <span className="lyric-punct">{lyric.punct}</span>}
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }

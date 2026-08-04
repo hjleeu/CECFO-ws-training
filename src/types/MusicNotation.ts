@@ -4,10 +4,14 @@ export interface Note {
     note: Jianpu | '-'
     dotted?: boolean
     fermata?: boolean
-    char: string
-    punct?: string
-    pinyin: string
+    lyrics: LyricEntry[]
     chord?: string
+}
+
+export interface LyricEntry {
+    char: string
+    pinyin: string
+    punct?: string
 }
 
 export interface Measure {

@@ -404,11 +404,19 @@
     text-underline-offset: 2px;
 }
 
-.lyric-container {
+.lyrics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lyric-row {
     position: relative;
     display: inline-flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: baseline;
+    align-items: center;
+    margin-bottom: 7px;
 }
 
 .lyric {

@@ -154,7 +154,7 @@ export function Measure({ measure, measureIndex, brackets, showOptions }: Props)
 
                 const span = Math.max(Math.abs(endX - startX), 10)
                 const baseArch = Math.min(Math.max(span * 0.18, 10), 20)
-                const archHeight = baseArch + b.level
+                const archHeight = baseArch + (1 - b.level) * 3
 
                 const cpX1 = startX + span * 0.2
                 const cpX2 = endX - span * 0.2
