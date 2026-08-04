@@ -150,11 +150,11 @@ export function Measure({ measure, measureIndex, brackets, showOptions }: Props)
                 const startX = b.isLeading ? 0 : b.x1
                 const endX = b.isTrailing ? b.containerWidth : b.x2
                 const cx = (startX + endX) / 2
-                const y = 37 - (b.level * 15)
+                const y = 37
 
                 const span = Math.max(Math.abs(endX - startX), 10)
                 const baseArch = Math.min(Math.max(span * 0.18, 10), 20)
-                const archHeight = baseArch + b.level * 10
+                const archHeight = baseArch + b.level
 
                 const cpX1 = startX + span * 0.2
                 const cpX2 = endX - span * 0.2
