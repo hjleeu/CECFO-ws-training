@@ -13,17 +13,35 @@ interface Props {
 interface BracketRect {
   x1: number
   y1: number
+
   x2: number
   y2: number
+
+  rowLeft: number
+  rowRight: number
+
   number?: number
   level: number
-  wrapped: boolean // start/end are on different visual rows
+  wrapped: boolean
 }
 
 export function Song({ song, showOptions }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null)
   const noteRefsMap   = useRef<Map<string, HTMLDivElement>>(new Map())
   const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
+
+  const measureRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  const registerMeasureRef = useCallback(
+    (measureIndex: number, el: HTMLDivElement | null) => {
+      if (el) {
+        measureRefs.current.set(measureIndex, el)
+      } else {
+        measureRefs.current.delete(measureIndex)
+      }
+    },
+    []
+  )
 
   const registerNoteRef = useCallback((measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => {
     const key = `${measureIndex}-${noteIndex}`
@@ -48,15 +66,43 @@ export function Song({ song, showOptions }: Props) {
             const startRect = startEl.getBoundingClientRect()
             const endRect = endEl.getBoundingClientRect()
 
+            const startMeasure =
+              measureRefs.current.get(b.startMeasure)
+
+            const endMeasure =
+              measureRefs.current.get(b.endMeasure)
+
+            if (!startMeasure || !endMeasure)
+              return null
+
+            const startMeasureRect =
+              startMeasure.getBoundingClientRect()
+
+            const endMeasureRect =
+              endMeasure.getBoundingClientRect()
+
             const y1 = startRect.top - containerRect.top
             const y2 = endRect.top - containerRect.top
-            const wrapped = Math.abs(y1 - y2) > 5
+
+            const wrapped =
+              Math.abs(startMeasureRect.top - endMeasureRect.top) > 1
+
+            const rowLeft =
+              endMeasureRect.left - containerRect.left
+
+            const rowRight =
+              startMeasureRect.right - containerRect.left
 
             return {
-              x1: startRect.left - containerRect.left + startRect.width * 0.5,
+              x1: startRect.left - containerRect.left + startRect.width / 2,
               y1,
-              x2: endRect.left - containerRect.left + endRect.width * 0.5,
+
+              x2: endRect.left - containerRect.left + endRect.width / 2,
               y2,
+
+              rowLeft,
+              rowRight,
+
               number: b.number,
               level: b.level,
               wrapped,
@@ -119,7 +165,8 @@ export function Song({ song, showOptions }: Props) {
                 )
               }
 
-              const rowRight = (containerRef.current?.clientWidth ?? 0)
+              const rowRight = b.rowRight
+              const rowLeft = b.rowLeft
               const y1 = b.y1 + 37 - (3 - b.level)
               const y2 = b.y2 + 37 - (3 - b.level)
 
@@ -131,7 +178,12 @@ export function Song({ song, showOptions }: Props) {
               const span2 = Math.max(b.x2, 10)
               const arch2 = Math.min(Math.max(span2 * 0.15, 10), 24)
               const cpOffset2 = Math.min(30, span2 * 0.2)
-              const d2 = `M 0 ${y2 - arch2} C ${cpOffset2} ${y2 - arch2}, ${b.x2 - cpOffset2} ${y2 - arch2}, ${b.x2} ${y2}`
+              const d2 = `
+                M ${rowLeft} ${y2 - arch2}
+                C ${rowLeft + cpOffset2} ${y2 - arch2},
+                ${b.x2 - cpOffset2} ${y2 - arch2},
+                ${b.x2} ${y2}
+              `
 
               return (
                 <g key={i}>
@@ -151,6 +203,7 @@ export function Song({ song, showOptions }: Props) {
         {song.measures?.map((measure, index) => (
           <div
             key={measure.id || index}
+            ref={el => registerMeasureRef(index, el)}
             className={`measure-wrapper${measure.sectionLabel ? ' has-section-label' : ''}`}
             style={{ flexGrow: measure.notes.length, flexBasis: 0 }}
           >
