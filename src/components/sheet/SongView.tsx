@@ -5,6 +5,7 @@ import { Song } from "@/components/sheet/Song"
 import { Metronome } from "@/components/sheet/Metronome"
 import { transposeSong } from "@/lib/key_transpose"
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
+import "@/styles/tools.css"
 
 interface Props {
     song: SongType

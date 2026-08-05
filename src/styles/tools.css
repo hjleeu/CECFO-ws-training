@@ -1,0 +1,150 @@
+.song-controls-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 1rem 1.25rem;
+
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+}
+
+.controls-label {
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+/* ---------- checkboxes ---------- */
+
+.song-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+
+    padding: .35rem .6rem;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    transition: var(--transition);
+}
+
+.checkbox-label:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* ---------- transpose ---------- */
+
+.transpose-controls {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+.current-key {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--color-accent);
+}
+
+.transpose-buttons {
+    display: flex;
+    gap: .5rem;
+}
+
+.transpose-btn,
+.transpose-reset-btn,
+.metronome-btn {
+    appearance: none;
+    border: 1px solid var(--color-border);
+
+    background: var(--color-bg);
+    color: var(--color-text);
+
+    padding: .5rem .9rem;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    transition: var(--transition);
+}
+
+.transpose-btn:hover,
+.transpose-reset-btn:hover {
+    background: var(--color-accent);
+    color: white;
+}
+
+/* ---------- metronome ---------- */
+
+.metronome-container {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+.metronome-title {
+    font-weight: 600;
+}
+
+.metronome-btn.play {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+}
+
+.metronome-btn.stop {
+    background: var(--color-danger);
+    color: white;
+    border: none;
+}
+
+.metronome-tempo {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.metronome-tempo input[type="range"] {
+    width: 160px;
+    accent-color: var(--color-accent);
+}
+
+.metronome-bpm-value {
+    min-width: 2.5rem;
+    text-align: center;
+    font-family: var(--font-mono);
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 900px) {
+
+    .song-controls-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .song-checkboxes,
+    .transpose-controls,
+    .metronome-container {
+        justify-content: center;
+    }
+
+}

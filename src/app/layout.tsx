@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body>
+      <body style={{paddingBottom: "calc(6rem + env(safe-area-inset-bottom))"}}>
         <Navbar />
         {children}
         <Script src="/register-sw.js" strategy="afterInteractive" />
