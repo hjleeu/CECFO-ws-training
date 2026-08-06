@@ -37,7 +37,8 @@ function format(raw: string): string {
 
         if (isNoteLine) {
             // Tokenize globally to safely support cross-measure brackets like (5 | 6)
-            const tokenRegex = /(\(\d+:\s*|\(|\)|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+            // and tie shorthand like 1~2
+            const tokenRegex = /(\(\d+:\s*|\(|\)|~|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
             const tokens: string[] = []
             let match: RegExpExecArray | null
 
@@ -56,6 +57,9 @@ function format(raw: string): string {
                     result += t
                 } else if (t === ')') {
                     result = result.trimEnd() + ') '
+                } else if (t === '~') {
+                    // ties bind directly to the previous note, no space before it
+                    result = result.trimEnd() + '~'
                 } else {
                     result += t + ' '
                 }
@@ -143,18 +147,18 @@ export default function AdminPage() {
         }
     }
 
-    // const handleBlur = () => {
-    //     const formatted = format(raw)
-    //     setRaw(formatted)
-    //     try {
-    //         const result = parse(formatted)
-    //         setParsed(result)
-    //         setError(null)
-    //     } catch (e) {
-    //         setParsed(null)
-    //         setError((e as Error).message)
-    //     }
-    // }
+    const handleBlur = () => {
+        const formatted = format(raw)
+        setRaw(formatted)
+        try {
+            const result = parse(formatted)
+            setParsed(result)
+            setError(null)
+        } catch (e) {
+            setParsed(null)
+            setError((e as Error).message)
+        }
+    }
 
     const handleLoad = async (slug: string) => {
         if (!slug) return
@@ -275,7 +279,7 @@ export default function AdminPage() {
                         spellCheck="false"
                         value={raw}
                         onChange={e => handleChange(e.target.value)}
-                        // onBlur={handleBlur}
+                        onBlur={handleBlur}
                     />
                 </div>
                 <div className="preview-area">
