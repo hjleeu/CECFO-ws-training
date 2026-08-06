@@ -1,5 +1,5 @@
 .song-container {
-    padding: 1.5rem;
+    padding: 1.52rem;
     width: 100%;
     margin: 0 0;
 }
@@ -115,7 +115,7 @@
     color: var(--color-text);
     font-family: var(--font-chinese);
     text-align: center;
-    font-size: 1.66rem;
+    font-size: 1.37rem;
 }
 
 .song-meta {
@@ -123,7 +123,7 @@
     color: var(--color-muted);
     font-family: var(--font-chinese);
     text-align: center;
-    font-size: 1.37rem;
+    font-size: 0.99rem;
 }
 
 .measures-container {
@@ -134,7 +134,7 @@
     column-gap: 0;
     align-items: flex-start;
     box-sizing: border-box;
-    margin-top: 1.5rem;
+    margin-top: 1.66rem;
 }
 
 .section-row {
@@ -198,17 +198,17 @@
     align-items: center;
     justify-content: flex-start;
     height: 100%;
-    min-width: 1.37rem;
+    min-width: 1.15rem;
 }
 
 .chord {
     font-family: var(--font-mono);
     color: var(--color-accent);
     text-transform: none;
-    font-size: 0.99rem;
-    font-weight: 600;
+    font-size: 0.88rem;
+    font-weight: 700;
     line-height: 1.2;
-    min-height: 1.88rem;
+    min-height: 1.37rem;
     display: flex;
     align-items: flex-start;
 }
@@ -228,7 +228,6 @@
     top: 1.37rem;
     left: 10%;
     width: auto;
-    height: 0.66rem;
     border-top: 1.5px solid currentColor;
     border-left: 1.5px solid currentColor;
     border-right: 1.5px solid currentColor;
@@ -315,7 +314,7 @@
 }
 
 .fermata {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   line-height: 1;
   color: var(--color-text);
   text-align: center;
@@ -325,7 +324,7 @@
 
 .accidental {
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.66rem;
   line-height: 1;
   color: var(--color-text);
   margin-right: -0.15rem;
@@ -342,8 +341,8 @@
 
 .note {
     font-family: var(--font-mono);
-    font-size: 1.37rem;
-    line-height: 1.37;
+    font-size: 1.15rem;
+    line-height: 1.15;
     color: var(--color-text);
 }
 
@@ -351,7 +350,7 @@
     position: absolute;
     left: 100%;
     margin-left: 0;
-    font-size: 0.88rem;
+    font-size: 0.66rem;
     line-height: 1;
     color: var(--color-text);
     pointer-events: none;
@@ -381,7 +380,7 @@
 
 .octave-dot {
     line-height: 0.37;
-    font-size: 0.73rem;
+    font-size: 0.66rem;
     display: block;
 }
 
@@ -428,10 +427,10 @@
 
 .lyric {
     font-family: var(--font-chinese);
-    font-size: 1.29rem;
-    line-height: 1.37;
+    font-size: 1.15rem;
+    line-height: 1.15;
     color: var(--color-text);
-    min-height: 1.37rem;
+    min-height: 1.15rem;
 }
 
 .lyric-punct {
@@ -439,7 +438,7 @@
     left: 100%;
     bottom: 0;
     font-family: var(--font-chinese);
-    font-size: 1.15rem;
+    font-size: 0.99rem;
     line-height: 1.37;
     color: var(--color-text);
     white-space: nowrap;
@@ -448,38 +447,33 @@
 
 .pinyin {
     color: var(--color-muted);
-    font-size: 0.73rem;
-    line-height: 1.37;
+    font-size: 0.66rem;
+    line-height: 1.15;
     min-height: 0.88rem;
 }
 
 @media (max-width: 480px) {
     .song-title {
-        font-size: 1.37rem;
+        font-size: 1.15rem;
     }
 
     .song-meta {
-        font-size: 1rem;
-    }
-
-    .note {
-        font-size: 1rem;
-    }
-
-    .lyric {
-        font-size: 1rem;
-    }
-
-    .pinyin {
         font-size: 0.73rem;
     }
 
-    .chord {
+    .note {
         font-size: 0.88rem;
     }
 
-    .measure-wrapper {
-        flex: 1 1 150px;
-        min-width: 150px;
+    .lyric {
+        font-size: 0.88rem;
+    }
+
+    .pinyin {
+        font-size: 0.52rem;
+    }
+
+    .chord {
+        font-size: 0.66rem;
     }
 }
