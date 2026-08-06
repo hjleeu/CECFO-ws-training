@@ -3,7 +3,7 @@
 import type { Song as SongProps, ShowOptions } from "@/types/MusicNotation"
 import { Measure } from "./Measure"
 import "@/styles/sheet.css"
-import { useRef, useState, useEffect, useCallback } from "react"
+import { useRef, useState, useEffect, useCallback, Fragment } from "react"
 
 interface Props {
   song: SongProps
@@ -200,17 +200,23 @@ export function Song({ song, showOptions }: Props) {
           </svg>
         )}
 
-        {song.measures?.map((measure, index) => (
-          <div
-            key={measure.id || index}
-            ref={el => registerMeasureRef(index, el)}
-            className={`measure-wrapper${measure.sectionLabel ? ' has-section-label' : ''}`}
-            style={{ flexGrow: measure.notes.length, flexBasis: 0 }}
-          >
+        {song.measures.map((measure, index) => (
+          <Fragment key={measure.id ?? index}>
             {measure.sectionLabel && (
-              <div className="measure-section-label">{measure.sectionLabel}</div>
+              <div className="section-row">
+                <div className="measure-section-label">
+                  {measure.sectionLabel}
+                </div>
+              </div>
             )}
-            <div className="measure-content">
+
+            <div
+              className="measure-wrapper"
+              style={{
+                flexGrow: measure.notes.length,
+                flexBasis: 0,
+              }}
+            >
               <Measure
                 measure={measure}
                 measureIndex={index}
@@ -218,7 +224,7 @@ export function Song({ song, showOptions }: Props) {
                 registerNoteRef={registerNoteRef}
               />
             </div>
-          </div>
+          </Fragment>
         ))}
       </div>
     </div>

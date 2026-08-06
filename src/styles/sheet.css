@@ -137,10 +137,15 @@
     margin-top: 1.5rem;
 }
 
+.section-row {
+    flex: 0 0 100%;
+    margin-bottom: 0.52rem;
+}
+
 .measure-section-label {
     text-transform: uppercase;
     font-size: 0.88rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.1em;
     color: var(--color-muted);
     margin-bottom: 0.73rem;
