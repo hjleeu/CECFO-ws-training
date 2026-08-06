@@ -85,7 +85,7 @@ export function Song({ song, showOptions }: Props) {
             const y2 = endRect.top - containerRect.top
 
             const wrapped =
-              Math.abs(startMeasureRect.top - endMeasureRect.top) > 1
+              Math.abs(startMeasureRect.top - endMeasureRect.top) > 37
 
             const rowLeft =
               endMeasureRect.left - containerRect.left
@@ -148,7 +148,7 @@ export function Song({ song, showOptions }: Props) {
                 const span = Math.max(Math.abs(b.x2 - b.x1), 10)
                 const arch = Math.min(Math.max(span * 0.18, 10), 30)
                 const cpOffset = span * 0.2
-                const y = b.y1 + 37 - (3 - b.level)
+                const y = b.y1 + 45 - (3 - b.level)
 
                 const d = `M ${b.x1} ${y} C ${b.x1 + cpOffset} ${y - arch}, ${b.x2 - cpOffset} ${y - arch}, ${b.x2} ${y}`
                 const cx = (b.x1 + b.x2) / 2
@@ -167,8 +167,8 @@ export function Song({ song, showOptions }: Props) {
 
               const rowRight = b.rowRight
               const rowLeft = b.rowLeft
-              const y1 = b.y1 + 37 - (3 - b.level)
-              const y2 = b.y2 + 37 - (3 - b.level)
+              const y1 = b.y1 + 45 - (3 - b.level)
+              const y2 = b.y2 + 45 - (3 - b.level)
 
               const span1 = Math.max(rowRight - b.x1, 10)
               const arch1 = Math.min(Math.max(span1 * 0.15, 10), 24)
