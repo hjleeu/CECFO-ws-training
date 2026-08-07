@@ -1,3 +1,7 @@
+export const BAR_HEIGHT_PX = 1.52
+export const BAR_GAP_PX    = 3.7
+export const BAR_STEP_PX   = BAR_HEIGHT_PX + BAR_GAP_PX
+
 export interface BeamGroup {
   start: number
   end: number

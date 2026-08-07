@@ -4,6 +4,7 @@ import type { Song as SongProps, ShowOptions } from "@/types/MusicNotation"
 import { Measure } from "./Measure"
 import "@/styles/sheet.css"
 import { useRef, useState, useEffect, useCallback } from "react"
+import { parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from '@/lib/jianpu'
 
 interface Props {
   song: SongProps
@@ -13,13 +14,10 @@ interface Props {
 interface BracketRect {
   x1: number
   y1: number
-
   x2: number
   y2: number
-
   rowLeft: number
   rowRight: number
-
   number?: number
   level: number
   wrapped: boolean
@@ -31,14 +29,12 @@ export function Song({ song, showOptions }: Props) {
   const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
 
   const measureRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  const [rowDurationHeights, setRowDurationHeights] = useState<Map<number, number>>(new Map())
 
   const registerMeasureRef = useCallback(
     (measureIndex: number, el: HTMLDivElement | null) => {
-      if (el) {
-        measureRefs.current.set(measureIndex, el)
-      } else {
-        measureRefs.current.delete(measureIndex)
-      }
+      if (el) measureRefs.current.set(measureIndex, el)
+      else measureRefs.current.delete(measureIndex)
     },
     []
   )
@@ -49,6 +45,7 @@ export function Song({ song, showOptions }: Props) {
     else noteRefsMap.current.delete(key)
   }, [])
 
+  // ── Bracket geometry (unchanged) ──────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current
     if (!container || !song.brackets?.length) { setBracketRects([]); return }
@@ -66,43 +63,28 @@ export function Song({ song, showOptions }: Props) {
             const startRect = startEl.getBoundingClientRect()
             const endRect = endEl.getBoundingClientRect()
 
-            const startMeasure =
-              measureRefs.current.get(b.startMeasure)
+            const startMeasure = measureRefs.current.get(b.startMeasure)
+            const endMeasure = measureRefs.current.get(b.endMeasure)
+            if (!startMeasure || !endMeasure) return null
 
-            const endMeasure =
-              measureRefs.current.get(b.endMeasure)
-
-            if (!startMeasure || !endMeasure)
-              return null
-
-            const startMeasureRect =
-              startMeasure.getBoundingClientRect()
-
-            const endMeasureRect =
-              endMeasure.getBoundingClientRect()
+            const startMeasureRect = startMeasure.getBoundingClientRect()
+            const endMeasureRect = endMeasure.getBoundingClientRect()
 
             const y1 = startRect.top - containerRect.top
             const y2 = endRect.top - containerRect.top
 
-            const wrapped =
-              Math.abs(startMeasureRect.top - endMeasureRect.top) > 37
+            const wrapped = Math.abs(startMeasureRect.top - endMeasureRect.top) > 37
 
-            const rowLeft =
-              endMeasureRect.left - containerRect.left
-
-            const rowRight =
-              startMeasureRect.right - containerRect.left
+            const rowLeft = endMeasureRect.left - containerRect.left
+            const rowRight = startMeasureRect.right - containerRect.left
 
             return {
               x1: startRect.left - containerRect.left + startRect.width / 2,
               y1,
-
               x2: endRect.left - containerRect.left + endRect.width / 2,
               y2,
-
               rowLeft,
               rowRight,
-
               number: b.number,
               level: b.level,
               wrapped,
@@ -120,6 +102,68 @@ export function Song({ song, showOptions }: Props) {
     window.addEventListener('resize', updateRects)
     return () => { ro.disconnect(); window.removeEventListener('resize', updateRects) }
   }, [song.brackets, song.measures, showOptions])
+
+  // ── Row-level duration-height equalization (NEW) ──────────────────────────
+  // Ensures every measure sharing a visual row reserves the SAME vertical
+  // space for beams, so lyric rows align on one shared baseline across
+  // the whole row — not just within a single measure.
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const updateRowHeights = () => {
+      requestAnimationFrame(() => {
+        const entries = Array.from(measureRefs.current.entries())
+          .sort(([a], [b]) => a - b)
+
+        if (entries.length === 0) return
+
+        // group measure indices into rows by shared vertical position
+        const rows: number[][] = []
+        let currentRow: number[] = []
+        let currentTop: number | null = null
+
+        for (const [index, el] of entries) {
+          const top = el.getBoundingClientRect().top
+          if (currentTop === null || Math.abs(top - currentTop) < 5) {
+            currentRow.push(index)
+            currentTop = currentTop ?? top
+          } else {
+            rows.push(currentRow)
+            currentRow = [index]
+            currentTop = top
+          }
+        }
+        if (currentRow.length) rows.push(currentRow)
+
+        // for each row, find the max note duration among ALL measures in it
+        const heights = new Map<number, number>()
+        for (const row of rows) {
+          let maxDur = 0
+          for (const idx of row) {
+            const m = song.measures[idx]
+            for (const n of m.notes) {
+              const d = parseJianpu(n.note).duration
+              if (d > maxDur) maxDur = d
+            }
+          }
+          const px = maxDur * BAR_STEP_PX + BAR_GAP_PX
+          for (const idx of row) heights.set(idx, px)
+        }
+
+        setRowDurationHeights(heights)
+      })
+    }
+
+    updateRowHeights()
+    const ro = new ResizeObserver(updateRowHeights)
+    ro.observe(container)
+    window.addEventListener('resize', updateRowHeights)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', updateRowHeights)
+    }
+  }, [song.measures, showOptions])
 
   return (
     <div className="song">
@@ -221,6 +265,7 @@ export function Song({ song, showOptions }: Props) {
               measureIndex={index}
               showOptions={showOptions}
               registerNoteRef={registerNoteRef}
+              rowDurationHeightPx={rowDurationHeights.get(index)}
             />
           </div>
         ))}

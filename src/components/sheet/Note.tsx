@@ -44,9 +44,7 @@ export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeight
             className="note-duration"
             style={reservedDurationHeightPx !== undefined ? { minHeight: `${reservedDurationHeightPx}px` } : undefined}
           >
-            {/* grouped notes render nothing here — BeamSegment draws shared bars instead */}
-            {reservedDurationHeightPx === undefined &&
-              Array.from({ length: extraBeams }).map((_, i) => (
+            {Array.from({ length: extraBeams }).map((_, i) => (
                 <span key={i} className="duration-bar" />
               ))}
           </div>

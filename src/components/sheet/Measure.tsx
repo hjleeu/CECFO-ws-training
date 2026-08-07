@@ -1,6 +1,6 @@
 'use client'
 
-import { computeBeamGroups, parseJianpu } from '@/lib/jianpu'
+import { computeBeamGroups, parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from '@/lib/jianpu'
 import type { Measure as MeasureProps, ShowOptions } from '../../types/MusicNotation'
 import { Note } from './Note'
 import { useRef, useState, useLayoutEffect } from 'react'
@@ -10,18 +10,21 @@ interface Props {
   measureIndex: number
   showOptions: ShowOptions
   registerNoteRef: (measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => void
+  rowDurationHeightPx?: number   // set by Song.tsx after measuring the whole row
 }
 
-// must match .beam-bar { height } and .beam-bars { gap } in sheet.css
-const BAR_HEIGHT_PX = 1.52
-const BAR_GAP_PX    = 3.7
-const BAR_STEP_PX   = BAR_HEIGHT_PX + BAR_GAP_PX
-
-export function Measure({ measure, measureIndex, showOptions, registerNoteRef }: Props) {
+export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx }: Props) {
   const parsedNote = measure.notes.map(n => {
     const parsed = parseJianpu(n.note)
     return { ...parsed, dotted: n.dotted || parsed.dotted }
   })
+
+  const measureMaxDuration = Math.max(...parsedNote.map(note => note.duration), 0)
+  const localFallbackHeightPx = measureMaxDuration * BAR_STEP_PX + BAR_GAP_PX
+
+  // use the row-wide value once Song.tsx has measured it; fall back to this
+  // measure's own local value on the very first paint before that happens
+  const durationHeightPx = rowDurationHeightPx ?? localFallbackHeightPx
 
   const beamGroups = computeBeamGroups(parsedNote)
 
@@ -58,12 +61,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef }:
         {finalSegments.map((seg, si) => {
           const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
           const noteDurations = seg.notes.map(ni => parsedNote[ni].duration)
-          const maxDuration   = Math.max(...noteDurations)
-
-          // reserved vertical space for ALL beam levels in this group — every
-          // note-column gets this same value so lyrics stay level regardless
-          // of how many extra beams any individual note has
-          const groupDurationHeightPx = isGroup ? maxDuration * BAR_STEP_PX + BAR_GAP_PX : undefined
 
           return (
             <BeamSegment
@@ -73,8 +70,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef }:
               noteDurations={noteDurations}
             >
               {seg.notes.map((ni, k) => {
-                // grouped notes render NO local bars — BeamSegment draws every
-                // level (shared + subdivided) as continuous shared bars instead
                 const extra = isGroup ? 0 : parsedNote[ni].duration
                 return (
                   <div
@@ -89,7 +84,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef }:
                       note={measure.notes[ni]}
                       showOptions={showOptions}
                       extraBeams={extra}
-                      reservedDurationHeightPx={groupDurationHeightPx}
+                      reservedDurationHeightPx={durationHeightPx}
                     />
                   </div>
                 )
@@ -144,8 +139,6 @@ function BeamSegment({
       const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2
       setPrimaryTop(baseTop)
 
-      // for each level beyond the shared beam, find consecutive runs of
-      // notes that reach that duration and draw one continuous bar per run
       const maxDuration = Math.max(...noteDurations)
       const runs: ExtraBarRun[] = []
 
