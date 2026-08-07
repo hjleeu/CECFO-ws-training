@@ -272,12 +272,11 @@
 
 .beam-bars {
     position: absolute;
-    top: 4.29rem;
     left: 7px;
     right: 7px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3.7px;
     pointer-events: none;
 }
 
@@ -311,6 +310,7 @@
     align-items: center;
     line-height: 1;
     position: relative;
+    min-height: var(--forced-wrapper-height, auto);
 }
 
 .fermata {

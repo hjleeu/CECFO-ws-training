@@ -3,6 +3,7 @@
 import { computeBeamGroups, parseJianpu } from '@/lib/jianpu'
 import type { Measure as MeasureProps, ShowOptions } from '../../types/MusicNotation'
 import { Note } from './Note'
+import { useRef, useState, useLayoutEffect } from 'react'
 
 interface Props {
   measure: MeasureProps
@@ -11,6 +12,11 @@ interface Props {
   registerNoteRef: (measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => void
 }
 
+// must match .beam-bar { height } and .beam-bars { gap } in sheet.css
+const BAR_HEIGHT_PX = 1.52
+const BAR_GAP_PX    = 3.7
+const BAR_STEP_PX   = BAR_HEIGHT_PX + BAR_GAP_PX
+
 export function Measure({ measure, measureIndex, showOptions, registerNoteRef }: Props) {
   const parsedNote = measure.notes.map(n => {
     const parsed = parseJianpu(n.note)
@@ -18,17 +24,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef }:
   })
 
   const beamGroups = computeBeamGroups(parsedNote)
-  const beamMap    = new Map<number, { shared: number, extra: number }>()
-
-  for (const group of beamGroups) {
-    for (let i = group.start; i <= group.end; i++) {
-      const noteDuration = parsedNote[i].duration
-      beamMap.set(i, {
-        shared: group.start === group.end ? 0 : group.sharedBeams,
-        extra: group.start === group.end ? noteDuration : noteDuration - group.sharedBeams,
-      })
-    }
-  }
 
   const segments: { notes: number[], sharedBeams: number }[] = []
 
@@ -62,36 +57,168 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef }:
       <div className="measure-notes" style={{ position: 'relative' }}>
         {finalSegments.map((seg, si) => {
           const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
+          const noteDurations = seg.notes.map(ni => parsedNote[ni].duration)
+          const maxDuration   = Math.max(...noteDurations)
+
+          // reserved vertical space for ALL beam levels in this group — every
+          // note-column gets this same value so lyrics stay level regardless
+          // of how many extra beams any individual note has
+          const groupDurationHeightPx = isGroup ? maxDuration * BAR_STEP_PX + BAR_GAP_PX : undefined
+
           return (
-            <div key={si} className={isGroup ? 'beam-group' : ''} style={{ position: 'relative' }}>
-              {isGroup && (
-                <div className="beam-bars">
-                  {Array.from({ length: seg.sharedBeams }).map((_, bi) => (
-                    <div key={bi} className="beam-bar" />
-                  ))}
-                </div>
-              )}
-              <div className="beam-notes">
-                {seg.notes.map((ni, k) => {
-                  const extra = beamMap.get(ni)?.extra ?? 0
-                  return (
-                    <div
-                      key={k}
-                      className="note-column"
-                      ref={(el: HTMLDivElement | null) => registerNoteRef(measureIndex, ni, el)}
-                    >
-                      <span className="chord">
-                        {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord : ''}
-                      </span>
-                      <Note note={measure.notes[ni]} showOptions={showOptions} extraBeams={extra} />
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <BeamSegment
+              key={si}
+              isGroup={isGroup}
+              sharedBeams={seg.sharedBeams}
+              noteDurations={noteDurations}
+            >
+              {seg.notes.map((ni, k) => {
+                // grouped notes render NO local bars — BeamSegment draws every
+                // level (shared + subdivided) as continuous shared bars instead
+                const extra = isGroup ? 0 : parsedNote[ni].duration
+                return (
+                  <div
+                    key={k}
+                    className="note-column"
+                    ref={(el: HTMLDivElement | null) => registerNoteRef(measureIndex, ni, el)}
+                  >
+                    <span className="chord">
+                      {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord : ''}
+                    </span>
+                    <Note
+                      note={measure.notes[ni]}
+                      showOptions={showOptions}
+                      extraBeams={extra}
+                      reservedDurationHeightPx={groupDurationHeightPx}
+                    />
+                  </div>
+                )
+              })}
+            </BeamSegment>
           )
         })}
         <span className="barline">|</span>
+      </div>
+    </div>
+  )
+}
+
+interface ExtraBarRun {
+  level: number
+  top:   number
+  left:  number
+  width: number
+}
+
+function BeamSegment({
+  isGroup,
+  sharedBeams,
+  noteDurations,
+  children,
+}: {
+  isGroup: boolean
+  sharedBeams: number
+  noteDurations: number[]
+  children: React.ReactNode
+}) {
+  const groupRef = useRef<HTMLDivElement>(null)
+  const notesRef = useRef<HTMLDivElement>(null)
+  const [primaryTop, setPrimaryTop] = useState<number | null>(null)
+  const [extraRuns, setExtraRuns] = useState<ExtraBarRun[]>([])
+
+  useLayoutEffect(() => {
+    if (!isGroup || !groupRef.current || !notesRef.current) return
+
+    const updatePosition = () => {
+      const groupEl = groupRef.current
+      const notesEl = notesRef.current
+      if (!groupEl || !notesEl) return
+
+      const noteColumns = Array.from(notesEl.querySelectorAll('.note-column')) as HTMLElement[]
+      if (noteColumns.length === 0) return
+
+      const groupRect  = groupEl.getBoundingClientRect()
+      const firstDigit = noteColumns[0].querySelector('.note-digit-row')
+      if (!firstDigit) return
+
+      const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2
+      setPrimaryTop(baseTop)
+
+      // for each level beyond the shared beam, find consecutive runs of
+      // notes that reach that duration and draw one continuous bar per run
+      const maxDuration = Math.max(...noteDurations)
+      const runs: ExtraBarRun[] = []
+
+      for (let level = sharedBeams + 1; level <= maxDuration; level++) {
+        let runStart: number | null = null
+
+        for (let i = 0; i <= noteDurations.length; i++) {
+          const inRun = i < noteDurations.length && noteDurations[i] >= level
+
+          if (inRun && runStart === null) {
+            runStart = i
+          } else if (!inRun && runStart !== null) {
+            const runEnd = i - 1
+            const startEl = noteColumns[runStart]?.querySelector('.note-digit-row')
+            const endEl   = noteColumns[runEnd]?.querySelector('.note-digit-row')
+
+            if (startEl && endEl) {
+              const sRect = startEl.getBoundingClientRect()
+              const eRect = endEl.getBoundingClientRect()
+              runs.push({
+                level,
+                top:   baseTop + (level - sharedBeams - 1) * BAR_STEP_PX + BAR_GAP_PX,
+                left:  sRect.left - groupRect.left,
+                width: eRect.right - sRect.left,
+              })
+            }
+            runStart = null
+          }
+        }
+      }
+
+      setExtraRuns(runs)
+    }
+
+    updatePosition()
+    const ro = new ResizeObserver(updatePosition)
+    ro.observe(groupRef.current)
+    window.addEventListener('resize', updatePosition)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', updatePosition)
+    }
+  }, [isGroup, sharedBeams, noteDurations])
+
+  if (!isGroup) {
+    return <div style={{ position: 'relative' }}>{children}</div>
+  }
+
+  return (
+    <div ref={groupRef} className="beam-group" style={{ position: 'relative' }}>
+      {primaryTop !== null && (
+        <div className="beam-bars" style={{ top: `${primaryTop}px` }}>
+          {Array.from({ length: sharedBeams }).map((_, bi) => (
+            <div key={bi} className="beam-bar" />
+          ))}
+        </div>
+      )}
+
+      {extraRuns.map((run, i) => (
+        <div
+          key={i}
+          className="beam-bar"
+          style={{
+            position: 'absolute',
+            top:   `${run.top}px`,
+            left:  `${run.left}px`,
+            width: `${run.width}px`,
+          }}
+        />
+      ))}
+
+      <div className="beam-notes" ref={notesRef}>
+        {children}
       </div>
     </div>
   )
