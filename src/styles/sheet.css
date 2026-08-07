@@ -173,7 +173,7 @@
 
 .barline {
     align-self: flex-start;
-    font-size: 1.88rem;
+    font-size: 1.66rem;
     color: var(--color-muted);
     user-select: none;
     margin-top: 2.88rem;
@@ -198,7 +198,7 @@
     align-items: center;
     justify-content: flex-start;
     height: 100%;
-    min-width: 1.15rem;
+    min-width: 0.88rem;
 }
 
 .chord {
@@ -208,7 +208,7 @@
     font-size: 0.88rem;
     font-weight: 700;
     line-height: 1.2;
-    min-height: 1.37rem;
+    min-height: 1.15rem;
     display: flex;
     align-items: flex-start;
 }
@@ -219,7 +219,7 @@
     position: relative;
     width: 100%;
     justify-content: space-between;
-    padding: 0 0.25rem;
+    padding: 0 0.15rem;
     box-sizing: border-box;
 }
 
@@ -299,9 +299,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 0.99rem;
-    padding: 0 0.15rem;
-    padding-bottom: 0.88rem;
+    min-width: 0.73rem;
+    padding: 0 0.07rem;
+    padding-bottom: 0.37rem;
 }
 
 .note-wrapper {
@@ -341,8 +341,8 @@
 
 .note {
     font-family: var(--font-mono);
-    font-size: 1.15rem;
-    line-height: 1.15;
+    font-size: 1.05rem;
+    line-height: 1.05;
     color: var(--color-text);
 }
 
@@ -422,7 +422,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 7px;
+    margin-bottom: 3px;
 }
 
 .lyric {
@@ -448,7 +448,7 @@
 .pinyin {
     color: var(--color-muted);
     font-size: 0.66rem;
-    line-height: 1.15;
+    line-height: 1;
     min-height: 0.88rem;
 }
 
