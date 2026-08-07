@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import "@/styles/homepage.css";
 import { FavoriteSongs } from "@/components/sheet/FavoriteSongs";
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const allSongs = await prisma.song.findMany({
     select: {
