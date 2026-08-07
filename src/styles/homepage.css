@@ -1,0 +1,84 @@
+.homepage {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.home-section {
+    margin-bottom: 2.5rem;
+}
+
+.home-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.home-section-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-family: var(--font-chinese);
+    color: var(--color-text);
+}
+
+.home-section-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: .9rem;
+}
+
+.home-section-link:hover {
+    text-decoration: underline;
+}
+
+.home-song-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: .75rem;
+}
+
+/* Make SongCards compact only on homepage */
+
+.home-song-grid .song-card {
+    padding: .75rem;
+    gap: .6rem;
+}
+
+.home-song-grid .song-card-header {
+    gap: .65rem;
+}
+
+.home-song-grid .song-cover-placeholder {
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+}
+
+.home-song-grid .song-card-title {
+    font-size: 1rem;
+}
+
+.home-song-grid .song-card-subtitle {
+    font-size: .82rem;
+    margin-top: .15rem;
+}
+
+.home-song-grid .song-card-meta {
+    gap: .35rem;
+}
+
+.home-song-grid .song-card-meta span {
+    font-size: .7rem;
+    padding: .18rem .45rem;
+}
+
+@media (max-width: 768px) {
+    .homepage {
+        padding: 1rem;
+    }
+
+    .home-song-grid {
+        grid-template-columns: 1fr;
+    }
+}
