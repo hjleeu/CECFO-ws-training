@@ -239,33 +239,28 @@ export function parse(raw: string): Song {
 
   function flush(noteLine: string, lyricLines: string[]) {
     const { measures: noteCols, brackets } = parseNotes(noteLine, measureCount)
-    const hasLyrics = lyricLines.length > 0
-    const lyricColsPerRow = hasLyrics ? lyricLines.map(l => splitMeasures(l)) : []
+    const lyricColsPerRow = lyricLines.map(l => splitMeasures(l))
 
-    if (hasLyrics) {
-      // verify all lyric rows have same column count as notes
-      for (const lyricCols of lyricColsPerRow) {
-        if (lyricCols.length !== noteCols.length)
-          throw new Error(`Column mismatch`)
-      }
+    // verify all lyric rows have same column count as notes
+    for (const lyricCols of lyricColsPerRow) {
+      if (lyricCols.length !== noteCols.length)
+        throw new Error(`Column mismatch`)
     }
 
     noteCols.forEach((noteCol, j) => {
       // get lyrics for each row at this measure
-      const lyricRowsForMeasure = hasLyrics ? lyricColsPerRow.map(lyricCols =>
+      const lyricRowsForMeasure = lyricColsPerRow.map(lyricCols =>
         parseLyrics(lyricCols[j])
-      ) : []
+      )
 
-      if (hasLyrics) {
-        // verify all rows have same note count
-        for (const lyrics of lyricRowsForMeasure) {
-          if (lyrics.length !== noteCol.length)
-            throw new Error(`Note/lyric count mismatch in measure ${j}`)
-        }
+      // verify all rows have same note count
+      for (const lyrics of lyricRowsForMeasure) {
+        if (lyrics.length !== noteCol.length)
+          throw new Error(`Note/lyric count mismatch in measure ${j}`)
       }
 
       const noteItems: Note[] = noteCol.map((pn, k) => {
-        const lyrics: LyricEntry[] = hasLyrics ? lyricRowsForMeasure.map(row => {
+        const lyrics: LyricEntry[] = lyricRowsForMeasure.map(row => {
           const raw = row[k] ?? ''
 
           const clean = raw.replace(/[，,。!！?？;；]+$/g, '')
@@ -274,12 +269,14 @@ export function parse(raw: string): Song {
           const char = clean !== '-' ? clean : ''
           const py = char ? pinyin(char, { toneType: "symbol", type: "array" })[0] ?? '' : ''
 
+          
+
           return {
             char,
             pinyin: py,
             punct: punct || undefined
           }
-        }) : [{ char: '', pinyin: '', punct: undefined }]
+        })
 
         return {
           note: pn.note as Jianpu | '-',
@@ -288,6 +285,7 @@ export function parse(raw: string): Song {
           chord: pn.chord,
         }
       })
+      console.log(noteItems[0].lyrics);
 
       measures.push({
         id: `m-${measureCount}`,
@@ -308,20 +306,13 @@ export function parse(raw: string): Song {
     if (!line) continue
 
     if (isSectionLabel(line)) {
-      if (pendingNoteLine !== null) {
-        flush(pendingNoteLine, pendingLyricLine)
-        pendingNoteLine = null
-        pendingLyricLine = []
-      }
       currentLabel = line.slice(1, -1).trim()
       continue
     }
 
     if (isNoteLine(line)) {
       if (pendingNoteLine !== null) {
-        flush(pendingNoteLine, pendingLyricLine)
-        pendingNoteLine = null
-        pendingLyricLine = []
+        throw new Error(`Missing lyric line for: "${pendingNoteLine}"`)
       }
       pendingNoteLine = line
       pendingLyricLine = []
@@ -332,6 +323,9 @@ export function parse(raw: string): Song {
       pendingLyricLine.push(line)
       const nextLine = lines.slice(i + 1).find(l => l.trim())
       if (!nextLine || isNoteLine(nextLine) || isSectionLabel(nextLine)) {
+        if (pendingLyricLine.length === 0)
+          throw new Error(`Missing lyric for: "${pendingNoteLine}"`)
+
         flush(pendingNoteLine, pendingLyricLine)
         pendingNoteLine = null
         pendingLyricLine = []
@@ -339,9 +333,9 @@ export function parse(raw: string): Song {
     }
   }
 
-  // End of input.
+  // If a note line has not a lyric line.
   if (pendingNoteLine !== null) {
-    flush(pendingNoteLine, pendingLyricLine)
+    throw new Error(`Missing lyric line for notes: "${pendingNoteLine}"`)
   }
 
   if (measures.length === 0) {
