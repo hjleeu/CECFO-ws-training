@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { SongCard } from "@/components/sheet/SongCard"
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
 export const dynamic = "force-dynamic"
 
@@ -10,9 +11,11 @@ export default async function SongsPage() {
     },
   })
 
+  const { t } = useLanguage()
+
   return (
     <main className="songs-page">
-      <h1 className="songs-title">曲库</h1>
+      <h1 className="songs-title">{t.song.library}</h1>
 
       <div className="songs-grid">
         {songs.map(song => (

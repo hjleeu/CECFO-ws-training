@@ -1,21 +1,28 @@
 "use client"
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { Language } from "@/lib/i18n/translations"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
 interface NavItem {
     href: string
-    label: string
     icon: string
 }
 
 /* Add or remove nav items here. */
 const NAV_ITEMS: NavItem[] = [
-    { href: '/', label: "首页", icon: "🏠︎" },
-    { href: "/songs", label: "曲库", icon: "🔍︎" },
-    { href: "/admin", label: "管理", icon: "♬" }
+    { href: '/', icon: "🏠︎" },
+    { href: "/songs", icon: "🔍︎" },
+    { href: "/admin", icon: "♬" }
 ]
+
+const LANGUAGE_LABELS: Record<Language, string> = {
+    zh: "简中",
+    en: "EN",
+    it: "IT"
+}
 
 export function Navbar() {
     const pathname = usePathname()
@@ -42,6 +49,20 @@ export function Navbar() {
         localStorage.setItem("theme", next)
     }
 
+    const { language, setLanguage, t } = useLanguage()
+    
+    const cycleLanguage = () => {
+        const order: Language[] = ["zh", "en", "it"]
+        const next = order[(order.indexOf(language) + 1) % order.length]
+        setLanguage(next)
+    }
+
+    const navLabels: Record<string, string> = {
+        '/': t.nav.home,
+        "/songs": t.nav.songs,
+        "/admin": t.nav.admin
+    }
+
     return (
         <nav className="navbar">
             <div className="navbar-inner">
@@ -55,14 +76,19 @@ export function Navbar() {
                             className={`nav-item${active ? " nav-item-active" : ''}`}
                         >
                             <span className="nav-icon">{item.icon}</span>
-                            <span className="nav-label">{item.label}</span>
+                            <span className="nav-label">{navLabels[item.href]}</span>
                         </Link>
                     )
                 })}
 
                 <button className="nav-item nav-theme-btn" onClick={toggleTheme}>
                     <span className="nav-icon">{theme === "light" ? "☾" : "☀︎"}</span>
-                    <span className="nav-label">{theme === "light" ? "暗色" : "亮色"}</span>
+                    <span className="nav-label">{theme === "light" ? t.nav.dark : t.nav.light}</span>
+                </button>
+
+                <button className="nav-item" onClick={cycleLanguage}>
+                    <span className="nav-icon">🌐</span>
+                    <span className="nav-label">{LANGUAGE_LABELS[language]}</span>
                 </button>
             </div>
         </nav>

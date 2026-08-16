@@ -1,5 +1,6 @@
 "use client"
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { useState } from "react"
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
 
 export function SelectOrNew({ options, value, onChange, placeholder, label, id }: Props) {
     const [isNew, setIsNew] = useState(false)
+
+    const { t } = useLanguage()
 
     return (
         <div className="select-or-new">
@@ -34,7 +37,7 @@ export function SelectOrNew({ options, value, onChange, placeholder, label, id }
                     {options.map(o => (
                         <option key={o} value={o}>{o}</option>
                     ))}
-                    <option value="__new__">+ 新增...</option>
+                    <option value="__new__">+ {t.select.new}...</option>
                 </select>
             ) : (
                 <div className="new-input-row">

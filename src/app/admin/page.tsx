@@ -8,6 +8,7 @@ import { Song } from "@/components/sheet/Song"
 import { toSlug } from "@/lib/slug"
 import { SelectOrNew } from "@/components/ui/SelectOrNew"
 import { songToRaw } from "@/lib/songParser"
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -218,36 +219,38 @@ export default function AdminPage() {
         }
     }
 
+    const { t } = useLanguage()
+
     return (
         <div className="container">
-            <h2>ADMIN EDITOR</h2>
+            <h2>{t.admin.heading}</h2>
             <div className="load-area">
                 <select
                     className="meta-input"
                     onChange={e => handleLoad(e.target.value)}
                     defaultValue=""
                 >
-                    <option value="" disabled>载入已有歌曲...</option>
+                    <option value="" disabled>{t.admin.load}...</option>
                     {songs.map(s => (
                         <option key={s.slug} value={s.slug}>{s.title}</option>
                     ))}
                 </select>
                 {editingSlug && (
-                    <span className="editing-badge">编辑中: {title}</span>
+                    <span className="editing-badge">{t.admin.editing}: {title}</span>
                 )}
-                <button className="cancel-new-btn" onClick={handleClear}>清空 / 新建</button>
+                <button className="cancel-new-btn" onClick={handleClear}>{t.admin.clear}</button>
             </div>
             <div className="meta-area">
                 <div className="meta-group">
-                    <label htmlFor="song-title" className="meta-label">歌名</label>
+                    <label htmlFor="song-title" className="meta-label">{t.admin.title}</label>
                     <input type="text" id="song-title" className="meta-input" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
                 <div className="meta-group">
-                    <label htmlFor="song-artist" className="meta-label">艺术家</label>
+                    <label htmlFor="song-artist" className="meta-label">{t.admin.artist}</label>
                     <SelectOrNew id="song-artist" options={savedArtists} value={artist} onChange={setArtist} placeholder="选择艺术家" label="艺术家"></SelectOrNew>
                 </div>
                 <div className="meta-group">
-                    <label htmlFor="song-album" className="meta-label">专辑</label>
+                    <label htmlFor="song-album" className="meta-label">{t.admin.album}</label>
                     <SelectOrNew id="song-album" options={savedAlbums} value={album} onChange={setAlbum} placeholder="选择专辑" label="专辑"></SelectOrNew>
                 </div>
                 <div className="meta-group">
@@ -268,7 +271,7 @@ export default function AdminPage() {
                     />
                 </div>
                 <div className="meta-group">
-                    <label htmlFor="song-time-sig" className="meta-label">拍号</label>
+                    <label htmlFor="song-time-sig" className="meta-label">{t.admin.timeSignature}</label>
                     <input type="text" id="song-time-sig" className="meta-input" value={timeSignature} onChange={e => setTimeSignature(e.target.value)} />
                 </div>
             </div>
@@ -289,7 +292,7 @@ export default function AdminPage() {
                     }
                 </div>
             </div>
-            <button disabled={!songToPreview} className="save-btn" onClick={handleSave}>保存数据库</button>
+            <button disabled={!songToPreview} className="save-btn" onClick={handleSave}>{t.admin.save}</button>
         </div>
     )
 }

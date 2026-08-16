@@ -1,5 +1,6 @@
 'use client'
 
+import { useLanguage } from '@/lib/i18n/LanguageProvider'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface Props {
@@ -83,15 +84,17 @@ export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
     }
   }, [isPlaying, scheduler, playClick, timeSignature])   // ← bpm removed from deps
 
+  const { t } = useLanguage()
+
   return (
     <div className="metronome-container">
-      <span className="metronome-title">🎵 节拍器 (Metronome)</span>
+      <span className="metronome-title">🎵 {t.metronome.metronome}</span>
 
       <button
         onClick={() => setIsPlaying(!isPlaying)}
         className={`metronome-btn ${isPlaying ? 'stop' : 'play'}`}
       >
-        {isPlaying ? '停止 (Stop)' : '播放 (Play)'}
+        {isPlaying ? t.metronome.stop : t.metronome.play}
       </button>
 
       <div className="metronome-tempo">

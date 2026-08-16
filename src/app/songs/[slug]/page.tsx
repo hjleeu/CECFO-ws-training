@@ -1,4 +1,5 @@
 import { SongView } from "@/components/sheet/SongView"
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { prisma } from "@/lib/prisma"
 import { Song as SongType } from "@/types/MusicNotation"
 
@@ -16,13 +17,15 @@ const SHOW_OPTION = {
 }
 
 export default async function SongsPage({ params }: Props) {
+    const { t } = useLanguage()
+
     const { slug } = await params
 
     const raw = await prisma.song.findUnique({
         where: { slug }
     })
 
-    if (!raw) return <p>There are no songs.</p>
+    if (!raw) return <p>{t.song.emptyLibrary}</p>
 
     const song = raw as unknown as SongType
 

@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Navbar } from '@/components/ui/Navbar'
 import './global.css'
 import "@/styles/navbar.css"
+import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 
 export const metadata: Metadata = {
   title: "CECFO Worship Training",
@@ -34,8 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="color-scheme" content="light dark" />
       </head>
       <body style={{paddingBottom: "calc(6rem + env(safe-area-inset-bottom))"}}>
-        <Navbar />
-        {children}
+        <LanguageProvider>
+          <Navbar />
+          {children}
+        </LanguageProvider>
         <Script src="/register-sw.js" strategy="afterInteractive" />
       </body>
     </html>

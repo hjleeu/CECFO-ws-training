@@ -6,12 +6,15 @@ import { Metronome } from "@/components/sheet/Metronome"
 import { transposeSong } from "@/lib/key_transpose"
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
 import "@/styles/tools.css"
+import { useLanguage } from '@/lib/i18n/LanguageProvider'
 
 interface Props {
     song: SongType
 }
 
 export function SongView({ song }: Props) {
+    const { t } = useLanguage()
+
     const [transposeOffset, setTransposeOffset] = useState<number>(0)
     const [showOptions, setShowOptions] = useState<ShowOptions>({
         chords: true,
@@ -24,15 +27,20 @@ export function SongView({ song }: Props) {
         setShowOptions(prev => ({ ...prev, [key]: !prev[key] }))
     }
 
-    // Compute transposed song on every offset change
     const transposedSong = transposeSong(song, transposeOffset)
+
+    const showLabel: Record<string, string> = {
+        "chords": t.song.chords,
+        "jianpu": t.song.jianpu,
+        "pinyin": t.song.pinyin,
+        "lyrics": t.song.lyrics
+    }
 
     return (
         <div className="song-container">
-            {/* Control Panel: Checkboxes, Transpose Controls & Metronome */}
             <div className="song-controls-panel">
                 <div className="song-checkboxes">
-                    <span className="controls-label">显示:</span>
+                    <span className="controls-label">{t.song.show}:</span>
                     {(Object.keys(showOptions) as (keyof ShowOptions)[]).map(key => (
                         <label key={key} className="checkbox-label">
                             <input
@@ -41,21 +49,20 @@ export function SongView({ song }: Props) {
                                 onChange={() => toggleOption(key)}
                                 className="checkbox-input"
                             />
-                            {key}
+                            {showLabel[key]}
                         </label>
                     ))}
                 </div>
 
-                {/* Transpose Controls */}
                 <div className="transpose-controls">
-                    <span className="controls-label">调性:</span>
+                    <span className="controls-label">{t.song.transpose}</span>
                     <span className="current-key font-bold">{transposedSong.key || 'C'}</span>
                     <div className="transpose-buttons">
                         <button
                             type="button"
                             onClick={() => setTransposeOffset(prev => prev - 1)}
                             className="transpose-btn"
-                            title="降半音"
+                            title={t.song.down}
                         >
                             ♭ -1
                         </button>
@@ -64,27 +71,25 @@ export function SongView({ song }: Props) {
                                 type="button"
                                 onClick={() => setTransposeOffset(0)}
                                 className="transpose-reset-btn"
-                                title="重置原调"
+                                title={t.song.reset}
                             >
-                                原调 ({transposeOffset > 0 ? `+${transposeOffset}` : transposeOffset})
+                                {t.song.original} ({transposeOffset > 0 ? `+${transposeOffset}` : transposeOffset})
                             </button>
                         )}
                         <button
                             type="button"
                             onClick={() => setTransposeOffset(prev => prev + 1)}
                             className="transpose-btn"
-                            title="升半音"
+                            title={t.song.up}
                         >
                             ♯ +1
                         </button>
                     </div>
                 </div>
 
-                {/* Embedded Metronome Widget */}
-                <Metronome defaultBpm={song.bpm || 100} />
+                <Metronome defaultBpm={song.bpm || 73} />
             </div>
 
-            {/* Render Song using Transposed Data */}
             <Song song={transposedSong} showOptions={showOptions} />
         </div>
     )
