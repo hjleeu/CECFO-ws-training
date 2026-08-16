@@ -3,7 +3,6 @@ import { SongCard } from "@/components/sheet/SongCard";
 import { prisma } from "@/lib/prisma";
 import "@/styles/homepage.css";
 import { FavoriteSongs } from "@/components/sheet/FavoriteSongs";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export const dynamic = 'force-dynamic'
 
@@ -58,8 +57,6 @@ export default async function HomePage() {
     LIMIT 3;
   `;
 
-  const { t } = useLanguage()
-
   return (
     <main className="homepage">
       <section className="home-section">
@@ -67,9 +64,9 @@ export default async function HomePage() {
       </section>
       <section className="home-section">
         <div className="home-section-header">
-          <h2 className="home-section-title">✨ {t.song.latest}</h2>
+          <h2 className="home-section-title">✨ LATEST</h2>
           <Link href="/songs" className="home-section-link">
-            {t.song.all} →
+            ALL →
           </Link>
         </div>
 
@@ -82,7 +79,7 @@ export default async function HomePage() {
 
       <section className="home-section">
         <div className="home-section-header">
-          <h2 className="home-section-title">🎲 {t.song.random}</h2>
+          <h2 className="home-section-title">🎲 RANDOM</h2>
         </div>
 
         <div className="home-song-grid home-song-grid-small">
