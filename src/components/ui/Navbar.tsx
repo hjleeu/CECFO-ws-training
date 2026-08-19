@@ -87,7 +87,7 @@ export function Navbar() {
                 </button>
 
                 <button className="nav-item" onClick={cycleLanguage}>
-                    <span className="nav-icon">🌐</span>
+                    <span className="nav-icon">🌐︎</span>
                     <span className="nav-label">{LANGUAGE_LABELS[language]}</span>
                 </button>
             </div>
