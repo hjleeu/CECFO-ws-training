@@ -1,17 +1,19 @@
-import { prisma } from "@/lib/prisma"
+"use client"
+
 import { SongCard } from "@/components/sheet/SongCard"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { useEffect, useState } from "react"
 
-export const dynamic = "force-dynamic"
-
-export default async function SongsPage() {
-  const songs = await prisma.song.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  })
-
+export default function SongsPage() {
   const { t } = useLanguage()
+
+  const [songs, setSongs] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch("/api/songs")
+      .then(r => r.json())
+      .then(setSongs)
+  }, [])
 
   return (
     <main className="songs-page">

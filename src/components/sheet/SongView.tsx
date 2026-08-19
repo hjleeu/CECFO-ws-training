@@ -7,6 +7,7 @@ import { transposeSong } from "@/lib/key_transpose"
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
 import "@/styles/tools.css"
 import { useLanguage } from '@/lib/i18n/LanguageProvider'
+import { useShowOptions } from '@/hooks/useShowOptions'
 
 interface Props {
     song: SongType
@@ -16,16 +17,8 @@ export function SongView({ song }: Props) {
     const { t } = useLanguage()
 
     const [transposeOffset, setTransposeOffset] = useState<number>(0)
-    const [showOptions, setShowOptions] = useState<ShowOptions>({
-        chords: true,
-        jianpu: true,
-        lyrics: true,
-        pinyin: true,
-    })
-
-    const toggleOption = (key: keyof ShowOptions) => {
-        setShowOptions(prev => ({ ...prev, [key]: !prev[key] }))
-    }
+    
+    const { showOptions, toggle } = useShowOptions()
 
     const transposedSong = transposeSong(song, transposeOffset)
 
@@ -46,7 +39,7 @@ export function SongView({ song }: Props) {
                             <input
                                 type="checkbox"
                                 checked={showOptions[key]}
-                                onChange={() => toggleOption(key)}
+                                onChange={() => toggle(key)}
                                 className="checkbox-input"
                             />
                             {showLabel[key]}

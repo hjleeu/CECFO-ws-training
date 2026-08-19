@@ -62,7 +62,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
           const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
           const noteDurations = seg.notes.map(ni => parsedNote[ni].duration)
 
-          return (
+          return ( showOptions.jianpu &&
             <BeamSegment
               key={si}
               isGroup={isGroup}
@@ -92,7 +92,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
             </BeamSegment>
           )
         })}
-        <span className="barline">|</span>
+        {showOptions.jianpu && <span className="barline">|</span>}
       </div>
     </div>
   )
