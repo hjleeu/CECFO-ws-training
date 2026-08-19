@@ -41,7 +41,7 @@ body {
     --shadow-sm: 0 3px 7px var(--color-shadow);
     --shadow-md: 0 5px 15px var(--color-shadow);
 
-    --transition: .25s ease;
+    --transition: 0.25s ease;
 }
 
 [data-theme="dark"]  { color-scheme: dark; }

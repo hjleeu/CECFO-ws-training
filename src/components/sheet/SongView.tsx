@@ -19,6 +19,7 @@ export function SongView({ song }: Props) {
     const [transposeOffset, setTransposeOffset] = useState<number>(0)
     
     const { showOptions, toggle } = useShowOptions()
+    const [isToolbarVisible, setToolbarVisibility] = useState(false)
 
     const transposedSong = transposeSong(song, transposeOffset)
 
@@ -31,7 +32,7 @@ export function SongView({ song }: Props) {
 
     return (
         <div className="song-container">
-            <div className="song-controls-panel">
+            <div className="song-controls-panel" style={{ display: isToolbarVisible ? "flex" : "none" }}>
                 <div className="song-checkboxes">
                     <span className="controls-label">{t.song.show}:</span>
                     {(Object.keys(showOptions) as (keyof ShowOptions)[]).map(key => (
@@ -82,6 +83,13 @@ export function SongView({ song }: Props) {
 
                 <Metronome defaultBpm={song.bpm || 73} />
             </div>
+        
+            <button
+                type="button"
+                className="toolbar-toggle-btn"
+                onClick={() => setToolbarVisibility(prev => !prev)}
+                title="Toggle toolbar"
+            >{isToolbarVisible ? '✕' : '⚙️'}</button>
 
             <Song song={transposedSong} showOptions={showOptions} />
         </div>
