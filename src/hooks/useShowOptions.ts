@@ -30,11 +30,10 @@ export function useShowOptions() {
                 })
             } catch (e) {
                 localStorage.removeItem(STORAGE_KEY)
-            } finally {
-                // Always set to true even if no data are loaded.
-                setIsLoaded(true)
             }
         }
+        // Always set to true even if no data are loaded.
+        setIsLoaded(true)
     }, [])
 
     useEffect(() => {
