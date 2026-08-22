@@ -222,7 +222,7 @@ function isSectionLabel(line: string): boolean {
  * @returns true if it is a note line
  */
 function isNoteLine(line: string): boolean {
-    return /^[\s0-7A-Ga-g#b=,\.'\/()~|\[\]:+\-mMajindsu]+$/.test(line)
+    return /^[\s0-9A-Ga-g#b=,\.'\/()~|\[\]:^+\-mMajindsu]+$/.test(line)
 }
 
 export function parse(raw: string): Song {
