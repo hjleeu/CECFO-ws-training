@@ -18,78 +18,22 @@ const DEFAULT_SHOW: ShowOptions = {
 }
 
 function format(raw: string): string {
-    if (!raw) return ''
+    try {
+        const parsed = parse(raw)
 
-    const lines = raw.split('\n')
-
-    return lines.map(line => {
-        const trimmed = line.trim()
-
-        // 1. Keep empty lines and section headers like [verse] or [chorus] as-is
-        if (!trimmed) return line
-        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-            return line
-        }
-
-        // 2. Determine if line is a Note line or Lyric line
-        const hasChinese = /[\u4e00-\u9fff]/.test(line)
-        const hasNotes = /[0-7]/.test(line)
-        const isNoteLine = hasNotes || (!hasChinese && line.includes('|'))
-
-        if (isNoteLine) {
-            // Tokenize globally to safely support cross-measure brackets like (5 | 6)
-            // and tie shorthand like 1~2
-            const tokenRegex = /(\(\d+:\s*|\(|\)|~|\||(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
-            const tokens: string[] = []
-            let match: RegExpExecArray | null
-
-            while ((match = tokenRegex.exec(line)) !== null) {
-                if (match[0].trim()) {
-                    tokens.push(match[0].trim())
-                }
-            }
-
-            let result = ''
-            for (let i = 0; i < tokens.length; i++) {
-                const t = tokens[i]
-                if (t === '|') {
-                    result = result.trimEnd() + ' | '
-                } else if (t === '(' || t.startsWith('(')) {
-                    result += t
-                } else if (t === ')') {
-                    result = result.trimEnd() + ') '
-                } else if (t === '~') {
-                    // ties bind directly to the previous note, no space before it
-                    result = result.trimEnd() + '~'
-                } else {
-                    result += t + ' '
-                }
-            }
-            return result.trim()
-        }
-
-        // 3. Format Lyric line
-        const measures = line.split('|')
-
-        const formattedMeasures = measures.map((col, index) => {
-            if (index === measures.length - 1 && col.trim() === '') {
-                return ''
-            }
-
-            const LYRIC_TOKEN_REGEX = /([\u4e00-\u9fff]|[a-zA-Z0-9]+|-+)[，,。!！?？;；]*/g
-            const tokens: string[] = []
-            let match: RegExpExecArray | null
-
-            while ((match = LYRIC_TOKEN_REGEX.exec(col)) !== null) {
-                tokens.push(match[0])
-            }
-
-            return tokens.join(' ')
+        return songToRaw({
+            ...parsed,
+            title: '',
+            slug: '',
+            artist: undefined,
+            album: undefined,
+            key: '',
+            bpm: 0,
+            timeSignature: ''
         })
-
-        const result = formattedMeasures.join(' | ')
-        return result.endsWith(' | ') ? result.slice(0, -1) : result
-    }).join('\n')
+    } catch {
+        return raw
+    }
 }
 
 export default function AdminPage() {
