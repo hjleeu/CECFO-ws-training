@@ -116,6 +116,7 @@
     font-family: var(--font-chinese);
     text-align: center;
     font-size: 1.37rem;
+    margin-bottom: 0;
 }
 
 .song-meta {

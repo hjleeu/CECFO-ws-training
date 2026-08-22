@@ -45,7 +45,6 @@ export function Song({ song, showOptions }: Props) {
     else noteRefsMap.current.delete(key)
   }, [])
 
-  // ── Bracket geometry (unchanged) ──────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current
     if (!container || !song.brackets?.length) { setBracketRects([]); return }
@@ -103,10 +102,6 @@ export function Song({ song, showOptions }: Props) {
     return () => { ro.disconnect(); window.removeEventListener('resize', updateRects) }
   }, [song.brackets, song.measures, showOptions])
 
-  // ── Row-level duration-height equalization (NEW) ──────────────────────────
-  // Ensures every measure sharing a visual row reserves the SAME vertical
-  // space for beams, so lyric rows align on one shared baseline across
-  // the whole row — not just within a single measure.
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -118,7 +113,6 @@ export function Song({ song, showOptions }: Props) {
 
         if (entries.length === 0) return
 
-        // group measure indices into rows by shared vertical position
         const rows: number[][] = []
         let currentRow: number[] = []
         let currentTop: number | null = null
@@ -136,7 +130,6 @@ export function Song({ song, showOptions }: Props) {
         }
         if (currentRow.length) rows.push(currentRow)
 
-        // for each row, find the max note duration among ALL measures in it
         const heights = new Map<number, number>()
         for (const row of rows) {
           let maxDur = 0
@@ -169,8 +162,8 @@ export function Song({ song, showOptions }: Props) {
     <div className="song">
       <div className="song-header">
         <h2 className="song-title">{song.title}</h2>
-        <span className="song-meta">{song.artist}·{song.album}</span>
-        <span className="song-meta">1= {song.key} {song.timeSignature} | BPM = {song.bpm}</span>
+        <span className="song-meta">{song.artist}·{song.album} | 1= {song.key} {song.timeSignature} | ♩ = {song.bpm}</span>
+        <span className="song-meta"></span>
       </div>
 
       <div className="measures-container" ref={containerRef} style={{ position: 'relative' }}>
