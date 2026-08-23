@@ -1,14 +1,36 @@
 import type { Song, Measure, Note, BracketSpan } from "@/types/MusicNotation"
 
+const JIANPU_DECOMPOSE = /^([#b=]?)([0-7])([',]*)(\/{0,2})(\^?)$/
+
 function formatNoteNotation(note: Note): string {
   let result = ''
   if (note.chord) result += `[${note.chord}]`
-  result += note.note ?? ''
-  if (note.dotted && !result.includes('.')) result += '.'
+
+  let raw = note.note ?? ''
+
+  if (raw === '-') {
+    return result + '-'
+  }
+
+  const match = raw.match(JIANPU_DECOMPOSE)
+
+  if (!match) {
+    return result + raw
+  }
+
+  const [, accidental, digit, octave, slashes, fermata] = match
+
+  // Reconstruct following the order.
+  result += accidental
+  result += digit
+  result += octave
+  if (note.dotted) result += '.'
+  result += slashes
+  result += fermata
+
   return result
 }
 
-// wraps each measure's note tokens with bracket symbols based on song.brackets
 function applyBrackets(
   tokens: string[],
   measureIndex: number,
@@ -22,8 +44,6 @@ function applyBrackets(
 
     if (!startsHere && !endsHere) continue
 
-    // tie shorthand: single-span bracket with no number and length 2 -> use ~
-    // (only when it doesn't cross measures, to keep the text readable)
     const isSimpleTie =
       b.number === undefined &&
       startsHere && endsHere &&
@@ -55,7 +75,6 @@ export function songToRaw(song: Song): string {
   const flushRow = (): string => {
     if (currentLineMeasures.length === 0) return ''
 
-    // 1. Notation line — now bracket-aware
     const notationLine =
       currentLineMeasures
         .map(({ measure, index }) => {
@@ -65,7 +84,6 @@ export function songToRaw(song: Song): string {
         })
         .join(' | ') + ' |'
 
-    // 2. Max lyric lines
     const maxLyricLines = Math.max(
       0,
       ...currentLineMeasures.flatMap(({ measure }) =>
@@ -73,8 +91,6 @@ export function songToRaw(song: Song): string {
       )
     )
 
-    // 3. Lyric lines — always emit '-' when the token would otherwise be empty,
-    //    so column count matches notes on reload regardless of WHY it's empty
     const lyricLines: string[] = []
     for (let lineIdx = 0; lineIdx < maxLyricLines; lineIdx++) {
       const lineStr = currentLineMeasures
@@ -84,8 +100,6 @@ export function songToRaw(song: Song): string {
               const entry = n.lyrics?.[lineIdx]
               const char  = entry?.char
               const punct = entry?.punct ?? ''
-              // '-' whenever there is no real character to show —
-              // whether because the note is a rest OR the lyric is held/empty
               return char ? `${char}${punct}` : '-'
             })
             .join(' ')

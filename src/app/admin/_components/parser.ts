@@ -16,12 +16,6 @@ interface ParsedNote {
   level: number
 }
 
-interface NoteBlock {
-  sectionLabel?: string
-  noteLine: string
-  lyricLine: string[]
-}
-
 // INTERNAL HELPER FUNCTIONS.
 function toToken(raw: string): string[] {
   const result: string[] = []
@@ -243,7 +237,6 @@ export function parse(raw: string): Song {
     const lyricColsPerRow = hasLyrics ? lyricLines.map(l => splitMeasures(l)) : []
 
     if (hasLyrics) {
-      // verify all lyric rows have same column count as notes
       for (const lyricCols of lyricColsPerRow) {
         if (lyricCols.length !== noteCols.length)
           throw new Error(`Column mismatch`)
@@ -251,13 +244,11 @@ export function parse(raw: string): Song {
     }
 
     noteCols.forEach((noteCol, j) => {
-      // get lyrics for each row at this measure
       const lyricRowsForMeasure = hasLyrics ? lyricColsPerRow.map(lyricCols =>
         parseLyrics(lyricCols[j])
       ) : []
 
       if (hasLyrics) {
-        // verify all rows have same note count
         for (const lyrics of lyricRowsForMeasure) {
           if (lyrics.length !== noteCol.length)
             throw new Error(`Note/lyric count mismatch in measure ${j}`)
