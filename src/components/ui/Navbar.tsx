@@ -4,7 +4,8 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { Language } from "@/lib/i18n/translations"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { JSXElementConstructor, optimisticKey, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react"
+import { UrlObject } from "url"
 
 interface NavItem {
     href: string
@@ -26,6 +27,10 @@ const LANGUAGE_LABELS: Record<Language, string> = {
 
 export function Navbar() {
     const pathname = usePathname()
+
+    // Hide the navbar in song details page.
+    const isSongDetailPage = /^\/songs\/[^/]+$/.test(pathname)
+    if (isSongDetailPage) return null
 
     /* Default use light theme. */
     const [theme, setTheme] = useState<"light" | "dark">("light")
@@ -66,7 +71,7 @@ export function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar-inner">
-                {NAV_ITEMS.map(item => {
+                {NAV_ITEMS.map((item: { href: string; icon: string }) => {
                     const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
 
                     return (

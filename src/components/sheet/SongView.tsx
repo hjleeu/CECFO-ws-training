@@ -8,6 +8,7 @@ import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
 import "@/styles/tools.css"
 import { useLanguage } from '@/lib/i18n/LanguageProvider'
 import { useShowOptions } from '@/hooks/useShowOptions'
+import { useRouter } from 'next/navigation'
 
 interface Props {
     song: SongType
@@ -15,6 +16,7 @@ interface Props {
 
 export function SongView({ song }: Props) {
     const { t } = useLanguage()
+    const router = useRouter()
 
     const [transposeOffset, setTransposeOffset] = useState<number>(0)
     
@@ -32,6 +34,7 @@ export function SongView({ song }: Props) {
 
     return (
         <div className="song-container">
+            <button type="button" className="return-btn" onClick={() => router.push("/songs")}>← {t.song.back}</button>
             <div className="song-controls-panel" style={{ display: isToolbarVisible ? "flex" : "none" }}>
                 <div className="song-checkboxes">
                     <span className="controls-label">{t.song.show}:</span>
