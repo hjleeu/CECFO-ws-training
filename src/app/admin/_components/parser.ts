@@ -262,7 +262,7 @@ export function parse(raw: string): Song {
           const clean = raw.replace(/[，,。!！?？;；]+$/g, '')
           const punct = raw.match(/[，,。!！?？;；]+$/)?.[0]
 
-          const char = clean !== '-' ? clean : ''
+          const char = (clean !== '-' && clean !== '@') ? clean : ''
           const py = char ? pinyin(char, { toneType: "symbol", type: "array" })[0] ?? '' : ''
 
           return {

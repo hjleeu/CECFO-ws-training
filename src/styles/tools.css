@@ -19,7 +19,7 @@
 
 .toolbar-toggle-btn {
     position: fixed;
-    bottom: 5.73rem;
+    bottom: 1.73rem;
     left: 1rem;
     width: 3.15rem;
     height: 3.15rem;
@@ -96,8 +96,6 @@
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
-/* ---------- transpose ---------- */
-
 .transpose-controls {
     display: flex;
     align-items: center;
@@ -139,8 +137,6 @@
     background: var(--color-accent);
     color: white;
 }
-
-/* ---------- metronome ---------- */
 
 .metronome-container {
     display: flex;

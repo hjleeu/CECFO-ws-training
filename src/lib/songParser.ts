@@ -100,7 +100,7 @@ export function songToRaw(song: Song): string {
               const entry = n.lyrics?.[lineIdx]
               const char  = entry?.char
               const punct = entry?.punct ?? ''
-              return char ? `${char}${punct}` : '-'
+              return char ? `${char}${punct}` : '@'
             })
             .join(' ')
         )
