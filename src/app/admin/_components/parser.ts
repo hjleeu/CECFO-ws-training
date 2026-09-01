@@ -47,19 +47,21 @@ function splitMeasures(line: string): string[] {
   return result.filter(Boolean)
 }
 
-function parseNotes(raw: string, measureOffset: number): { measures: ParsedNote[][], brackets: BracketSpan[] } {
+function parseNotes(
+  raw: string,
+  measureOffset: number,
+  sharedBracketStack: OpenBracket[],
+  sharedLevelRef: { current: number }
+): { measures: ParsedNote[][], brackets: BracketSpan[] } {
   const tokens = toToken(raw)
   const measures: ParsedNote[][] = []
   const brackets: BracketSpan[] = []
   let currentMeasure: ParsedNote[] = []
-  const bracketStack: OpenBracket[] = []
 
   let bracketCounter = 0
   let measureCounter = measureOffset
-  let currentLevel = 0
   let pendingChord : string | undefined
   let noteIndex = 0
-
   let tieStart: { measure: number, note: number } | null = null
 
   function pushNote(raw: string) {
@@ -83,7 +85,7 @@ function parseNotes(raw: string, measureOffset: number): { measures: ParsedNote[
       endMeasure: measureCounter,
       endNote: noteIndex - 1,
       number: undefined,
-      level: currentLevel
+      level: sharedLevelRef.current
     })
     tieStart = null
   }
@@ -119,21 +121,21 @@ function parseNotes(raw: string, measureOffset: number): { measures: ParsedNote[
       const numMatch = t.match(/(\d+)/)
       const num = numMatch ? parseInt(numMatch[1]) : undefined
 
-      bracketStack.push({
+      sharedBracketStack.push({
         id: `b-${bracketCounter++}`,
         number: num,
         startMeasure: measureCounter,
         startNote: noteIndex,
-        level: currentLevel++
+        level: sharedLevelRef.current++
       })
       continue
     }
 
     // Close bracket.
     if (t === '__BE__' || t === ')') {
-      const open = bracketStack.pop()
+      const open = sharedBracketStack.pop()
       if (open) {
-        currentLevel--
+        sharedLevelRef.current--
         brackets.push({
           id: open.id,
           startMeasure: open.startMeasure,
@@ -165,20 +167,6 @@ function parseNotes(raw: string, measureOffset: number): { measures: ParsedNote[
     pushNote(t)
 
     if (tokens[i + 1] !== '~') closeTie()
-  }
-
-  while (bracketStack.length > 0) {
-    const open = bracketStack.pop()!
-    currentLevel--
-    brackets.push({
-      id: open.id,
-      startMeasure: open.startMeasure,
-      startNote: open.startNote,
-      endMeasure: measureCounter,
-      endNote: noteIndex - 1,
-      number: open.number,
-      level: open.level
-    })
   }
 
   measures.push(currentMeasure)
@@ -231,8 +219,11 @@ export function parse(raw: string): Song {
   let pendingLyricLine: string[] = []
   let measureCount = 0
 
+  const globalBracketStack: OpenBracket[] = []
+  const globalLevelRef = { current: 0 }
+
   function flush(noteLine: string, lyricLines: string[]) {
-    const { measures: noteCols, brackets } = parseNotes(noteLine, measureCount)
+    const { measures: noteCols, brackets } = parseNotes(noteLine, measureCount, globalBracketStack, globalLevelRef)
     const hasLyrics = lyricLines.length > 0
     const lyricColsPerRow = hasLyrics ? lyricLines.map(l => splitMeasures(l)) : []
 
@@ -333,6 +324,10 @@ export function parse(raw: string): Song {
   // End of input.
   if (pendingNoteLine !== null) {
     flush(pendingNoteLine, pendingLyricLine)
+  }
+
+  if (globalBracketStack.length > 0) {
+    throw new Error(`Unclosed bracket(s): ${globalBracketStack.map(b => b.id).join(', ')}`)
   }
 
   if (measures.length === 0) {
