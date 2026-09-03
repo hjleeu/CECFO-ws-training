@@ -9,6 +9,7 @@ import "@/styles/tools.css"
 import { useLanguage } from '@/lib/i18n/LanguageProvider'
 import { useShowOptions } from '@/hooks/useShowOptions'
 import { useRouter } from 'next/navigation'
+import { useSongTranspose } from '@/hooks/useSongTranspose'
 
 interface Props {
     song: SongType
@@ -18,7 +19,12 @@ export function SongView({ song }: Props) {
     const { t } = useLanguage()
     const router = useRouter()
 
-    const [transposeOffset, setTransposeOffset] = useState<number>(0)
+    const {
+        offset: transposeOffset,
+        transposeUp,
+        transposeDown,
+        reset: resetTranspose
+    } = useSongTranspose(song.slug)
     
     const { showOptions, toggle } = useShowOptions()
     const [isToolbarVisible, setToolbarVisibility] = useState(false)
@@ -57,7 +63,7 @@ export function SongView({ song }: Props) {
                     <div className="transpose-buttons">
                         <button
                             type="button"
-                            onClick={() => setTransposeOffset(prev => prev - 1)}
+                            onClick={transposeDown}
                             className="transpose-btn"
                             title={t.song.down}
                         >
@@ -66,7 +72,7 @@ export function SongView({ song }: Props) {
                         {transposeOffset !== 0 && (
                             <button
                                 type="button"
-                                onClick={() => setTransposeOffset(0)}
+                                onClick={resetTranspose}
                                 className="transpose-reset-btn"
                                 title={t.song.reset}
                             >
@@ -75,7 +81,7 @@ export function SongView({ song }: Props) {
                         )}
                         <button
                             type="button"
-                            onClick={() => setTransposeOffset(prev => prev + 1)}
+                            onClick={transposeUp}
                             className="transpose-btn"
                             title={t.song.up}
                         >

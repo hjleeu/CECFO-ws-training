@@ -3,7 +3,7 @@
 import Link from "next/link"
 import "@/styles/songs.css"
 import { useFavorites } from "@/hooks/useFavourite";
-import { Heart, HeartOff } from "lucide-react";
+import { Heart } from "lucide-react";
 
 interface Props {
   song: {
