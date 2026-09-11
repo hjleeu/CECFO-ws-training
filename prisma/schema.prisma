@@ -26,4 +26,27 @@ model Song {
   brackets      Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  WorshipSets   WorshipSetSong[]
+}
+
+model WorshipSet {
+  id        String @id @default(cuid())
+  name      String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  songs     WorshipSetSong[]
+}
+
+model WorshipSetSong {
+  id            String @id @default(cuid())
+  order         Int
+  worshipSetId  String
+  worshipSet    WorshipSet @relation(fields: [worshipSetId], references: [id], onDelete: Cascade)
+  songSlug      String
+  song          Song @relation(fields: [songSlug], references: [slug], onDelete: Cascade)
+
+  @@unique([worshipSetId, songSlug])
+  @@unique([worshipSetId, order])
 }

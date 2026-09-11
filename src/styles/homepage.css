@@ -38,41 +38,6 @@
     gap: .75rem;
 }
 
-/* Make SongCards compact only on homepage */
-
-.home-song-grid .song-card {
-    padding: .75rem;
-    gap: .6rem;
-}
-
-.home-song-grid .song-card-header {
-    gap: .65rem;
-}
-
-.home-song-grid .song-cover-placeholder {
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
-}
-
-.home-song-grid .song-card-title {
-    font-size: 1rem;
-}
-
-.home-song-grid .song-card-subtitle {
-    font-size: .82rem;
-    margin-top: .15rem;
-}
-
-.home-song-grid .song-card-meta {
-    gap: .35rem;
-}
-
-.home-song-grid .song-card-meta span {
-    font-size: .7rem;
-    padding: .18rem .45rem;
-}
-
 @media (max-width: 768px) {
     .homepage {
         padding: 1rem;

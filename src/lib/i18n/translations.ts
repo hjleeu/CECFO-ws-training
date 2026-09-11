@@ -2,6 +2,10 @@ export type Language = "zh" | "en" | "it"
 
 export const translations = {
     zh: {
+        home: {
+            worshipSets: "敬拜歌单",
+            all: "查看全部"
+        },
         nav: {
             home: "首页",
             songs: "曲库",
@@ -55,6 +59,10 @@ export const translations = {
         }
     },
     it: {
+        home: {
+            worshipSets: "Worship sets",
+            all: "Visualizza tutti"
+        },
         nav: {
             home: "Home",
             songs: "Libreria",
@@ -108,6 +116,10 @@ export const translations = {
         }
     },
     en: {
+        home: {
+            worshipSets: "Worship sets",
+            all: "View all"
+        },
         nav: {
             home: "Home",
             songs: "Songs",

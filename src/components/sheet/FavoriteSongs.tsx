@@ -39,7 +39,6 @@ export function FavoriteSongs({ songs }: Props) {
           <SongCard
             key={song.slug}
             song={song}
-            compact
           />
         ))}
       </div>

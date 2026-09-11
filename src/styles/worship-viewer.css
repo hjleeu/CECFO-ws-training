@@ -1,0 +1,78 @@
+.worship-viewer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.worship-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.worship-viewer-title {
+  font-family: var(--font-chinese);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.worship-viewer-counter {
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.worship-viewer-nav {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+.worship-viewer-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.worship-viewer-arrow {
+  width: 3rem;
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.worship-viewer-arrow:hover:not(:disabled) {
+  color: var(--color-accent);
+}
+
+.worship-viewer-arrow:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.worship-viewer-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem;
+}
+
+.worship-viewer-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  padding: 0;
+}
+
+.worship-viewer-dot.active {
+  background: var(--color-accent);
+  width: 1.2rem;
+  border-radius: 999px;
+}

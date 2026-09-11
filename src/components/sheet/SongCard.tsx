@@ -15,15 +15,14 @@ interface Props {
     bpm: number
     timeSignature: string
   }
-  compact?: boolean // Compact view.
 }
 
-export function SongCard({ song, compact = false }: Props) {
+export function SongCard({ song }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
   return (
     <Link
       href={`/songs/${song.slug}`}
-      className={`song-card${compact ? " song-card-compact" : ""}`}
+      className={`song-card`}
     >
       <button
         type="button"
