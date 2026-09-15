@@ -44,7 +44,7 @@ export default function HomePage() {
 
       <section className="home-section">
         <div className="home-section-header">
-          <h2>{t.home.worshipSets}</h2>
+          <h2 className="home-section-title">{t.home.worshipSets}</h2>
           <Link href="/worship">
             {t.home.all} →
           </Link>

@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
 import type { Song as SongProps, ShowOptions } from "@/types/MusicNotation"
 import { Measure } from "./Measure"
 import "@/styles/sheet.css"
 import { useRef, useState, useEffect, useCallback } from "react"
-import { parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from '@/lib/jianpu'
+import { parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from "@/lib/jianpu"
 
 interface Props {
   song: SongProps
@@ -26,9 +26,9 @@ interface BracketRect {
 export function Song({ song, showOptions }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null)
   const noteRefsMap   = useRef<Map<string, HTMLDivElement>>(new Map())
-  const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
-
   const measureRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
   const [rowDurationHeights, setRowDurationHeights] = useState<Map<number, number>>(new Map())
 
   const registerMeasureRef = useCallback(
@@ -47,116 +47,100 @@ export function Song({ song, showOptions }: Props) {
 
   useEffect(() => {
     const container = containerRef.current
-    if (!container || !song.brackets?.length) { setBracketRects([]); return }
+    if (!container) { return }
 
-    const updateRects = () => {
+    const updateLayout = () => {
       requestAnimationFrame(() => {
         const containerRect = container.getBoundingClientRect()
 
-        const rects: BracketRect[] = song.brackets
-          .map((b): BracketRect | null => {
-            const startEl = noteRefsMap.current.get(`${b.startMeasure}-${b.startNote}`)
-            const endEl = noteRefsMap.current.get(`${b.endMeasure}-${b.endNote}`)
-            if (!startEl || !endEl) return null
+        const entries = Array.from(measureRefs.current.entries()).sort(([a], [b]) => a - b)
 
-            const startRect = startEl.getBoundingClientRect()
-            const endRect = endEl.getBoundingClientRect()
+        if (entries.length > 0) {
+          const rows: number[][] = []
+          let currentRow: number[] = []
+          let currentTop: number | null = null
 
-            const startMeasure = measureRefs.current.get(b.startMeasure)
-            const endMeasure = measureRefs.current.get(b.endMeasure)
-            if (!startMeasure || !endMeasure) return null
-
-            const startMeasureRect = startMeasure.getBoundingClientRect()
-            const endMeasureRect = endMeasure.getBoundingClientRect()
-
-            const y1 = startRect.top - containerRect.top
-            const y2 = endRect.top - containerRect.top
-
-            const wrapped = Math.abs(startMeasureRect.top - endMeasureRect.top) > 37
-
-            const rowLeft = endMeasureRect.left - containerRect.left
-            const rowRight = startMeasureRect.right - containerRect.left
-
-            return {
-              x1: startRect.left - containerRect.left + startRect.width / 2,
-              y1,
-              x2: endRect.left - containerRect.left + endRect.width / 2,
-              y2,
-              rowLeft,
-              rowRight,
-              number: b.number,
-              level: b.level,
-              wrapped,
+          for (const [index, el] of entries) {
+            const top = el.getBoundingClientRect().top
+            if (currentTop === null || Math.abs(top - currentTop) < 5) {
+              currentRow.push(index)
+              currentTop = currentTop ?? top
+            } else {
+              rows.push(currentRow)
+              currentRow = [index]
+              currentTop = top
             }
-          })
-          .filter((r): r is BracketRect => r !== null)
+          }
+          if (currentRow.length) { rows.push(currentRow) }
 
-        setBracketRects(rects)
+          const heights = new Map<number, number>()
+          for (const row of rows) {
+            let maxDur = 0
+            for (const idx of row) {
+              const m = song.measures[idx]
+              for (const n of m.notes) {
+                const d = parseJianpu(n.note).duration
+                if (d > maxDur) { maxDur = d }
+              }
+            }
+            const px = maxDur * BAR_STEP_PX + BAR_GAP_PX
+            for (const idx of row) { heights.set(idx, px) }
+          }
+          setRowDurationHeights(heights)
+        }
+
+        if (song.brackets?.length) {
+          const rects: BracketRect[] = song.brackets
+            .map((b): BracketRect | null => {
+              const startEl = noteRefsMap.current.get(`${b.startMeasure}-${b.startNote}`)
+              const endEl = noteRefsMap.current.get(`${b.endMeasure}-${b.endNote}`)
+              if (!startEl || !endEl) return null
+
+              const startRect = startEl.getBoundingClientRect()
+              const endRect = endEl.getBoundingClientRect()
+
+              const startMeasure = measureRefs.current.get(b.startMeasure)
+              const endMeasure = measureRefs.current.get(b.endMeasure)
+              if (!startMeasure || !endMeasure) return null
+
+              const startMeasureRect = startMeasure.getBoundingClientRect()
+              const endMeasureRect = endMeasure.getBoundingClientRect()
+
+              const y1 = startRect.top - containerRect.top
+              const y2 = endRect.top - containerRect.top
+
+              const wrapped = Math.abs(startMeasureRect.top - endMeasureRect.top) > 37
+
+              const rowLeft = endMeasureRect.left - containerRect.left
+              const rowRight = startMeasureRect.right - containerRect.left
+
+              return {
+                x1: startRect.left - containerRect.left + startRect.width / 2,
+                y1,
+                x2: endRect.left - containerRect.left + endRect.width / 2,
+                y2,
+                rowLeft,
+                rowRight,
+                number: b.number,
+                level: b.level,
+                wrapped
+              }
+            })
+            .filter((r): r is BracketRect => r !== null)
+
+          setBracketRects(rects)
+        } else {
+          setBracketRects([])
+        }
       })
     }
 
-    updateRects()
-    const ro = new ResizeObserver(updateRects)
+    updateLayout()
+    const ro = new ResizeObserver(updateLayout)
     ro.observe(container)
-    window.addEventListener('resize', updateRects)
-    return () => { ro.disconnect(); window.removeEventListener('resize', updateRects) }
+
+    return () => { ro.disconnect() }
   }, [song.brackets, song.measures, showOptions])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const updateRowHeights = () => {
-      requestAnimationFrame(() => {
-        const entries = Array.from(measureRefs.current.entries())
-          .sort(([a], [b]) => a - b)
-
-        if (entries.length === 0) return
-
-        const rows: number[][] = []
-        let currentRow: number[] = []
-        let currentTop: number | null = null
-
-        for (const [index, el] of entries) {
-          const top = el.getBoundingClientRect().top
-          if (currentTop === null || Math.abs(top - currentTop) < 5) {
-            currentRow.push(index)
-            currentTop = currentTop ?? top
-          } else {
-            rows.push(currentRow)
-            currentRow = [index]
-            currentTop = top
-          }
-        }
-        if (currentRow.length) rows.push(currentRow)
-
-        const heights = new Map<number, number>()
-        for (const row of rows) {
-          let maxDur = 0
-          for (const idx of row) {
-            const m = song.measures[idx]
-            for (const n of m.notes) {
-              const d = parseJianpu(n.note).duration
-              if (d > maxDur) maxDur = d
-            }
-          }
-          const px = maxDur * BAR_STEP_PX + BAR_GAP_PX
-          for (const idx of row) heights.set(idx, px)
-        }
-
-        setRowDurationHeights(heights)
-      })
-    }
-
-    updateRowHeights()
-    const ro = new ResizeObserver(updateRowHeights)
-    ro.observe(container)
-    window.addEventListener('resize', updateRowHeights)
-    return () => {
-      ro.disconnect()
-      window.removeEventListener('resize', updateRowHeights)
-    }
-  }, [song.measures, showOptions])
 
   return (
     <div className="song">
@@ -166,17 +150,17 @@ export function Song({ song, showOptions }: Props) {
         <span className="song-meta"></span>
       </div>
 
-      <div className="measures-container" ref={containerRef} style={{ position: 'relative' }}>
+      <div className="measures-container" ref={containerRef} style={{ position: "relative" }}>
         {bracketRects.length > 0 && (
           <svg
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
-              width: '100%',
-              height: '100%',
-              overflow: 'visible',
-              pointerEvents: 'none',
+              width: "100%",
+              height: "100%",
+              overflow: "visible",
+              pointerEvents: "none",
               zIndex: 3,
             }}
           >

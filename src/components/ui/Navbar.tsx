@@ -30,7 +30,8 @@ export function Navbar() {
 
     // Hide the navbar in song details page.
     const isSongDetailPage = /^\/songs\/[^/]+$/.test(pathname)
-    if (isSongDetailPage) return null
+    const isWorshirSetPage = /^\/worship\/[^/]+$/.test(pathname)
+    if (isSongDetailPage || isWorshirSetPage) return null
 
     /* Default use light theme. */
     const [theme, setTheme] = useState<"light" | "dark">("light")
@@ -87,7 +88,7 @@ export function Navbar() {
                 })}
 
                 <button className="nav-item nav-theme-btn" onClick={toggleTheme}>
-                    <span className="nav-icon">{theme === "light" ? "☾" : "☀︎"}</span>
+                    <span className="nav-icon">{theme === "light" ? "⏾" : "☀︎"}</span>
                     <span className="nav-label">{theme === "light" ? t.nav.dark : t.nav.light}</span>
                 </button>
 

@@ -1,19 +1,34 @@
-'use client'
+"use client"
 
-import { computeBeamGroups, parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from '@/lib/jianpu'
-import type { Measure as MeasureProps, ShowOptions } from '../../types/MusicNotation'
-import { Note } from './Note'
-import { useRef, useState, useLayoutEffect } from 'react'
+import { computeBeamGroups, parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from "@/lib/jianpu"
+import type { Measure as MeasureProps, ShowOptions } from "../../types/MusicNotation"
+import { Note } from "./Note"
+import { useRef, useState, useLayoutEffect } from "react"
 
 interface Props {
   measure: MeasureProps
   measureIndex: number
   showOptions: ShowOptions
   registerNoteRef: (measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => void
-  rowDurationHeightPx?: number   // set by Song.tsx after measuring the whole row
+  rowDurationHeightPx?: number
+}
+
+interface ExtraBarRun {
+  level: number
+  top: number
+  left: number
+  width: number
+}
+
+interface SegmentGeometry {
+  primaryTop: number
+  extraRuns: ExtraBarRun[]
 }
 
 export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx }: Props) {
+  const notesContainerRef = useRef<HTMLDivElement>(null)
+  const segmentRefs = useRef<(HTMLDivElement | null)[]>([])
+
   const parsedNote = measure.notes.map(n => {
     const parsed = parseJianpu(n.note)
     return { ...parsed, dotted: n.dotted || parsed.dotted }
@@ -21,9 +36,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
 
   const measureMaxDuration = Math.max(...parsedNote.map(note => note.duration), 0)
   const localFallbackHeightPx = measureMaxDuration * BAR_STEP_PX + BAR_GAP_PX
-
-  // use the row-wide value once Song.tsx has measured it; fall back to this
-  // measure's own local value on the very first paint before that happens
   const durationHeightPx = rowDurationHeightPx ?? localFallbackHeightPx
 
   const beamGroups = computeBeamGroups(parsedNote)
@@ -55,41 +67,129 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
     }
   }
 
+  const [geometry, setGeometry] = useState<Map<number, SegmentGeometry>>(new Map())
+
+  useLayoutEffect(() => {
+    const container = notesContainerRef.current
+    if (!container) return
+
+    const update = () => {
+      const next = new Map<number, SegmentGeometry>()
+
+      finalSegments.forEach((seg, segIndex) => {
+        const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
+        if (!isGroup) return
+
+        const groupEl = segmentRefs.current[segIndex]
+        if (!groupEl) return
+
+        const noteColumns = Array.from(groupEl.querySelectorAll(".note-column")) as HTMLElement[]
+        if (noteColumns.length === 0) return
+
+        const groupRect = groupEl.getBoundingClientRect()
+        const firstDigit = noteColumns[0].querySelector(".note-digit-row")
+        if (!firstDigit) return
+
+        const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2
+        const noteDurations = seg.notes.map(ni => parsedNote[ni].duration)
+        const maxDuration = Math.max(...noteDurations)
+        const runs: ExtraBarRun[] = []
+
+        for (let level = seg.sharedBeams + 1; level <= maxDuration; level++) {
+          let runStart: number | null = null
+          for (let i = 0; i <= noteDurations.length; i++) {
+            const inRun = i < noteDurations.length && noteDurations[i] >= level
+            if (inRun && runStart === null) {
+              runStart = i
+            } else if (!inRun && runStart !== null) {
+              const runEnd = i - 1
+              const startEl = noteColumns[runStart]?.querySelector(".note-digit-row")
+              const endEl = noteColumns[runEnd]?.querySelector(".note-digit-row")
+              if (startEl && endEl) {
+                const sRect = startEl.getBoundingClientRect()
+                const eRect = endEl.getBoundingClientRect()
+                runs.push({
+                  level,
+                  top: baseTop + (level - seg.sharedBeams - 1) * BAR_STEP_PX + BAR_GAP_PX,
+                  left: sRect.left - groupRect.left,
+                  width: eRect.right - sRect.left
+                })
+              }
+              runStart = null
+            }
+          }
+        }
+        next.set(segIndex, { primaryTop: baseTop, extraRuns: runs })
+      })
+      setGeometry(next)
+    }
+    update()
+    // Single Observer for whole measure.
+    const ro = new ResizeObserver(update)
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [measure.notes, showOptions.jianpu])
+
   return (
     <div className="measure">
-      <div className="measure-notes" style={{ position: 'relative' }}>
-        {finalSegments.map((seg, si) => {
+      <div className="measure-notes" ref={notesContainerRef} style={{ position: "relative" }}>
+        {showOptions.jianpu && finalSegments.map((seg, si) => {
           const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
-          const noteDurations = seg.notes.map(ni => parsedNote[ni].duration)
+          const geo = geometry.get(si)
+
+          const content = seg.notes.map((ni, k) => {
+            const extra = isGroup ? 0 : parsedNote[ni].duration
+
+            return (
+              <div
+                key={k}
+                className="note-column"
+                ref={(el: HTMLDivElement | null) => registerNoteRef(measureIndex, ni, el)}
+              >
+                <span className="chord">
+                  {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord: ''}
+                </span>
+                <Note
+                  note={measure.notes[ni]}
+                  showOptions={showOptions}
+                  extraBeams={extra}
+                  reservedDurationHeightPx={durationHeightPx}
+                ></Note>
+              </div>
+            )
+          })
+
+          if (!isGroup) {
+            return <div key={si} style={{ position: "relative" }}>{content}</div>
+          }
 
           return ( showOptions.jianpu &&
-            <BeamSegment
+            <div
               key={si}
-              isGroup={isGroup}
-              sharedBeams={seg.sharedBeams}
-              noteDurations={noteDurations}
+              ref={el => { segmentRefs.current[si] = el }}
+              className="beam-group"
+              style={{ position: "relative" }}
             >
-              {seg.notes.map((ni, k) => {
-                const extra = isGroup ? 0 : parsedNote[ni].duration
-                return (
-                  <div
-                    key={k}
-                    className="note-column"
-                    ref={(el: HTMLDivElement | null) => registerNoteRef(measureIndex, ni, el)}
-                  >
-                    <span className="chord">
-                      {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord : ''}
-                    </span>
-                    <Note
-                      note={measure.notes[ni]}
-                      showOptions={showOptions}
-                      extraBeams={extra}
-                      reservedDurationHeightPx={durationHeightPx}
-                    />
+              {geo && (
+                <>
+                  <div className="beam-bars" style={{ top: `${geo.primaryTop}px`}}>
+                    {Array.from({ length: seg.sharedBeams }).map((_, bi) => (
+                      <div key={bi} className="beam-bar"></div>
+                    ))}
                   </div>
-                )
-              })}
-            </BeamSegment>
+                  {geo.extraRuns.map((run, ri) => (
+                    <div
+                      key={ri}
+                      className="beam-bar"
+                      style={{ position: "absolute", top: `${run.top}px`, left: `${run.left}px`, width: `${run.width}px` }}
+                    ></div>
+                  ))}
+                </>
+              )}
+              <div className="beam-notes">
+                {content}
+              </div>
+            </div>
           )
         })}
         {showOptions.jianpu && <span className="barline">|</span>}
