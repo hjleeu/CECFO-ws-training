@@ -155,7 +155,7 @@ export function Song({ song, showOptions }: Props) {
           <svg
             style={{
               position: "absolute",
-              top: 0,
+              top: "-0.37rem",
               left: 0,
               width: "100%",
               height: "100%",
