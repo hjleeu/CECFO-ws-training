@@ -1,6 +1,6 @@
 import { pinyin } from "pinyin-pro";
 import { Jianpu } from "@/types/Jianpu";
-import { BracketSpan, LyricEntry, Measure, Note, Song } from "@/types/MusicNotation";
+import { BarlineType, BracketSpan, LyricEntry, Measure, NavigationMark, Note, Song } from "@/types/MusicNotation";
 
 interface ParsedNote {
   note: string
@@ -20,12 +20,29 @@ interface ParsedNote {
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  const TOKEN_REGEX = /(\||~|__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
   while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
   }
   return result
+}
+
+const BARLINE_TOKEN = new Set(['|', "|:", "||", ":|", "|]"])
+
+function tokenToBarline(token: string): BarlineType {
+  switch (token) {
+    case "||":
+      return "double"
+    case "|:":
+      return "repeatStart"
+    case ":|":
+      return "repeatEnd"
+    case "|]":
+      return "final"
+    default:
+      return "normal" 
+  }
 }
 
 function splitMeasures(line: string): string[] {
@@ -52,9 +69,10 @@ function parseNotes(
   measureOffset: number,
   sharedBracketStack: OpenBracket[],
   sharedLevelRef: { current: number }
-): { measures: ParsedNote[][], brackets: BracketSpan[] } {
+): { measures: ParsedNote[][], barlines: BarlineType[], brackets: BracketSpan[] } {
   const tokens = toToken(raw)
   const measures: ParsedNote[][] = []
+  const barlines: BarlineType[] = []
   const brackets: BracketSpan[] = []
   let currentMeasure: ParsedNote[] = []
 
@@ -94,8 +112,9 @@ function parseNotes(
     let t = tokens[i]
 
     // Barline.
-    if (t === '|') {
+    if (BARLINE_TOKEN.has(t)) {
       measures.push(currentMeasure)
+      barlines.push(tokenToBarline(t))
       currentMeasure = []
       measureCounter++
       noteIndex = 0
@@ -170,9 +189,15 @@ function parseNotes(
   }
 
   measures.push(currentMeasure)
+  barlines.push("normal")
+
+  const nonEmpty = measures.map((m, i) => ({
+    m, b: barlines[i]
+  })).filter(z => z.m.length > 0)
 
   return {
-    measures: measures.filter(m => m.length > 0),
+    measures: nonEmpty.map(z => z.m),
+    barlines: nonEmpty.map(z => z.b),
     brackets
   }
 }
@@ -196,6 +221,18 @@ function isSectionLabel(line: string): boolean {
   if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return false
   const inner = trimmed.slice(1, -1).trim()
   return !CHORD_PATTERN.test(inner)
+}
+
+const VALID_NAV_MARKS = new Set<NavigationMark>([
+  "segno", "coda", "toCoda", "fine", "ds", "dsCoda", "dsFine", "dc", "dcFine", "dcCoda"
+])
+
+function parseNavMarkLine(line: string): NavigationMark[] | null {
+  const match = line.trim().match(/^@([a-zA-Z,]+)$/)
+  if (!match) return null
+  const marks = match[1].split(',').map(s => s.trim()).filter(Boolean)
+  if (marks.length === 0 || !marks.every(m => VALID_NAV_MARKS.has(m as NavigationMark))) { return null }
+  return marks as NavigationMark[]
 }
 
 /**
@@ -223,7 +260,7 @@ export function parse(raw: string): Song {
   const globalLevelRef = { current: 0 }
 
   function flush(noteLine: string, lyricLines: string[]) {
-    const { measures: noteCols, brackets } = parseNotes(noteLine, measureCount, globalBracketStack, globalLevelRef)
+    const { measures: noteCols, barlines, brackets } = parseNotes(noteLine, measureCount, globalBracketStack, globalLevelRef)
     const hasLyrics = lyricLines.length > 0
     const lyricColsPerRow = hasLyrics ? lyricLines.map(l => splitMeasures(l)) : []
 
@@ -275,6 +312,7 @@ export function parse(raw: string): Song {
         id: `m-${measureCount}`,
         sectionLabel: currentLabel,
         notes: noteItems,
+        barline: barlines[j] ?? "normal"
       })
       if (currentLabel) currentLabel = undefined
       measureCount++
@@ -288,6 +326,20 @@ export function parse(raw: string): Song {
 
     // Skip empty lines.
     if (!line) continue
+
+    const navMarks = parseNavMarkLine(line)
+    if (navMarks) {
+      if (pendingNoteLine !== null) {
+        flush(pendingNoteLine, pendingLyricLine)
+        pendingNoteLine = null
+        pendingLyricLine = []
+      }
+      const lastMeasure = measures[measures.length - 1]
+      if (lastMeasure) {
+        lastMeasure.navigationMark = [...(lastMeasure.navigationMark ?? []), ...navMarks]
+      }
+      continue
+    }
 
     if (isSectionLabel(line)) {
       if (pendingNoteLine !== null) {

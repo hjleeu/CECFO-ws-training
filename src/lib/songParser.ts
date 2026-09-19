@@ -1,6 +1,21 @@
-import type { Song, Measure, Note, BracketSpan } from "@/types/MusicNotation"
+import type { BarlineType, Song, Measure, Note, BracketSpan } from "@/types/MusicNotation"
 
 const JIANPU_DECOMPOSE = /^([#b=]?)([0-7])([',]*)(\/{0,2})(\^?)$/
+
+function barlineToToken(barline: BarlineType | undefined): string {
+  switch (barline) {
+    case "double":
+      return "||"
+    case "repeatStart":
+      return "|:"
+    case "repeatEnd":
+      return ":|"
+    case "final":
+      return "|]"
+    default:
+      return "|"
+  }
+}
 
 function formatNoteNotation(note: Note): string {
   let result = ''
@@ -80,9 +95,9 @@ export function songToRaw(song: Song): string {
         .map(({ measure, index }) => {
           const tokens = measure.notes.map(formatNoteNotation)
           const bracketed = applyBrackets(tokens, index, song.brackets ?? [])
-          return bracketed.join(' ')
+          return bracketed.join(' ') + ' ' + barlineToToken(measure.barline)
         })
-        .join(' | ') + ' |'
+        .join(' ')
 
     const maxLyricLines = Math.max(
       0,
@@ -104,14 +119,17 @@ export function songToRaw(song: Song): string {
             })
             .join(' ')
         )
-        .join(' | ')
+        .join(" | ")
       lyricLines.push(lineStr)
     }
+
+    const lastMeasure = currentLineMeasures[currentLineMeasures.length - 1]?.measure
+    const navMarksOutput = lastMeasure?.navigationMark?.length ? `@${lastMeasure.navigationMark.join(',')}\n` : ''
 
     currentLineMeasures = []
 
     const lyricsOutput = lyricLines.length > 0 ? lyricLines.join('\n') + '\n' : ''
-    return `${notationLine}\n${lyricsOutput}\n`
+    return `${notationLine}\n${lyricsOutput}${navMarksOutput}\n`
   }
 
   for (let i = 0; i < song.measures.length; i++) {

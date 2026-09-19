@@ -14,10 +14,15 @@ export interface LyricEntry {
     punct?: string
 }
 
+export type BarlineType = "normal" | "double" | "final" | "repeatStart" | "repeatEnd"
+export type NavigationMark = "segno" | "coda" | "toCoda" | "fine" | "ds" | "dsFine" | "dsCoda" | "dc" | "dcFine" | "dcCoda"
+
 export interface Measure {
     id: string
     notes: Note[]
     sectionLabel?: string
+    barline: BarlineType
+    navigationMark?: NavigationMark[]
 }
 
 export interface BracketSpan {

@@ -1,9 +1,139 @@
 "use client"
 
 import { computeBeamGroups, parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from "@/lib/jianpu"
-import type { Measure as MeasureProps, ShowOptions } from "../../types/MusicNotation"
+import type { Measure as MeasureProps, ShowOptions, BarlineType, NavigationMark } from "../../types/MusicNotation"
 import { Note } from "./Note"
 import { useRef, useLayoutEffect } from "react"
+
+function SegnoIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      className="nav-symbol"
+      aria-label="segno"
+    >
+      <line
+        x1="8"
+        y1="18"
+        x2="15"
+        y2="3"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="
+          M 13.5 3.5
+          C 10.8 3.0, 8.0 4.0, 7.2 6.3
+          C 6.3 8.8, 8.5 10.2, 10.9 10.8
+          C 13.4 11.4, 16.2 12.3, 16.8 14.4
+          C 17.4 16.7, 14.9 18.5, 12.3 18.5
+          C 10.0 18.5, 8.1 17.5, 8 16.0
+        "
+        transform="rotate(-25 12 11) translate(12 11) scale(0.65 1) translate(-12 -11)"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="17"
+        cy="7"
+        r="1.7"
+        fill="currentColor"
+      />
+      <circle
+        cx="6"
+        cy="14"
+        r="1.7"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function CodaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" className="nav-symbol" aria-label="coda">
+      <circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function Barline({ type }: { type: BarlineType }) {
+  const thin = <span className="barline-stroke" />
+  const thick = <span className="barline-stroke thick" />
+  const dots = (
+    <span className="repeat-dots">
+      <span />
+      <span />
+    </span>
+  )
+
+  switch (type) {
+    case "double":
+      return <span className="barline barline-double">{thin}{thin}</span>
+    case "final":
+      return <span className="barline barline-final">{thin}{thick}</span>
+    case "repeatStart":
+      return <span className="barline barline-repeat-start">{thick}{thin}{dots}</span>
+    case "repeatEnd":
+      return <span className="barline barline-repeat-end">{dots}{thin}{thick}</span>
+    default:
+      return <span className="barline barline-normal">{thin}</span>
+  }
+}
+
+function NavMark({ mark }: { mark: NavigationMark }) {
+  switch (mark) {
+    case "segno":
+      return <span className="nav-mark"><SegnoIcon /></span>
+    case "coda":
+      return <span className="nav-mark"><CodaIcon /></span>
+    case "toCoda":
+      return <span className="nav-mark">To <CodaIcon /></span>
+    case "fine":
+      return <span className="nav-mark">Fine</span>
+    case "ds":
+      return <span className="nav-mark">D.S. <SegnoIcon /></span>
+    case "dsFine":
+      return <span className="nav-mark">D.S. <SegnoIcon /> al Fine</span>
+    case "dsCoda":
+      return <span className="nav-mark">D.S. <SegnoIcon /> al <CodaIcon /></span>
+    case "dc":
+      return <span className="nav-mark">D.C.</span>
+    case "dcFine":
+      return <span className="nav-mark">D.C. al Fine</span>
+    case "dcCoda":
+      return <span className="nav-mark">D.C. al <CodaIcon /></span>
+  }
+}
+
+const BARLINE_GLYPH: Record<BarlineType, string> = {
+  normal: '|',
+  double: "||",
+  final: "|]",
+  repeatStart: "|:",
+  repeatEnd: ":|"
+}
+
+const NAV_MARK_LABEL: Record<NavigationMark, string> = {
+  segno: "Segno",
+  coda: "Coda",
+  toCoda: "To Coda",
+  fine: "Fine",
+  ds: "D.S.",
+  dsFine: "D.S. al Fine",
+  dsCoda: "D.S. al Coda",
+  dc: "D.C.",
+  dcCoda: "D.C. al Coda",
+  dcFine: "D.C. al Fine"
+}
 
 interface Props {
   measure: MeasureProps
@@ -15,8 +145,8 @@ interface Props {
 
 interface ExtraRunSpec {
   level: number
-  startNote: number // actual note index within measure.notes
-  endNote: number   // actual note index within measure.notes
+  startNote: number
+  endNote: number
 }
 
 export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx }: Props) {
@@ -24,11 +154,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
   const groupRefs = useRef<(HTMLDivElement | null)[]>([])
   const beamBarsRefs = useRef<(HTMLDivElement | null)[]>([])
   const extraRunRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  // Local note-index -> DOM element map, populated by the same ref callback
-  // that registers note-columns with Song.tsx. Avoids re-querying the DOM by
-  // class and matching by array position (which assumed DOM order always
-  // matches seg.notes order — a real element-mismatch risk if that ever
-  // drifted).
+
   const noteColumnRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   const parsedNote = measure.notes.map(n => {
@@ -69,10 +195,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
     }
   }
 
-  // Pure function of note durations. startNote/endNote here are the actual
-  // note indices (seg.notes[...]) — not positions within seg.notes — so the
-  // effect can look them up directly by note index, with no dependency on
-  // DOM query order matching array order.
   const extraRunSpecsBySeg = finalSegments.map(seg => {
     const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0
     if (!isGroup) { return [] as ExtraRunSpec[] }
@@ -123,13 +245,6 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
           const endEl = noteColumnRefs.current.get(run.endNote)
           if (!runEl || !startEl || !endEl) return
 
-          // A run's edge that touches the group boundary must land exactly
-          // on the group's own edge (where the base/long beam ends) — not
-          // on the individual note-column's edge, which can shift depending
-          // on that note's own pinyin/lyric width and no longer line up.
-          // Anchor to the *actual rendered* rect of the base beam (barEl),
-          // not to a hardcoded inset — however CSS positions .beam-bars,
-          // a run touching the group boundary will always line up with it.
           const isFirstNote = run.startNote === seg.notes[0]
           const isLastNote = run.endNote === seg.notes[seg.notes.length - 1]
           const barRect = barEl.getBoundingClientRect()
@@ -218,7 +333,14 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
             </div>
           )
         })}
-        {showOptions.jianpu && <span className="barline">|</span>}
+        {showOptions.jianpu && (
+          <span className="barline-group">
+            <Barline type={measure.barline ?? "normal"} />
+            {measure.navigationMark?.map(mark => (
+              <NavMark key={mark} mark={mark} />
+            ))}
+          </span>
+        )}
       </div>
     </div>
   )
