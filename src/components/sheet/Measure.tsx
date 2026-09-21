@@ -100,11 +100,11 @@ function NavMark({ mark }: { mark: NavigationMark }) {
     case "fine":
       return <span className="nav-mark">Fine</span>
     case "ds":
-      return <span className="nav-mark">D.S. <SegnoIcon /></span>
+      return <span className="nav-mark">D.S.</span>
     case "dsFine":
-      return <span className="nav-mark">D.S. <SegnoIcon /> al Fine</span>
+      return <span className="nav-mark">D.S. al Fine</span>
     case "dsCoda":
-      return <span className="nav-mark">D.S. <SegnoIcon /> al <CodaIcon /></span>
+      return <span className="nav-mark">D.S. al <CodaIcon /></span>
     case "dc":
       return <span className="nav-mark">D.C.</span>
     case "dcFine":
@@ -112,27 +112,6 @@ function NavMark({ mark }: { mark: NavigationMark }) {
     case "dcCoda":
       return <span className="nav-mark">D.C. al <CodaIcon /></span>
   }
-}
-
-const BARLINE_GLYPH: Record<BarlineType, string> = {
-  normal: '|',
-  double: "||",
-  final: "|]",
-  repeatStart: "|:",
-  repeatEnd: ":|"
-}
-
-const NAV_MARK_LABEL: Record<NavigationMark, string> = {
-  segno: "Segno",
-  coda: "Coda",
-  toCoda: "To Coda",
-  fine: "Fine",
-  ds: "D.S.",
-  dsFine: "D.S. al Fine",
-  dsCoda: "D.S. al Coda",
-  dc: "D.C.",
-  dcCoda: "D.C. al Coda",
-  dcFine: "D.C. al Fine"
 }
 
 interface Props {

@@ -218,8 +218,11 @@ const CHORD_PATTERN = /^[A-G][#b]?(m|maj|min|dim|aug|sus)?[0-9]?$/
 
 function isSectionLabel(line: string): boolean {
   const trimmed = line.trim()
-  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return false
+  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) { return false }
   const inner = trimmed.slice(1, -1).trim()
+
+  if (inner.includes('[') || inner.includes(']') || inner.includes('|')) { return false }
+
   return !CHORD_PATTERN.test(inner)
 }
 
