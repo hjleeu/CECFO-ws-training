@@ -430,6 +430,7 @@
     line-height: 0.37;
     align-items: center;
     min-height: 0.88rem;
+    margin-top: -7px;
 }
 
 .octave-dot {
