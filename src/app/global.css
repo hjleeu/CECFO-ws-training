@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital@0;1&display=swap');
 
 *,
 *::before,
@@ -18,7 +19,7 @@ body {
 
   /* Fonts */
     --font-chinese: "Noto Serif SC", serif;
-    --font-mono: "Space Mono", monospace;
+    --font-mono: "JetBrains Mono", monospace;
 
     /* Colors */
     --color-bg: light-dark(#F4F3EE, #141A14);
