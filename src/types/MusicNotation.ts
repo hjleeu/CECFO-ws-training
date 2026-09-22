@@ -33,6 +33,8 @@ export interface BracketSpan {
     endNote: number
     number?: number
     level: number
+    kind?: "tuplet" | "ending"
+    endingStyle?: "closed" | "open"
 }
 
 export interface Song {

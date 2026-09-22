@@ -70,7 +70,9 @@ function applyBrackets(
     }
 
     if (startsHere) {
-      const prefix = b.number !== undefined ? `(${b.number}:` : '('
+      const prefix = b.kind === "ending"
+      ? `(v${b.number}${b.endingStyle === "open" ? ">" : ":"}`
+      : b.number !== undefined ? `(${b.number}:` : '('
       out[b.startNote] = prefix + out[b.startNote]
     }
     if (endsHere) {

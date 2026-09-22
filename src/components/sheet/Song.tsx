@@ -21,6 +21,8 @@ interface BracketRect {
   number?: number
   level: number
   wrapped: boolean
+  kind?: "tuplet" | "ending"
+  endingStyle?: "closed" | "open"
 }
 
 export function Song({ song, showOptions }: Props) {
@@ -114,16 +116,27 @@ export function Song({ song, showOptions }: Props) {
               const rowLeft = endMeasureRect.left - containerRect.left
               const rowRight = startMeasureRect.right - containerRect.left
 
+              const isEnding = b.kind === "ending"
+              const x1 = isEnding
+                ? startMeasureRect.left - containerRect.left
+                : startRect.left - containerRect.left + startRect.width / 2
+
+              const x2 = isEnding
+                ? endMeasureRect.right - containerRect.left
+                : endRect.left - containerRect.left + endRect.width / 2
+
               return {
-                x1: startRect.left - containerRect.left + startRect.width / 2,
+                x1,
                 y1,
-                x2: endRect.left - containerRect.left + endRect.width / 2,
+                x2,
                 y2,
                 rowLeft,
                 rowRight,
                 number: b.number,
                 level: b.level,
-                wrapped
+                wrapped,
+                kind: b.kind,
+                endingStyle: b.endingStyle
               }
             })
             .filter((r): r is BracketRect => r !== null)
@@ -165,9 +178,53 @@ export function Song({ song, showOptions }: Props) {
             }}
           >
             {bracketRects.map((b, i) => {
+              if (b.kind === "ending") {
+                const dropPx = 10
+                const ENDING_LIFT_PX = 20
+                const isOpen = b.endingStyle === "open"
+
+                if (!b.wrapped) { 
+                  const y = b.y1 + 45 - ENDING_LIFT_PX
+                  const d = isOpen
+                    ? `M ${b.x1} ${y + dropPx} L ${b.x1} ${y} L ${b.x2} ${y}`
+                    : `M ${b.x1} ${y + dropPx} L ${b.x1} ${y} L ${b.x2} ${y} L ${b.x2} ${y + dropPx}`
+
+                  return (
+                    <g key={i}>
+                      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5"></path>
+                      {b.number !== undefined && (
+                        <text x={b.x1 + 4} y={y + 10} textAnchor="start" fontSize="10" fontFamily="monospace" fill="currentColor">
+                          {b.number}.
+                        </text>
+                      )}
+                    </g>
+                  )
+                }
+
+                const { rowLeft, rowRight } = b
+                const y1 = b.y1 + 45 - ENDING_LIFT_PX
+                const y2 = b.y2 + 45 - ENDING_LIFT_PX
+                const d1 = `M ${b.x1} ${y1 + dropPx} L ${b.x1} ${y1} L ${rowRight} ${y1}`
+                const d2 = isOpen
+                  ? `M ${rowLeft} ${y2} L ${b.x2} ${y2}`
+                  : `M ${rowLeft} ${y2} L ${b.x2} ${y2} L ${b.x2} ${y2 + dropPx}`
+
+                return (
+                  <g key={i}>
+                    <path d={d1} fill="none" stroke="currentColor" strokeWidth="1.5" />
+                    <path d={d2} fill="none" stroke="currentColor" strokeWidth="1.5" />
+                    {b.number !== undefined && (
+                      <text x={b.x1 + 4} y={y1 + 10} textAnchor="start" fontSize="10" fontFamily="monospace" fill="currentColor">
+                        {b.number}.
+                      </text>
+                    )}
+                  </g>
+                )
+              }
+
               if (!b.wrapped) {
                 const span = Math.max(Math.abs(b.x2 - b.x1), 10)
-                const arch = Math.min(Math.max(span * 0.18, 10), 30)
+                const arch = Math.min(Math.max(span * 0.15, 7), 25)
                 const cpOffset = span * 0.2
                 const y = b.y1 + 45 - (3 - b.level)
 
@@ -192,12 +249,12 @@ export function Song({ song, showOptions }: Props) {
               const y2 = b.y2 + 45 - (3 - b.level)
 
               const span1 = Math.max(rowRight - b.x1, 10)
-              const arch1 = Math.min(Math.max(span1 * 0.15, 10), 24)
+              const arch1 = Math.min(Math.max(span1 * 0.15, 7), 25)
               const cpOffset1 = Math.min(30, span1 * 0.2)
               const d1 = `M ${b.x1} ${y1} C ${b.x1 + cpOffset1} ${y1 - arch1}, ${rowRight - cpOffset1} ${y1 - arch1}, ${rowRight} ${y1 - arch1}`
 
               const span2 = Math.max(b.x2, 10)
-              const arch2 = Math.min(Math.max(span2 * 0.15, 10), 24)
+              const arch2 = Math.min(Math.max(span2 * 0.15, 7), 25)
               const cpOffset2 = Math.min(30, span2 * 0.2)
               const d2 = `
                 M ${rowLeft} ${y2 - arch2}

@@ -11,6 +11,8 @@ interface ParsedNote {
  interface OpenBracket {
   id: string
   number?: number
+  kind?: "tuplet" | "ending"
+  endingStyle?: "closed" | "open"
   startMeasure: number
   startNote: number
   level: number
@@ -20,7 +22,7 @@ interface ParsedNote {
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(v\d+[:>]|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
   let match
   while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -136,13 +138,17 @@ function parseNotes(
     }
 
     // Open bracket.
-    if (/^__BS/.test(t) || /^\(\d+:/.test(t) || t === '(') {
+    if (/^__BS/.test(t) || /^\(v\d+[:>]/.test(t) || /^\(\d+:/.test(t) || t === '(') {
+      const isEnding = /^\(v\d+[:>]/.test(t)
       const numMatch = t.match(/(\d+)/)
       const num = numMatch ? parseInt(numMatch[1]) : undefined
+      const style = isEnding ? (t.includes('>') ? "open" : "closed") : undefined
 
       sharedBracketStack.push({
         id: `b-${bracketCounter++}`,
         number: num,
+        kind: isEnding ? "ending" : undefined,
+        endingStyle: style,
         startMeasure: measureCounter,
         startNote: noteIndex,
         level: sharedLevelRef.current++
@@ -162,7 +168,9 @@ function parseNotes(
           endMeasure: measureCounter,
           endNote: noteIndex - 1, // Last note pushed.
           number: open.number,
-          level: open.level
+          level: open.level,
+          kind: open.kind,
+          endingStyle: open.endingStyle
         })
       }
       continue
@@ -244,7 +252,7 @@ function parseNavMarkLine(line: string): NavigationMark[] | null {
  * @returns true if it is a note line
  */
 function isNoteLine(line: string): boolean {
-    return /^[\s0-9A-Ga-g#b=,\.'\/()~|\[\]:^+\-mMajindsu]+$/.test(line)
+    return /^[\s0-9A-Ga-g#b=,\.'\/()~|\[\]:^+\-mMajindsuv>]+$/.test(line)
 }
 
 export function parse(raw: string): Song {
