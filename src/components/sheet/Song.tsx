@@ -80,6 +80,7 @@ export function Song({ song, showOptions }: Props) {
             let maxDur = 0
             for (const idx of row) {
               const m = song.measures[idx]
+              if (!m) continue
               for (const n of m.notes) {
                 const d = parseJianpu(n.note).duration
                 if (d > maxDur) { maxDur = d }
