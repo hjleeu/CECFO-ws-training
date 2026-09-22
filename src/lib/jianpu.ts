@@ -71,6 +71,7 @@ export function computeBeamGroups(notes: { duration: number; dotted?: boolean }[
 
 export function parseJianpu(raw: string) {
   if (raw === '-') return { accidental: '', base: '-', octave: '', dotted: false, duration: 0, fermata: false }
+  if (raw === '\\') return { accidental: '', base: '', octave: '', dotted: false, duration: 0, fermata: false }
 
   const match = raw.match(/^([#b=]?)([0-7]?)([',]*)(\.?)(\/{0,2})(\^?)$/)
   if (!match) return { accidental: '', base: raw, octave: '', dotted: false, duration: 0, fermata: false }

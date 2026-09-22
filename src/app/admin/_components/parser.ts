@@ -22,7 +22,7 @@ interface ParsedNote {
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(v\d+[:>]|\(\d+:|\(|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-))/g
+  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(v\d+[:>]|\(\d+:|\(|v\)|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-|\\))/g
   let match
   while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -70,6 +70,7 @@ function parseNotes(
   raw: string,
   measureOffset: number,
   sharedBracketStack: OpenBracket[],
+  sharedVoltaStack: OpenBracket[],
   sharedLevelRef: { current: number }
 ): { measures: ParsedNote[][], barlines: BarlineType[], brackets: BracketSpan[] } {
   const tokens = toToken(raw)
@@ -137,8 +138,26 @@ function parseNotes(
       continue
     }
 
+    // Open volta brackets.
+    if (/^\(v\d+[:>]/.test(t)) {
+      if (noteIndex !== 0)
+        throw new Error(`Volta deve iniziare a un confine di battuta (misura ${measureCounter})`)
+      const style = t.includes('>') ? "open" : "closed"
+      const num = parseInt(t.match(/\d+/)![0])
+      sharedVoltaStack.push({
+        id: `b-${bracketCounter++}`,
+        number: num,
+        kind: "ending",
+        endingStyle: style,
+        startMeasure: measureCounter,
+        startNote: noteIndex,
+        level: sharedLevelRef.current
+      })
+      continue
+    }
+
     // Open bracket.
-    if (/^__BS/.test(t) || /^\(v\d+[:>]/.test(t) || /^\(\d+:/.test(t) || t === '(') {
+    if (/^__BS/.test(t) || /^\(\d+:/.test(t) || t === '(') {
       const isEnding = /^\(v\d+[:>]/.test(t)
       const numMatch = t.match(/(\d+)/)
       const num = numMatch ? parseInt(numMatch[1]) : undefined
@@ -153,6 +172,18 @@ function parseNotes(
         startNote: noteIndex,
         level: sharedLevelRef.current++
       })
+      continue
+    }
+
+    // Close volta bracket.
+    if (t === 'v)') {
+      const open = sharedVoltaStack.pop()
+      if (open) {
+        if (i + 1 < tokens.length && !BARLINE_TOKEN.has(tokens[i + 1])) {
+          throw new Error(`Volta deve terminare a un confine di battuta (misura ${measureCounter})`)
+        }
+        brackets.push({ ...open, endMeasure: measureCounter, endNote: noteIndex - 1 })
+      }
       continue
     }
 
@@ -252,7 +283,7 @@ function parseNavMarkLine(line: string): NavigationMark[] | null {
  * @returns true if it is a note line
  */
 function isNoteLine(line: string): boolean {
-    return /^[\s0-9A-Ga-g#b=,\.'\/()~|\[\]:^+\-mMajindsuv>]+$/.test(line)
+  return /^[\s0-9A-Ga-g#b=,\.'\/()~|\[\]:^+\-mMajindsuv>\\]+$/.test(line)
 }
 
 export function parse(raw: string): Song {
@@ -268,10 +299,11 @@ export function parse(raw: string): Song {
   let measureCount = 0
 
   const globalBracketStack: OpenBracket[] = []
+  const globalVoltaStack: OpenBracket[] = []
   const globalLevelRef = { current: 0 }
 
   function flush(noteLine: string, lyricLines: string[]) {
-    const { measures: noteCols, barlines, brackets } = parseNotes(noteLine, measureCount, globalBracketStack, globalLevelRef)
+    const { measures: noteCols, barlines, brackets } = parseNotes(noteLine, measureCount, globalBracketStack, globalVoltaStack, globalLevelRef)
     const hasLyrics = lyricLines.length > 0
     const lyricColsPerRow = hasLyrics ? lyricLines.map(l => splitMeasures(l)) : []
 
@@ -389,8 +421,8 @@ export function parse(raw: string): Song {
     flush(pendingNoteLine, pendingLyricLine)
   }
 
-  if (globalBracketStack.length > 0) {
-    throw new Error(`Unclosed bracket(s): ${globalBracketStack.map(b => b.id).join(', ')}`)
+  if (globalBracketStack.length > 0 || globalVoltaStack.length > 0) {
+    throw new Error(`Unclosed bracket(s): ${[...globalBracketStack, ...globalVoltaStack].map(b => b.id).join(', ')}`)
   }
 
   if (measures.length === 0) {

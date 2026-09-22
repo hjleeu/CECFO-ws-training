@@ -23,8 +23,8 @@ function formatNoteNotation(note: Note): string {
 
   let raw = note.note ?? ''
 
-  if (raw === '-') {
-    return result + '-'
+  if (raw === '-' || raw === '\\') {
+    return result + raw
   }
 
   const match = raw.match(JIANPU_DECOMPOSE)
@@ -76,7 +76,7 @@ function applyBrackets(
       out[b.startNote] = prefix + out[b.startNote]
     }
     if (endsHere) {
-      out[b.endNote] = out[b.endNote] + ')'
+      out[b.endNote] = out[b.endNote] + (b.kind === "ending" ? 'v)' : ')')
     }
   }
 

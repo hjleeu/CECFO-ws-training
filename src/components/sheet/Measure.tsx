@@ -258,7 +258,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
             return (
               <div
                 key={k}
-                className="note-column"
+                className={measure.notes[ni].note === '\\' ? "note-column note-column-ghost" : "note-column"}
                 ref={(el: HTMLDivElement | null) => {
                   registerNoteRef(measureIndex, ni, el)
                   if (el) { noteColumnRefs.current.set(ni, el) }

@@ -148,6 +148,13 @@
     min-width: 1.15rem;
 }
 
+.note-column-ghost {
+    min-width: 0;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 .chord {
     font-family: var(--font-mono);
     color: var(--color-accent);
@@ -321,7 +328,7 @@
     line-height: 0.37;
     align-items: center;
     min-height: 0.88rem;
-    margin-top: -7px;
+    margin-top: -5px;
 }
 
 .octave-dot {

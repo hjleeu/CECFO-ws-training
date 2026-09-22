@@ -17,6 +17,11 @@ const ACCIDENTAL_SYMBOL: Record<string, string> = {
 export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeightPx }: Props) {
   const raw = note.note
   const isRest = raw === '-'
+
+  if (raw === '\\') {
+    return <div className="notation notation-ghost" aria-hidden="true"></div>
+  }
+
   const { accidental, base, octave, fermata } = parseJianpu(raw)
 
   const dotAbove = octave.startsWith("'")

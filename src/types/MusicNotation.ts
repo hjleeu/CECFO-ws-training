@@ -1,7 +1,7 @@
 import type { Jianpu } from "./Jianpu";
 
 export interface Note {
-    note: Jianpu | '-'
+    note: Jianpu | '-' | '\\'
     dotted?: boolean
     fermata?: boolean
     lyrics: LyricEntry[]
