@@ -64,9 +64,9 @@ export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeight
 
       {showOptions.lyrics && note?.lyrics?.some(l => l.char) && (
         <div className="lyrics">
-          {note.lyrics.map((lyric, i) => lyric.char && (
+          {note.lyrics.map((lyric, i) => (
             <div key={i} className="lyric-row">
-              {showOptions.pinyin && lyric.pinyin && (
+              {showOptions.pinyin && (
                 <span className="pinyin">{lyric.pinyin}</span>
               )}
               <span className="lyric">
