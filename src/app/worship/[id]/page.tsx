@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { SongView } from '@/components/sheet/SongView'
 import type { Song as SongType } from '@/types/MusicNotation'
 import '@/styles/worship-viewer.css'
@@ -9,7 +9,7 @@ import '@/styles/worship-viewer.css'
 interface WorshipSetSong {
   songSlug: string
   order: number
-  song: any   // raw DB song, matches what SongView already expects to receive
+  song: any
 }
 
 interface WorshipSet {
@@ -20,7 +20,6 @@ interface WorshipSet {
 }
 
 export default function WorshipSetViewerPage() {
-  const router = useRouter()
   const params = useParams<{ id: string }>()
 
   const [set, setSet] = useState<WorshipSet | null>(null)
@@ -55,12 +54,18 @@ export default function WorshipSetViewerPage() {
   // swipe navigation (touch)
   useEffect(() => {
     let startX = 0
-    const handleStart = (e: TouchEvent) => { startX = e.touches[0].clientX }
+    let startY = 0
+    const handleStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+    }
     const handleEnd = (e: TouchEvent) => {
-      const diff = e.changedTouches[0].clientX - startX
-      if (Math.abs(diff) < 50) return
-      if (diff < 0) next()
-      else prev()
+      const diffX = e.changedTouches[0].clientX - startX
+      const diffY = e.changedTouches[0].clientY - startY
+      if (Math.abs(diffX) < 50) { return }
+      if (Math.abs(diffX) < Math.abs(diffY)) { return } 
+      if (diffX < 0) { next() }
+      else { prev() }
     }
     window.addEventListener('touchstart', handleStart)
     window.addEventListener('touchend', handleEnd)
