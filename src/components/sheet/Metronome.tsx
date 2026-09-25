@@ -1,37 +1,83 @@
-'use client'
+"use client"
 
-import { useLanguage } from '@/lib/i18n/LanguageProvider'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 
 interface Props {
-  defaultBpm?:     number
-  timeSignature?:  number
+  defaultBpm?: number
+  timeSignature?: string
 }
 
-export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
+interface TimeSigInfo {
+  clicksPerMeasure: number
+  groupSize: number
+  isCompound: boolean
+}
+
+function parseTimeSignature(ts: string): TimeSigInfo {
+  const [numStr, denStr] = ts.split('/')
+  const numerator   = parseInt(numStr, 10) || 4
+  const denominator = parseInt(denStr, 10) || 4
+
+  const isCompound = denominator === 8 && numerator > 3 && numerator % 3 === 0
+
+  return {
+    clicksPerMeasure: numerator,
+    groupSize: isCompound ? 3 : 1,
+    isCompound,
+  }
+}
+
+type Accent = "Forte" | "Mezzoforte" | "Debole"
+
+function accentForClick(clickIndex: number, groupSize: number): Accent {
+  if (groupSize === 1) {
+    return clickIndex === 0 ? "Forte" : "Debole"
+  }
+  const positionInGroup = clickIndex % groupSize
+  if (positionInGroup !== 0) { return "Debole" }
+
+  const groupIndex = clickIndex / groupSize
+  return groupIndex === 0 ? "Forte" : "Mezzoforte"
+}
+
+export function Metronome({ defaultBpm = 73, timeSignature = "4/4" }: Props) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [bpm, setBpm] = useState(defaultBpm)
 
-  const audioCtxRef      = useRef<AudioContext | null>(null)
-  const nextClickTimeRef = useRef(0)
-  const timerIdRef       = useRef<number | null>(null)
-  const beatCountRef     = useRef(0)
-  const bpmRef           = useRef(bpm)   // ← always holds latest bpm
+  const { clicksPerMeasure, groupSize } = useMemo(() => parseTimeSignature(timeSignature), [timeSignature])
 
-  // keep bpmRef in sync without retriggering the audio effect
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const nextClickTimeRef = useRef(0)
+  const timerIdRef = useRef<number | null>(null)
+  const beatCountRef = useRef(0)
+  const bpmRef = useRef(bpm)
+
   useEffect(() => {
     bpmRef.current = bpm
   }, [bpm])
 
-  const playClick = useCallback((isFirstBeat: boolean) => {
+  useEffect(() => {
+    return () => {
+      audioCtxRef.current?.close()
+    }
+  }, [])
+
+  const playClick = useCallback((accent: Accent) => {
     if (!audioCtxRef.current) return
     const ctx = audioCtxRef.current
 
-    const osc      = ctx.createOscillator()
+    const tone = accent === "Forte"
+      ? { freq: 1500, gain: 1.52 }
+      : accent === "Mezzoforte"
+        ? { freq: 1200, gain: 1.37 }
+        : { freq: 800, gain: 0.99 }
+
+    const osc = ctx.createOscillator()
     const envelope = ctx.createGain()
 
-    osc.frequency.setValueAtTime(isFirstBeat ? 1200 : 800, ctx.currentTime)
-    envelope.gain.setValueAtTime(isFirstBeat ? 1.5 : 1, ctx.currentTime)
+    osc.frequency.setValueAtTime(tone.freq, ctx.currentTime)
+    envelope.gain.setValueAtTime(tone.gain, ctx.currentTime)
     envelope.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
 
     osc.connect(envelope)
@@ -46,18 +92,16 @@ export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
     const ctx = audioCtxRef.current
 
     while (nextClickTimeRef.current < ctx.currentTime + 0.1) {
-      const isFirstBeat = (beatCountRef.current % timeSignature) === 0
-      playClick(isFirstBeat)
+      playClick(accentForClick(beatCountRef.current, groupSize))
 
-      beatCountRef.current = (beatCountRef.current + 1) % timeSignature
+      beatCountRef.current = (beatCountRef.current + 1) % clicksPerMeasure
 
-      const secondsPerBeat = 60.0 / bpmRef.current   // ← read from ref, always current
+      const secondsPerBeat = 60.0 / bpmRef.current / groupSize
       nextClickTimeRef.current += secondsPerBeat
     }
     timerIdRef.current = window.setTimeout(scheduler, 25)
-  }, [playClick, timeSignature])
+  }, [playClick, clicksPerMeasure, groupSize])
 
-  // this effect ONLY runs on isPlaying/timeSignature change — never on bpm
   useEffect(() => {
     if (isPlaying) {
       beatCountRef.current = 0
@@ -65,10 +109,10 @@ export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
       const ctx = new AudioContextClass()
       audioCtxRef.current = ctx
 
-      playClick(true)
-      beatCountRef.current = (beatCountRef.current + 1) % timeSignature
+      playClick("Forte")
+      beatCountRef.current = (beatCountRef.current + 1) % clicksPerMeasure
 
-      const secondsPerBeat = 60.0 / bpmRef.current
+      const secondsPerBeat = 60.0 / bpmRef.current / groupSize
       nextClickTimeRef.current = ctx.currentTime + secondsPerBeat
 
       scheduler()
@@ -82,7 +126,7 @@ export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
     return () => {
       if (timerIdRef.current) clearTimeout(timerIdRef.current)
     }
-  }, [isPlaying, scheduler, playClick, timeSignature])   // ← bpm removed from deps
+  }, [isPlaying, scheduler, playClick, clicksPerMeasure, groupSize])
 
   const { t } = useLanguage()
 
@@ -92,7 +136,7 @@ export function Metronome({ defaultBpm = 120, timeSignature = 4 }: Props) {
 
       <button
         onClick={() => setIsPlaying(!isPlaying)}
-        className={`metronome-btn ${isPlaying ? 'stop' : 'play'}`}
+        className={`metronome-btn ${isPlaying ? "stop" : "play"}`}
       >
         {isPlaying ? t.metronome.stop : t.metronome.play}
       </button>
