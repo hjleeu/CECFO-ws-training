@@ -1,15 +1,15 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import { Song } from "@/components/sheet/Song"
 import { Metronome } from "@/components/sheet/Metronome"
 import { transposeSong } from "@/lib/key_transpose"
 import { Song as SongType, ShowOptions } from "@/types/MusicNotation"
 import "@/styles/tools.css"
-import { useLanguage } from '@/lib/i18n/LanguageProvider'
-import { useShowOptions } from '@/hooks/useShowOptions'
-import { useRouter } from 'next/navigation'
-import { useSongTranspose } from '@/hooks/useSongTranspose'
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { useShowOptions } from "@/hooks/useShowOptions"
+import { useRouter } from "next/navigation"
+import { useSongTranspose } from "@/hooks/useSongTranspose"
 
 interface Props {
     song: SongType
@@ -90,7 +90,7 @@ export function SongView({ song }: Props) {
                     </div>
                 </div>
 
-                <Metronome defaultBpm={song.bpm || 73} />
+                <Metronome key={song.slug} defaultBpm={song.bpm || 73} timeSignature={song.timeSignature || "4/4"} />
             </div>
         
             <button
