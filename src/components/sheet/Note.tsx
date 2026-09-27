@@ -34,7 +34,7 @@ export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeight
         <div className="note-wrapper">
           <span className="fermata">{fermata ? '𝄐' : ''}</span>
           <div className="dots-above">
-            {dotAbove && Array.from({ length: Math.min(2, dotCount) }).map((_, i) => (
+            {dotAbove && Array.from({ length: Math.min(3, dotCount) }).map((_, i) => (
               <span key={i} className="octave-dot">·</span>
             ))}
           </div>
@@ -55,7 +55,7 @@ export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeight
           </div>
 
           <div className="dots-below">
-            {dotBelow && Array.from({ length: Math.min(2, dotCount) }).map((_, i) => (
+            {dotBelow && Array.from({ length: Math.min(3, dotCount) }).map((_, i) => (
               <span key={i} className="octave-dot">·</span>
             ))}
           </div>
