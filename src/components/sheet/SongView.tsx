@@ -10,12 +10,17 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { useShowOptions } from "@/hooks/useShowOptions"
 import { useRouter } from "next/navigation"
 import { useSongTranspose } from "@/hooks/useSongTranspose"
+import { DrawLayer } from "@/components/sheet/DrawLayer"
+import { DrawToolbar } from "@/components/sheet/DrawToolbar"
+import { useStrokes } from "@/hooks/useStrokes"
+import { DrawTool } from "@/types/Drawing"
 
 interface Props {
     song: SongType
+    worshipSetId?: string
 }
 
-export function SongView({ song }: Props) {
+export function SongView({ song, worshipSetId }: Props) {
     const { t } = useLanguage()
     const router = useRouter()
 
@@ -25,11 +30,17 @@ export function SongView({ song }: Props) {
         transposeDown,
         reset: resetTranspose
     } = useSongTranspose(song.slug)
-    
+
     const { showOptions, toggle } = useShowOptions()
     const [isToolbarVisible, setToolbarVisibility] = useState(false)
+    const [isDrawToolbarVisible, setDrawToolbarVisibility] = useState(false)
 
     const transposedSong = transposeSong(song, transposeOffset)
+
+    const { strokes, persist, undo, canUndo } = useStrokes(worshipSetId, song.slug)
+    const [drawTool, setDrawTool] = useState<DrawTool | null>(null)
+    const [drawColor, setDrawColor] = useState("#1a1a1a")
+    const [drawWidth, setDrawWidth] = useState(3)
 
     const showLabel: Record<string, string> = {
         "chords": t.song.chords,
@@ -67,7 +78,7 @@ export function SongView({ song }: Props) {
                             className="transpose-btn"
                             title={t.song.down}
                         >
-                            ♭ -1
+                            ♭ - 1
                         </button>
                         {transposeOffset !== 0 && (
                             <button
@@ -85,14 +96,14 @@ export function SongView({ song }: Props) {
                             className="transpose-btn"
                             title={t.song.up}
                         >
-                            ♯ +1
+                            ♯ + 1
                         </button>
                     </div>
                 </div>
 
                 <Metronome key={song.slug} defaultBpm={song.bpm || 73} timeSignature={song.timeSignature || "4/4"} />
             </div>
-        
+
             <button
                 type="button"
                 className="toolbar-toggle-btn"
@@ -100,7 +111,36 @@ export function SongView({ song }: Props) {
                 title="Toggle toolbar"
             >{isToolbarVisible ? '✕' : '⚙️'}</button>
 
-            <Song song={transposedSong} showOptions={showOptions} />
+            <button
+                type="button"
+                className="toolbar-toggle-btn draw-toolbar-toggle-btn"
+                onClick={() => setDrawToolbarVisibility(prev => !prev)}
+                title="Toggle draw toolbar"
+            >{isDrawToolbarVisible ? '✕' : '✎'}</button>
+
+            <div className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
+                <Song song={transposedSong} showOptions={showOptions} />
+                <DrawLayer
+                    strokes={strokes}
+                    onChange={persist}
+                    tool={drawTool}
+                    color={drawColor}
+                    width={drawWidth}
+                />
+            </div>
+
+            {isDrawToolbarVisible && (
+                <DrawToolbar
+                    tool={drawTool}
+                    onToolChange={setDrawTool}
+                    color={drawColor}
+                    onColorChange={setDrawColor}
+                    width={drawWidth}
+                    onWidthChange={setDrawWidth}
+                    onUndo={undo}
+                    canUndo={canUndo}
+                />
+            )}
         </div>
     )
 }

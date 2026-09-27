@@ -10,6 +10,7 @@
     color: var(--color-muted);
     font-size: 0.73rem;
     padding: 0.37rem 0.73rem;
+    z-index: 15;
 }
 
 .return-btn:hover {
