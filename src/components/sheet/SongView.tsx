@@ -116,7 +116,7 @@ export function SongView({ song, worshipSetId }: Props) {
                 className="toolbar-toggle-btn draw-toolbar-toggle-btn"
                 onClick={() => setDrawToolbarVisibility(prev => !prev)}
                 title="Toggle draw toolbar"
-            >{isDrawToolbarVisible ? '✕' : '✎'}</button>
+            >{isDrawToolbarVisible ? '✕' : '✍🏻'}</button>
 
             <div className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
                 <Song song={transposedSong} showOptions={showOptions} />

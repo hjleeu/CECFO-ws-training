@@ -13,8 +13,8 @@ interface Props {
 }
 
 const TOOLS: { id: DrawTool; label: string }[] = [
-    { id: "pen", label: '✎' },
-    { id: "highlighter", label: '🖊' },
+    { id: "pen", label: '✏️' },
+    { id: "highlighter", label: '🖍️' },
     { id: "eraser", label: '⌫' },
     { id: "select", label: '⛶' },
 ]
