@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Song } from "@/components/sheet/Song"
 import { Metronome } from "@/components/sheet/Metronome"
 import { transposeSong } from "@/lib/key_transpose"
@@ -18,9 +18,10 @@ import { DrawTool } from "@/types/Drawing"
 interface Props {
     song: SongType
     worshipSetId?: string
+    onDrawingActiveChange?: (active: boolean) => void
 }
 
-export function SongView({ song, worshipSetId }: Props) {
+export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
     const { t } = useLanguage()
     const router = useRouter()
 
@@ -48,6 +49,10 @@ export function SongView({ song, worshipSetId }: Props) {
         "pinyin": t.song.pinyin,
         "lyrics": t.song.lyrics
     }
+
+    useEffect(() => {
+        onDrawingActiveChange?.(drawTool !== null)
+    }, [drawTool, onDrawingActiveChange])
 
     return (
         <div className="song-container">

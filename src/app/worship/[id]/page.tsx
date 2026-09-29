@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { SongView } from '@/components/sheet/SongView'
 import type { Song as SongType } from '@/types/MusicNotation'
@@ -25,6 +25,12 @@ export default function WorshipSetViewerPage() {
   const [set, setSet] = useState<WorshipSet | null>(null)
   const [index, setIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+
+  const [isDrawing, setIsDrawing] = useState(false)
+  const isDrawingRef = useRef(false)
+  useEffect(() => {
+    isDrawingRef.current = isDrawing
+  }, [isDrawing])
 
   useEffect(() => {
     fetch(`/api/worship-sets/${params.id}`)
@@ -60,6 +66,7 @@ export default function WorshipSetViewerPage() {
       startY = e.touches[0].clientY
     }
     const handleEnd = (e: TouchEvent) => {
+      if (isDrawingRef.current) { return }
       const diffX = e.changedTouches[0].clientX - startX
       const diffY = e.changedTouches[0].clientY - startY
       if (Math.abs(diffX) < 50) { return }
@@ -98,7 +105,7 @@ export default function WorshipSetViewerPage() {
         </button>
 
         <div className="worship-viewer-content">
-          <SongView song={currentSong} />
+          <SongView song={currentSong} worshipSetId={set.id} onDrawingActiveChange={setIsDrawing} />
         </div>
 
         <button
