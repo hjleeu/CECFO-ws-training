@@ -36,6 +36,9 @@ export default function HomePage() {
       .then(setWorshipSets)
   }, [])
 
+  // Sort by date from old to new.
+  worshipSets.sort((a, b) => a.date.localeCompare(b.date))
+
   return (
     <main className="homepage">
       <section className="home-section">
