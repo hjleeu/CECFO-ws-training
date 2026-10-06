@@ -255,10 +255,13 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
           const content = seg.notes.map((ni, k) => {
             const extra = isGroup ? 0 : parsedNote[ni].duration
 
+            const isGhost = measure.notes[ni].note === '\\'
+            const hasChord = showOptions.chords && !!measure.notes[ni].chord
+          
             return (
               <div
                 key={k}
-                className={measure.notes[ni].note === '\\' ? "note-column note-column-ghost" : "note-column"}
+                className={isGhost && !hasChord ? "note-column note-column-ghost" : "note-column"}
                 ref={(el: HTMLDivElement | null) => {
                   registerNoteRef(measureIndex, ni, el)
                   if (el) { noteColumnRefs.current.set(ni, el) }
