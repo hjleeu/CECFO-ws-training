@@ -253,7 +253,7 @@ function parseLyrics(raw: string): string[] {
   return tokens
 }
 
-const CHORD_PATTERN = /^[A-G][#b]?(m|maj|min|dim|aug|sus)?[0-9]?$/
+const CHORD_PATTERN = /^\(?[A-G][#b]?(m|maj|min|dim|aug|sus)?[0-9]?(\([^()\]\[|]*\))?\)?$/
 
 function isSectionLabel(line: string): boolean {
   const trimmed = line.trim()

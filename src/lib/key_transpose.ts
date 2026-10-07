@@ -45,23 +45,7 @@ function transposePitch(pitch: string, semitones: number, useFlats = false): str
 export function transposeChord(chord: string, semitones: number, useFlats = false): string {
     if (!chord) return chord
 
-    // Handles input like 'C/D'.
-    const parts = chord.split('/')
-    const mainChord = parts[0]
-    const bassNote = parts[1]
-
-    const tranponsedMain = mainChord.replace(/^([A-G][#b]?)(.*)$/, (_, root, suffix) => {
-        return transposePitch(root, semitones, useFlats) + suffix
-    })
-
-    if (bassNote) {
-        const tranponsedBass = bassNote.replace(/^([A-G][#b]?)(.*)$/, (_, root, suffix) => {
-            return transposePitch(root, semitones, useFlats) + suffix
-        })
-        return `${tranponsedMain}/${tranponsedBass}`
-    }
-
-    return tranponsedMain
+    return chord.replace(/[A-G][#b]?/g, (root) => transposePitch(root, semitones, useFlats))
 }
 
 export function transposeKey(key: string, semitones: number, useFlats = false): string {
