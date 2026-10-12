@@ -1,3 +1,5 @@
+import { BracketSpan } from "@/types/MusicNotation"
+
 export const BAR_HEIGHT_PX = 1.52
 export const BAR_GAP_PX    = 3.7
 export const BAR_STEP_PX   = BAR_HEIGHT_PX + BAR_GAP_PX
@@ -8,23 +10,30 @@ export interface BeamGroup {
   sharedBeams: number
 }
 
-export interface BeamGroup {
-  start: number
-  end: number
-  sharedBeams: number
+export function tupletScale(brackets: BracketSpan[], m: number, n: number): number {
+  return brackets.filter(b => b.kind !== "ending" && b.number !== undefined)
+          .filter(b => (m > b.startMeasure || (m === b.startMeasure && n >= b.startNote))
+            && (m < b.startMeasure || (m === b.startMeasure && n <= b.endNote)))
+          .reduce((acc, b) => acc * (2 ** Math.floor(Math.log2(b.number ?? 1)) / (b.number ?? 1)), 1)
 }
 
-export function computeBeamGroups(notes: { duration: number; dotted?: boolean }[]): BeamGroup[] {
+export function beatLength(timeSignature: string): number {
+  const [num, den] = timeSignature.split('/').map(Number)
+  return den === 8 && num > 3 && num % 3 === 0 ? 1.5 : 1
+}
+
+export function computeBeamGroups(notes: { duration: number; dotted?: boolean; scale?: number }[], beat = 1): BeamGroup[] {
   const groups: BeamGroup[] = []
   let i = 0
   let globalBeat = 0 // Track our exact position in the measure
 
   while (i < notes.length) {
-    const { duration: slashes, dotted } = notes[i]
+    const { duration: slashes, dotted, scale = 1 } = notes[i]
 
     // Calculate actual musical beat value (quarter = 1.0, eighth = 0.5, 16th = 0.25)
     let beatValue = slashes === 1 ? 0.5 : slashes >= 2 ? 0.25 : 1.0
     if (dotted) beatValue *= 1.5
+    beatValue *= scale
 
     // If it has 0 beams (quarter note or longer), it stands alone
     if (slashes === 0) {
@@ -35,16 +44,15 @@ export function computeBeamGroups(notes: { duration: number; dotted?: boolean }[
     }
 
     const start = i
-    // Find the next whole beat boundary. 
-    // Example: If globalBeat is 1.5, the next boundary is 2.0.
-    // (+ 0.001 guards against JavaScript floating point math errors like 1.99999)
-    const nextBoundary = Math.floor(globalBeat + 0.001) + 1.0
+
+    const nextBoundary = (Math.floor(globalBeat / beat + 0.001) + 1.0) * beat
 
     while (i < notes.length && notes[i].duration > 0) {
-      const { duration: dur, dotted: dot } = notes[i]
+      const { duration: dur, dotted: dot, scale: sc = 1 } = notes[i]
       
       let val = dur === 1 ? 0.5 : dur >= 2 ? 0.25 : 1.0
       if (dot) val *= 1.5
+      val *= sc
 
       globalBeat += val
       i++

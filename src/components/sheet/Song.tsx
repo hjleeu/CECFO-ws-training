@@ -309,7 +309,9 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
               showOptions={showOptions}
               registerNoteRef={registerNoteRef}
               rowDurationHeightPx={rowDurationHeights.get(index)}
+              brackets={song.brackets}
               scale={scale}
+              timeSignature={song.timeSignature}
             />
           </div>
         ))}

@@ -1,7 +1,7 @@
 "use client"
 
-import { computeBeamGroups, parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from "@/lib/jianpu"
-import type { Measure as MeasureProps, ShowOptions, BarlineType, NavigationMark } from "../../types/MusicNotation"
+import { computeBeamGroups, parseJianpu, tupletScale, BAR_STEP_PX, BAR_GAP_PX, beatLength } from "@/lib/jianpu"
+import type { Measure as MeasureProps, ShowOptions, BarlineType, NavigationMark, BracketSpan } from "../../types/MusicNotation"
 import { Note } from "./Note"
 import { useRef, useLayoutEffect } from "react"
 
@@ -120,7 +120,9 @@ interface Props {
   showOptions: ShowOptions
   registerNoteRef: (measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => void
   rowDurationHeightPx?: number
+  brackets?: BracketSpan[]
   scale?: number
+  timeSignature?: string
 }
 
 interface ExtraRunSpec {
@@ -129,7 +131,7 @@ interface ExtraRunSpec {
   endNote: number
 }
 
-export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx, scale = 1 }: Props) {
+export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx, brackets = [], scale = 1, timeSignature }: Props) {
   const notesContainerRef = useRef<HTMLDivElement>(null)
   const groupRefs = useRef<(HTMLDivElement | null)[]>([])
   const beamBarsRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -137,9 +139,9 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
 
   const noteColumnRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
-  const parsedNote = measure.notes.map(n => {
+  const parsedNote = measure.notes.map((n, ni) => {
     const parsed = parseJianpu(n.note)
-    return { ...parsed, dotted: n.dotted || parsed.dotted }
+    return { ...parsed, dotted: n.dotted || parsed.dotted, scale: tupletScale(brackets, measureIndex, ni) }
   })
 
   const measureMaxDuration = Math.max(...parsedNote.map(note => note.duration), 0)
@@ -149,7 +151,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
   const localFallbackHeightPx = measureMaxDuration * barStepPx + barGapPx
   const durationHeightPx = rowDurationHeightPx ?? localFallbackHeightPx
 
-  const beamGroups = computeBeamGroups(parsedNote)
+  const beamGroups = computeBeamGroups(parsedNote, beatLength(timeSignature ?? "4/4"))
 
   const segments: { notes: number[], sharedBeams: number }[] = []
 
