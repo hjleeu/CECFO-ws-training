@@ -14,6 +14,7 @@ import { DrawLayer } from "@/components/sheet/DrawLayer"
 import { DrawToolbar } from "@/components/sheet/DrawToolbar"
 import { useStrokes } from "@/hooks/useStrokes"
 import { DrawTool } from "@/types/Drawing"
+import { useSongScale } from "@/hooks/useSongScale"
 
 interface Props {
     song: SongType
@@ -54,6 +55,8 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
         onDrawingActiveChange?.(drawTool !== null)
     }, [drawTool, onDrawingActiveChange])
 
+    const { scale, zoomIn, zoomOut, reset: resetScale } = useSongScale(song.slug)
+
     return (
         <div className="song-container">
             <button type="button" className="return-btn" onClick={() => router.push("/songs")}>← {t.song.back}</button>
@@ -74,6 +77,15 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                 </div>
 
                 <div className="transpose-controls">
+                    <span className="controls-label">Aa</span>
+                    <span className="current-key font-bold">{Math.round(scale * 100)}%</span>
+                    <div className="transpose-buttons">
+                        <button type="button" onClick={zoomOut} className="transpose-btn">A −</button>
+                        <button type="button" onClick={resetScale} className="transpose-reset-btn">100%</button>
+                        <button type="button" onClick={zoomIn} className="transpose-btn">A +</button>
+                    </div>
+                </div>
+                <div className="transpose-controls">
                     <span className="controls-label">{t.song.transpose}</span>
                     <span className="current-key font-bold">{transposedSong.key || 'C'}</span>
                     <div className="transpose-buttons">
@@ -85,16 +97,14 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                         >
                             ♭ - 1
                         </button>
-                        {transposeOffset !== 0 && (
-                            <button
-                                type="button"
-                                onClick={resetTranspose}
-                                className="transpose-reset-btn"
-                                title={t.song.reset}
-                            >
-                                {t.song.original} ({transposeOffset > 0 ? `+${transposeOffset}` : transposeOffset})
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={resetTranspose}
+                            className="transpose-reset-btn"
+                            title={t.song.reset}
+                        >
+                            {t.song.original} ({transposeOffset > 0 ? `+${transposeOffset}` : transposeOffset})
+                        </button>
                         <button
                             type="button"
                             onClick={transposeUp}
@@ -124,7 +134,7 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
             >{isDrawToolbarVisible ? '✕' : '✍🏻'}</button>
 
             <div className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
-                <Song song={transposedSong} showOptions={showOptions} />
+                <Song song={transposedSong} showOptions={showOptions} scale={scale}/>
                 <DrawLayer
                     strokes={strokes}
                     onChange={persist}

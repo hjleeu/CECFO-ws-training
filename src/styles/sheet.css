@@ -1,5 +1,5 @@
 .song-container {
-    padding: 1.52rem;
+    padding: calc(1.52rem * var(--song-scale, 1));
     width: 100%;
     margin: 0;
 }
@@ -8,7 +8,7 @@
     color: var(--color-text);
     font-family: var(--font-chinese);
     text-align: center;
-    font-size: 1.37rem;
+    font-size: calc(1.37rem * var(--song-scale, 1));
     margin-bottom: 0;
     margin-top: 0;
 }
@@ -18,31 +18,31 @@
     color: var(--color-muted);
     font-family: var(--font-chinese);
     text-align: center;
-    font-size: 0.99rem;
+    font-size: calc(0.99rem * var(--song-scale, 1));
 }
 
 .measures-container {
     display: flex;
     flex-wrap: wrap;
     width: 100%;
-    row-gap: 0.99rem;
+    row-gap: calc(0.99rem * var(--song-scale, 1));
     column-gap: 0;
     align-items: flex-start;
     box-sizing: border-box;
-    margin-top: 1.66rem;
+    margin-top: calc(1.66rem * var(--song-scale, 1));
 }
 
 .section-row {
     flex: 0 0 100%;
-    margin-bottom: 0.52rem;
+    margin-bottom: calc(0.52rem * var(--song-scale, 1));
 }
 
 .measure-section-label {
     position: absolute;
     left: 0;
-    top: -1.73rem;
+    top: calc(-1.73rem * var(--song-scale, 1));
     text-transform: uppercase;
-    font-size: 0.88rem;
+    font-size: calc(0.88rem * var(--song-scale, 1));
     font-weight: 700;
     letter-spacing: 0.1em;
     color: var(--color-muted);
@@ -72,28 +72,27 @@
     align-items: center;
     align-self: flex-start;
     flex-shrink: 0;
-    gap: 0.2rem;
-    margin: 2.52rem 0.35rem 0;
+    gap: calc(0.2rem * var(--song-scale, 1));
+    margin: calc(2.52rem * var(--song-scale, 1)) calc(0.35rem * var(--song-scale, 1)) 0;
 }
 
 .barline {
     display: flex;
     align-items: stretch;
     flex-shrink: 0;
-    gap: 2.5px;
-    height: 1.8rem;
-    color: var(--color-muted);
-    opacity: 0.85;
+    gap: calc(2.52px * var(--song-scale, 1));
+    height: calc(1.8rem * var(--song-scale, 1));
+    color: var(--color-text);
 }
 
 .barline-stroke {
-    width: 1.3px;
+    width: calc(1.37px * var(--song-scale, 1));
     align-self: stretch;
     background: currentColor;
 }
 
 .barline-stroke.thick {
-    width: 3px;
+    width: calc(3px * var(--song-scale, 1));
 }
 
 .repeat-dots {
@@ -101,13 +100,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 3.5px;
+    gap: calc(3.7px * var(--song-scale, 1));
 }
 
 .repeat-dots span {
     display: block;
-    width: 3.5px;
-    height: 3.5px;
+    width: calc(3.7px * var(--song-scale, 1));
+    height: calc(3.7px * var(--song-scale, 1));
     border-radius: 50%;
     background: currentColor;
 }
@@ -115,9 +114,9 @@
 .nav-mark {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: calc(0.18rem * var(--song-scale, 1));
     font-family: var(--font-mono);
-    font-size: 0.73rem;
+    font-size: calc(0.73rem * var(--song-scale, 1));
     font-weight: 700;
     color: var(--color-accent);
     white-space: nowrap;
@@ -126,6 +125,8 @@
 }
 
 .nav-symbol {
+    width: calc(1rem * var(--song-scale, 1));
+    height: calc(1rem * var(--song-scale, 1));
     display: inline-block;
     vertical-align: middle;
     flex-shrink: 0;
@@ -145,7 +146,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    min-width: 1.15rem;
+    min-width: calc(1.15rem * var(--song-scale, 1));
 }
 
 .note-column-ghost {
@@ -159,10 +160,10 @@
     font-family: var(--font-mono);
     color: var(--color-accent);
     text-transform: none;
-    font-size: 0.88rem;
+    font-size: calc(0.88rem * var(--song-scale, 1));
     font-weight: 700;
     line-height: 1.2;
-    min-height: 1.15rem;
+    min-height: calc(1.15rem * var(--song-scale, 1));
     display: flex;
     align-items: flex-start;
 }
@@ -173,13 +174,13 @@
     position: relative;
     width: 100%;
     justify-content: space-between;
-    padding: 0 0.15rem;
+    padding: 0 calc(0.15rem * var(--song-scale, 1));
     box-sizing: border-box;
 }
 
 .bracket {
     position: absolute;
-    top: 1.37rem;
+    top: calc(1.37rem * var(--song-scale, 1));
     left: 10%;
     width: auto;
     border-top: 1.5px solid currentColor;
@@ -195,21 +196,21 @@
 }
 
 .bracket.bracket-leading {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
 }
 
 .bracket.bracket-trailing {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
 }
 
 .bracket-number {
     position: absolute;
-    top: -0.52rem;
-    font-size: 0.66rem;
+    top: calc(-0.52rem * var(--song-scale, 1));
+    font-size: calc(0.66rem * var(--song-scale, 1));
     font-family: var(--font-mono);
     background: var(--color-bg);
     padding: 0 2px;
@@ -226,17 +227,17 @@
 
 .beam-bars {
     position: absolute;
-    left: 7px;
-    right: 7px;
+    left: calc(7px * var(--song-scale, 1));
+    right: calc(7px * var(--song-scale, 1));
     display: flex;
     flex-direction: column;
-    gap: 3.7px;
+    gap: calc(3.7px * var(--song-scale, 1));
     pointer-events: none;
 }
 
 .beam-bar {
     width: 100%;
-    height: 1.52px;
+    height: calc(1.52px * var(--song-scale, 1));
     background-color: currentColor;
 }
 
@@ -253,9 +254,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 0.73rem;
-    padding: 0 0.07rem;
-    padding-bottom: 0.37rem;
+    min-width: calc(0.73rem * var(--song-scale, 1));
+    padding: 0 calc(0.07rem * var(--song-scale, 1));
+    padding-bottom: calc(0.37rem * var(--song-scale, 1));
 }
 
 .note-wrapper {
@@ -268,22 +269,22 @@
 }
 
 .fermata {
-  font-size: 1.15rem;
-  line-height: 1;
-  color: var(--color-text);
-  text-align: center;
-  margin-bottom: -0.37rem;
-  min-height: 1.2rem;
+    font-size: calc(1.15rem * var(--song-scale, 1));
+    line-height: 1;
+    color: var(--color-text);
+    text-align: center;
+    margin-bottom: calc(-0.37rem * var(--song-scale, 1));
+    min-height: calc(1.2rem * var(--song-scale, 1));
 }
 
 .accidental {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  line-height: 1;
-  color: var(--color-text);
-  margin-right: -0.15rem;
-  align-self: flex-start;
-  padding-top: 2px;
+    font-family: var(--font-mono);
+    font-size: calc(0.66rem * var(--song-scale, 1));
+    line-height: 1;
+    color: var(--color-text);
+    margin-right: calc(-0.15rem * var(--song-scale, 1));
+    align-self: flex-start;
+    padding-top: calc(2px * var(--song-scale, 1));
 }
 
 .note-digit-row {
@@ -295,7 +296,7 @@
 
 .note {
     font-family: var(--font-mono);
-    font-size: 1.05rem;
+    font-size: calc(1.05rem * var(--song-scale, 1));
     line-height: 1.05;
     color: var(--color-text);
 }
@@ -303,7 +304,7 @@
 .augmentation-dot {
     position: absolute;
     left: 100%;
-    font-size: 0.66rem;
+    font-size: calc(0.66rem * var(--song-scale, 1));
     line-height: 1;
     color: var(--color-text);
     pointer-events: none;
@@ -317,7 +318,7 @@
     gap: 0;
     line-height: 0.37;
     align-items: center;
-    min-height: 0.88rem;
+    min-height: calc(0.88rem * var(--song-scale, 1));
 }
 
 .dots-below {
@@ -327,29 +328,29 @@
     gap: 0;
     line-height: 0.37;
     align-items: center;
-    min-height: 0.88rem;
-    margin-top: -5px;
+    min-height: calc(0.88rem * var(--song-scale, 1));
+    margin-top: calc(-5px * var(--song-scale, 1));
 }
 
 .octave-dot {
     line-height: 0.37;
-    font-size: 0.66rem;
+    font-size: calc(0.66rem * var(--song-scale, 1));
     display: block;
 }
 
 .note-duration {
     display: flex;
     flex-direction: column;
-    gap: 1.5px;
+    gap: calc(1.5px * var(--song-scale, 1));
     width: 100%;
-    margin-top: 1px;
-    min-height: 5px;
+    margin-top: calc(1px * var(--song-scale, 1));
+    min-height: calc(5px * var(--song-scale, 1));
 }
 
 .duration-bar {
     display: block;
     width: 100%;
-    height: 1.5px;
+    height: calc(1.5px * var(--song-scale, 1));
     background: currentColor;
 }
 
@@ -375,15 +376,15 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: calc(3px * var(--song-scale, 1));
 }
 
 .lyric {
     font-family: var(--font-chinese);
-    font-size: 1.15rem;
+    font-size: calc(1.15rem * var(--song-scale, 1));
     line-height: 1.15;
     color: var(--color-text);
-    min-height: 1.15rem;
+    min-height: calc(1.15rem * var(--song-scale, 1));
 }
 
 .lyric-punct {
@@ -391,7 +392,7 @@
     left: 100%;
     bottom: 0;
     font-family: var(--font-chinese);
-    font-size: 0.99rem;
+    font-size: calc(0.99rem * var(--song-scale, 1));
     line-height: 1.37;
     color: var(--color-text);
     white-space: nowrap;
@@ -400,33 +401,33 @@
 
 .pinyin {
     color: var(--color-muted);
-    font-size: 0.66rem;
+    font-size: calc(0.66rem * var(--song-scale, 1));
     line-height: 1;
-    min-height: 0.88rem;
+    min-height: calc(0.88rem * var(--song-scale, 1));
 }
 
 @media (max-width: 480px) {
     .song-title {
-        font-size: 1.15rem;
+        font-size: calc(1.15rem * var(--song-scale, 1));
     }
 
     .song-meta {
-        font-size: 0.73rem;
+        font-size: calc(0.73rem * var(--song-scale, 1));
     }
 
     .note {
-        font-size: 0.88rem;
+        font-size: calc(0.88rem * var(--song-scale, 1));
     }
 
     .lyric {
-        font-size: 0.88rem;
+        font-size: calc(0.88rem * var(--song-scale, 1));
     }
 
     .pinyin {
-        font-size: 0.52rem;
+        font-size: calc(0.52rem * var(--song-scale, 1));
     }
 
     .chord {
-        font-size: 0.66rem;
+        font-size: calc(0.66rem * var(--song-scale, 1));
     }
 }

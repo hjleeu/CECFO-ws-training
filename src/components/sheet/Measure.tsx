@@ -120,6 +120,7 @@ interface Props {
   showOptions: ShowOptions
   registerNoteRef: (measureIndex: number, noteIndex: number, el: HTMLDivElement | null) => void
   rowDurationHeightPx?: number
+  scale?: number
 }
 
 interface ExtraRunSpec {
@@ -128,7 +129,7 @@ interface ExtraRunSpec {
   endNote: number
 }
 
-export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx }: Props) {
+export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx, scale = 1 }: Props) {
   const notesContainerRef = useRef<HTMLDivElement>(null)
   const groupRefs = useRef<(HTMLDivElement | null)[]>([])
   const beamBarsRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -142,7 +143,10 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
   })
 
   const measureMaxDuration = Math.max(...parsedNote.map(note => note.duration), 0)
-  const localFallbackHeightPx = measureMaxDuration * BAR_STEP_PX + BAR_GAP_PX
+  
+  const barStepPx = BAR_STEP_PX * scale
+  const barGapPx = BAR_GAP_PX * scale
+  const localFallbackHeightPx = measureMaxDuration * barStepPx + barGapPx
   const durationHeightPx = rowDurationHeightPx ?? localFallbackHeightPx
 
   const beamGroups = computeBeamGroups(parsedNote)
@@ -215,7 +219,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
         const firstDigit = firstColumnEl?.querySelector(".note-digit-row")
         if (!firstDigit) return
 
-        const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2
+        const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2 * scale
         barEl.style.top = `${baseTop}px`
 
         extraRunSpecsBySeg[segIndex].forEach((run, runIndex) => {
@@ -233,7 +237,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
           const left = isFirstNote ? barRect.left - groupRect.left : sRect.left - groupRect.left
           const right = isLastNote ? barRect.right - groupRect.left : eRect.right - groupRect.left
 
-          runEl.style.top = `${baseTop + (run.level - seg.sharedBeams - 1) * BAR_STEP_PX + BAR_GAP_PX}px`
+          runEl.style.top = `${baseTop + (run.level - seg.sharedBeams - 1) * barStepPx + barGapPx}px`
           runEl.style.left = `${left}px`
           runEl.style.width = `${right - left}px`
         })
@@ -245,7 +249,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
     const ro = new ResizeObserver(update)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [measure.notes, showOptions.jianpu])
+  }, [measure.notes, showOptions.jianpu, scale])
 
   return (
     <div className="measure">
