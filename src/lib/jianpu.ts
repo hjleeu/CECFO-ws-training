@@ -13,7 +13,7 @@ export interface BeamGroup {
 export function tupletScale(brackets: BracketSpan[], m: number, n: number): number {
   return brackets.filter(b => b.kind !== "ending" && b.number !== undefined)
           .filter(b => (m > b.startMeasure || (m === b.startMeasure && n >= b.startNote))
-            && (m < b.startMeasure || (m === b.startMeasure && n <= b.endNote)))
+            && (m < b.endMeasure || (m === b.endMeasure && n <= b.endNote)))
           .reduce((acc, b) => acc * (2 ** Math.floor(Math.log2(b.number ?? 1)) / (b.number ?? 1)), 1)
 }
 
