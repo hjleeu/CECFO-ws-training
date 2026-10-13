@@ -224,7 +224,7 @@ function parseNotes(
 
     pushNote(t)
 
-    if (tokens[i + 1] !== '~') closeTie()
+    if (tokens[i + 1] !== '~' && t !== '-') closeTie()
   }
 
   measures.push(currentMeasure)

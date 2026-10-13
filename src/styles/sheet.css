@@ -183,9 +183,9 @@
     top: calc(1.37rem * var(--song-scale, 1));
     left: 10%;
     width: auto;
-    border-top: 1.5px solid currentColor;
-    border-left: 1.5px solid currentColor;
-    border-right: 1.5px solid currentColor;
+    border-top: 1.37px solid currentColor;
+    border-left: 1.37px solid currentColor;
+    border-right: 1.37px solid currentColor;
     border-top-left-radius: var(--radius-md);
     border-top-right-radius: var(--radius-md);
     display: flex;

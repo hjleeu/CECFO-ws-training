@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react"
 
-const STORAGE_KEY = "songScale"
 const MIN = 0.5
 const MAX = 2
 const STEP = 0.1
@@ -15,10 +14,9 @@ export function useSongScale(slug: string) {
     const [scale, setScale] = useState(DEFAULT)
 
     useEffect(() => {
-        const saved = parseFloat(localStorage.getItem(keyFor(slug)) ?? '');
-
-        if (!Number.isNaN(saved)) { setScale(clamp(saved)) }
-    }, [])
+        const saved = parseFloat(localStorage.getItem(keyFor(slug)) ?? '')
+        setScale(Number.isNaN(saved) ? DEFAULT : clamp(saved))
+    }, [slug])
 
     const update = useCallback((next: number) => {
         const value = clamp(next)
