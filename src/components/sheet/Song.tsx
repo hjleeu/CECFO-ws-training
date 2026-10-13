@@ -33,6 +33,7 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
 
   const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
   const [rowDurationHeights, setRowDurationHeights] = useState<Map<number, number>>(new Map())
+  const [rowHasUpper, setRowHasUpper] = useState<Set<number>>(new Set())
 
   const registerMeasureRef = useCallback(
     (measureIndex: number, el: HTMLDivElement | null) => {
@@ -77,20 +78,27 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
           if (currentRow.length) { rows.push(currentRow) }
 
           const heights = new Map<number, number>()
+          const upperRows = new Set<number>()
           for (const row of rows) {
             let maxDur = 0
+            let hasUpper = false
             for (const idx of row) {
               const m = song.measures[idx]
               if (!m) continue
               for (const n of m.notes) {
                 const d = parseJianpu(n.note).duration
                 if (d > maxDur) { maxDur = d }
+                if (n.upper) { hasUpper = true }
               }
             }
             const px = (maxDur * BAR_STEP_PX + BAR_GAP_PX) * scale
-            for (const idx of row) { heights.set(idx, px) }
+            for (const idx of row) {
+              heights.set(idx, px)
+              if (hasUpper) { upperRows.add(idx) }
+            }
           }
           setRowDurationHeights(heights)
+          setRowHasUpper(upperRows) 
         }
 
         if (song.brackets?.length) {
@@ -309,6 +317,7 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
               showOptions={showOptions}
               registerNoteRef={registerNoteRef}
               rowDurationHeightPx={rowDurationHeights.get(index)}
+              rowHasUpper={rowHasUpper.has(index)} 
               brackets={song.brackets}
               scale={scale}
               timeSignature={song.timeSignature}

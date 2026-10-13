@@ -6,6 +6,7 @@ export interface Note {
     fermata?: boolean
     lyrics: LyricEntry[]
     chord?: string
+    upper?: Jianpu
 }
 
 export interface LyricEntry {

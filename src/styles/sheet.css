@@ -294,6 +294,18 @@
     position: relative;
 }
 
+.note-upper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.note-upper .dots-below,
+.note-wrapper-stacked > .dots-above {
+    min-height: calc(0.25rem * var(--song-scale, 1));
+    margin-top: 0;
+}
+
 .note {
     font-family: var(--font-mono);
     font-size: calc(1.05rem * var(--song-scale, 1));

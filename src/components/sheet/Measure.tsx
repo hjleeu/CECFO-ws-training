@@ -123,6 +123,7 @@ interface Props {
   brackets?: BracketSpan[]
   scale?: number
   timeSignature?: string
+  rowHasUpper?: boolean
 }
 
 interface ExtraRunSpec {
@@ -131,7 +132,7 @@ interface ExtraRunSpec {
   endNote: number
 }
 
-export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx, brackets = [], scale = 1, timeSignature }: Props) {
+export function Measure({ measure, measureIndex, showOptions, registerNoteRef, rowDurationHeightPx, brackets = [], scale = 1, timeSignature, rowHasUpper }: Props) {
   const notesContainerRef = useRef<HTMLDivElement>(null)
   const groupRefs = useRef<(HTMLDivElement | null)[]>([])
   const beamBarsRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -218,7 +219,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
 
         const groupRect = groupEl.getBoundingClientRect()
         const firstColumnEl = noteColumnRefs.current.get(seg.notes[0])
-        const firstDigit = firstColumnEl?.querySelector(".note-digit-row")
+        const firstDigit = firstColumnEl?.querySelector(".note-digit-row:not(.note-digit-row-upper)")
         if (!firstDigit) return
 
         const baseTop = firstDigit.getBoundingClientRect().bottom - groupRect.top + 2 * scale
@@ -251,7 +252,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
     const ro = new ResizeObserver(update)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [measure.notes, showOptions.jianpu, scale])
+  }, [measure.notes, showOptions.jianpu, scale, rowHasUpper])
 
   return (
     <div className="measure">
@@ -282,6 +283,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
                   showOptions={showOptions}
                   extraBeams={extra}
                   reservedDurationHeightPx={durationHeightPx}
+                  reserveUpper={rowHasUpper}
                 ></Note>
               </div>
             )

@@ -6,6 +6,7 @@ interface Props {
   showOptions: ShowOptions
   extraBeams?: number
   reservedDurationHeightPx?: number
+  reserveUpper?: boolean
 }
 
 const ACCIDENTAL_SYMBOL: Record<string, string> = {
@@ -14,7 +15,7 @@ const ACCIDENTAL_SYMBOL: Record<string, string> = {
   '=': '♮',
 }
 
-export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeightPx }: Props) {
+export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeightPx, reserveUpper }: Props) {
   const raw = note.note
   const isRest = raw === '-'
 
@@ -28,11 +29,39 @@ export function Note({ note, showOptions, extraBeams = 0, reservedDurationHeight
   const dotBelow = octave.startsWith(",")
   const dotCount = octave.length
 
+  const upper = note.upper ? parseJianpu(note.upper) : undefined
+  const upperOctave = upper?.octave ?? ''
+  const stacked = Boolean(note.upper) || Boolean(reserveUpper)
+
   return (
     <div className="notation">
       {showOptions.jianpu && (
-        <div className="note-wrapper">
+        <div className={stacked ? "note-wrapper note-wrapper-stacked" : "note-wrapper"}>
           <span className="fermata">{fermata ? '𝄐' : ''}</span>
+
+          {stacked && (
+            <div
+              className="note-upper"
+              style={upper ? undefined : { visibility: "hidden" }}
+              aria-hidden={upper ? undefined : true}
+            >
+              <div className="dots-above">
+                {upperOctave.startsWith("'") && Array.from({ length: Math.min(3, upperOctave.length) }).map((_, i) => (
+                  <span key={i} className="octave-dot">·</span>
+                ))}
+              </div>
+              <div className="note-digit-row note-digit-row-upper">
+                {upper?.accidental && <span className="accidental">{ACCIDENTAL_SYMBOL[upper.accidental]}</span>}
+                <span className="note">{upper ? upper.base : '0'}</span>
+              </div>
+              <div className="dots-below">
+                {upperOctave.startsWith(",") && Array.from({ length: Math.min(3, upperOctave.length) }).map((_, i) => (
+                  <span key={i} className="octave-dot">·</span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="dots-above">
             {dotAbove && Array.from({ length: Math.min(3, dotCount) }).map((_, i) => (
               <span key={i} className="octave-dot">·</span>

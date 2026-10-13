@@ -27,6 +27,8 @@ function formatNoteNotation(note: Note): string {
     return result + raw
   }
 
+  if (note.upper) { result += `${note.upper}+` }
+
   const match = raw.match(JIANPU_DECOMPOSE)
 
   if (!match) {

@@ -6,6 +6,7 @@ interface ParsedNote {
   note: string
   dotted?: boolean
   chord?: string
+  upper?: string
 }
 
  interface OpenBracket {
@@ -22,7 +23,7 @@ interface ParsedNote {
 function toToken(raw: string): string[] {
   const result: string[] = []
 
-  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(v\d+[:>]|\(\d+:|\(|v\)|\)|(\[[^\]]+\])?([#b=]?[0-7][',]*\.?\/{0,2}\^?|-|\\))/g
+  const TOKEN_REGEX = /(\|:|:\||\|\||\|\]|\||~|__BS\d+__|__BS__|__BE__|\(v\d+[:>]|\(\d+:|\(|v\)|\)|(\[[^\]]+\])?((?:[#b=]?[0-7][',]*\+)?[#b=]?[0-7][',]*\.?\/{0,2}\^?|-|\\))/g
   let match
   while ((match = TOKEN_REGEX.exec(raw)) !== null) {
     result.push(match[0])
@@ -86,13 +87,15 @@ function parseNotes(
   let tieStart: { measure: number, note: number } | null = null
 
   function pushNote(raw: string) {
-    let t = raw
+    const parts = raw.split('+')
+    let t = parts[parts.length - 1]
+    const upper = parts.length > 1 ? parts[0] : undefined
     let dotted = false
     if (t.includes('.')) {
       dotted = true
       t = t.replace('.', '')
     }
-    currentMeasure.push({ note: t, dotted: dotted || undefined, chord: pendingChord })
+    currentMeasure.push({ note: t, dotted: dotted || undefined, chord: pendingChord, upper })
     pendingChord = undefined
     noteIndex++
   }
@@ -348,6 +351,7 @@ export function parse(raw: string): Song {
           dotted: pn.dotted,
           lyrics,
           chord: pn.chord,
+          upper: pn.upper as Jianpu | undefined
         }
       })
 
