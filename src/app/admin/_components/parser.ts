@@ -195,17 +195,44 @@ function parseNotes(
       const open = sharedBracketStack.pop()
       if (open) {
         sharedLevelRef.current--
-        brackets.push({
-          id: open.id,
-          startMeasure: open.startMeasure,
-          startNote: open.startNote,
-          endMeasure: measureCounter,
-          endNote: noteIndex - 1, // Last note pushed.
-          number: open.number,
-          level: open.level,
-          kind: open.kind,
-          endingStyle: open.endingStyle
-        })
+
+        const parent = sharedBracketStack[sharedBracketStack.length - 1]
+        const isSingleNote =
+          open.number === undefined && open.kind === undefined &&
+          open.startMeasure === measureCounter && open.startNote === noteIndex - 1
+        const parentIsPlain =
+          parent !== undefined && parent.number === undefined && parent.kind === undefined
+
+        if (isSingleNote && parentIsPlain) {
+          // Junction: close the parent here and reopen it from the same note.
+          brackets.push({
+            id: parent.id,
+            startMeasure: parent.startMeasure,
+            startNote: parent.startNote,
+            endMeasure: measureCounter,
+            endNote: noteIndex - 1,
+            number: undefined,
+            level: parent.level
+          })
+          sharedBracketStack[sharedBracketStack.length - 1] = {
+            ...parent,
+            id: `b-${bracketCounter++}`,
+            startMeasure: measureCounter,
+            startNote: noteIndex - 1
+          }
+        } else {
+          brackets.push({
+            id: open.id,
+            startMeasure: open.startMeasure,
+            startNote: open.startNote,
+            endMeasure: measureCounter,
+            endNote: noteIndex - 1, // Last note pushed.
+            number: open.number,
+            level: open.level,
+            kind: open.kind,
+            endingStyle: open.endingStyle
+          })
+        }
       }
       continue
     }
