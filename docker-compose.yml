@@ -41,6 +41,8 @@ services:
      - "3000:3000"
     environment:
      - DATABASE_URL=postgresql://worship:worship@db:5432/worship
+    volumes:
+      - uploads:/app/public/uploads
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -50,6 +52,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads:
 
 networks:
   app-network:

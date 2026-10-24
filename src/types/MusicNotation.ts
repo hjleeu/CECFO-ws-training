@@ -48,6 +48,8 @@ export interface Song {
     timeSignature: string
     measures: Measure[]
     brackets: BracketSpan[]
+    coverUrl?: string
+    audioUrl?: string
 }
 
 export interface ShowOptions {

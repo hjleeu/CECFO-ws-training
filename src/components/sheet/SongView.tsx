@@ -116,6 +116,19 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                     </div>
                 </div>
 
+                {song.audioUrl && (
+                    <div className="audio-controls">
+                        <span className="controls-label">♪</span>
+                        <audio
+                            controls
+                            controlsList="nodownload noplaybackrate"
+                            onContextMenu={(e) => e.preventDefault()}
+                            src={song.audioUrl.startsWith('/') ? song.audioUrl : `/${song.audioUrl}`}
+                            className="audio-controls-player"
+                        ></audio>
+                    </div>
+                )}
+
                 <Metronome key={song.slug} defaultBpm={song.bpm || 73} timeSignature={song.timeSignature || "4/4"} />
             </div>
 

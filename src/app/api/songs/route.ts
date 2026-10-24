@@ -22,7 +22,9 @@ export async function POST(request: Request) {
         bpm:      body.bpm,
         timeSignature: body.timeSignature,
         measures: body.measures,
-        brackets: body.brackets ?? []
+        brackets: body.brackets ?? [],
+        coverUrl: body.coverUrl ?? null,
+        audioUrl: body.audioUrl ?? null
       }
     })
 

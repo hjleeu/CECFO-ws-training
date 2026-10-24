@@ -37,7 +37,9 @@ export async function PUT(request: Request, { params }: Props) {
                 bpm: body.bpm,
                 timeSignature: body.timeSignature,
                 measures: body.measures,
-                brackets: body.brackets ?? []
+                brackets: body.brackets ?? [],
+                coverUrl: body.coverUrl ?? null,
+                audioUrl: body.audioUrl ?? null
             }
         })
         return NextResponse.json(song)

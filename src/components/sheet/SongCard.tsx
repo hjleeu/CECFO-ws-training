@@ -14,6 +14,7 @@ interface Props {
     key: string
     bpm: number
     timeSignature: string
+    coverUrl: string | null
   }
 }
 
@@ -40,7 +41,14 @@ export function SongCard({ song }: Props) {
       </button>
 
       <div className="song-card-header">
-        <div className="song-cover-placeholder">♪</div>
+        {song.coverUrl ? (
+          <img
+            src={song.coverUrl.startsWith('/') ? song.coverUrl : `/${song.coverUrl}`}
+            alt={song.title}
+            className="song-cover-thumb" />
+        ) : (
+          <div className="song-cover-placeholder">♪</div>
+        )}
 
         <div className="song-info">
           <h2 className="song-card-title">{song.title}</h2>
