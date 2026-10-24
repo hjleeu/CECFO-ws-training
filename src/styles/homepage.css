@@ -38,6 +38,20 @@
     gap: .75rem;
 }
 
+.archive-toggle {
+  margin-bottom: 0.75rem;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+.set-card.archived {
+  opacity: 0.6;
+}
+
 @media (max-width: 768px) {
     .homepage {
         padding: 1rem;

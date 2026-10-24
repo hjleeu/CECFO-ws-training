@@ -25,6 +25,7 @@ export default function HomePage() {
   const { t } = useLanguage()
   const [songs, setSongs] = useState<any[]>([])
   const [worshipSets, setWorshipSets] = useState<WorshipSet[]>([])
+  const [showArchive, setShowArchive] = useState(false)
 
   useEffect(() => {
     fetch("/api/songs")
@@ -36,8 +37,17 @@ export default function HomePage() {
       .then(setWorshipSets)
   }, [])
 
-  // Sort by date from old to new.
-  worshipSets.sort((a, b) => a.date.localeCompare(b.date))
+  const todayStr = new Date().toLocaleDateString('en-CA')
+  const isPast = (set: WorshipSet) => set.date.slice(0, 10) < todayStr
+
+  const byDateThenName = (dir: 1 | -1) => (a: WorshipSet, b: WorshipSet) =>
+    dir * a.date.slice(0, 10).localeCompare(b.date.slice(0, 10)) || a.name.localeCompare(b.name)
+
+  const activeSets = worshipSets.filter(set => !isPast(set)).sort(byDateThenName(1))
+  const archivedSets = worshipSets.filter(isPast).sort(byDateThenName(-1))
+  const archivedCount = archivedSets.length
+  const visibleSets = showArchive ? [...activeSets, ...archivedSets] : activeSets
+
 
   return (
     <main className="homepage">
@@ -53,12 +63,18 @@ export default function HomePage() {
           </Link>
         </div>
 
+        {archivedCount > 0 && (
+          <button className="archive-toggle" onClick={() => setShowArchive(prev => !prev)}>
+            {showArchive ? '隐藏已过期歌单' : `显示已过期歌单 (${archivedCount})`}
+          </button>
+        )}
+
         <div className="sets-list">
-          {worshipSets.map((worshipSet) => (
+          {visibleSets.map((worshipSet) => (
             <Link
               key={worshipSet.id}
               href={`/worship/${worshipSet.id}`}
-              className="set-card"
+              className={`set-card${isPast(worshipSet) ? ' archived' : ''}`}
             >
               <div className="set-card-header">
                 <span>🎶 {worshipSet.name}</span>
