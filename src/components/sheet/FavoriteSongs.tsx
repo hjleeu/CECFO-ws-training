@@ -13,6 +13,7 @@ interface Props {
     key: string;
     bpm: number;
     timeSignature: string;
+    coverUrl: string | null
   }[];
 }
 
