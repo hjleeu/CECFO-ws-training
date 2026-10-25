@@ -4,13 +4,9 @@ import path from "path";
 
 const ROOT = path.join(process.cwd(), "public", "uploads")
 const TYPES: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "audio/mp3": "mp3",
-    "audio/mpeg": "mp3",
-    "audio/mp4": "m4a",
-    "audio/x-m4a": "m4a"
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".webp": "image/webp", ".mp3": "audio/mpeg", ".mpeg": "audio/mpeg",
+    ".m4a": "audio/mp4", ".mp4": "audio/mp4", ".aac": "audio/aac"
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
