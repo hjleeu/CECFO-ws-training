@@ -8,6 +8,9 @@ const nextConfig = {
             ]
         }
     ],
+    rewrites: async () => [
+        { source: "/uploads/:path*", destination: "/api/uploads/:path*" }
+    ],
     output: "standalone"
 }
 export default nextConfig
