@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body style={{paddingBottom: "calc(6rem + env(safe-area-inset-bottom))"}}>
+      <body>
         <LanguageProvider>
           <Navbar />
           {children}

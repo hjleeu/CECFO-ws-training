@@ -14,6 +14,14 @@ body {
     padding: 0;
 }
 
+body {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+body:has(.song-container) {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 :root {
   color-scheme: light dark; /* To handle light and dark theme switching. */
 
