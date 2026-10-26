@@ -1,7 +1,7 @@
 "use client"
 
 import { DrawTool, Stroke } from "@/types/Drawing"
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 interface Props {
     strokes: Stroke[]
@@ -89,6 +89,29 @@ export function DrawLayer({ strokes, onChange, tool, color, width }: Props) {
     // --- group scale handle ---
     const groupScaleStart = useRef<{ startDist: number; center: Point; base: Record<string, Stroke['transform']> } | null>(null)
 
+    const touchIds = useRef(new Set<number>())
+
+    function resetGesture() {
+        setDrafting(null)
+        erasingActive.current = false
+        setErasingIds(new Set())
+        setMarquee(null)
+        dragOrigin.current = null
+        dragBase.current = null
+        setLiveTransforms(null)
+    }
+
+    useEffect(() => {
+        const el = svgRef.current
+        if (el && tool) {
+            const block = (e: TouchEvent) => {
+                if (e.touches.length === 1 && e.cancelable) { e.preventDefault() }
+            }
+            el.addEventListener("touchmove", block, { passive: false })
+            return () => el.removeEventListener("touchmove", block)
+        }
+    }, [tool])
+
     function toRelative(e: React.PointerEvent): Point {
         const rect = svgRef.current!.getBoundingClientRect()
         return {
@@ -132,7 +155,13 @@ export function DrawLayer({ strokes, onChange, tool, color, width }: Props) {
     }
 
     function handlePointerDown(e: React.PointerEvent) {
+        if (e.pointerType === "touch") { touchIds.current.add(e.pointerId) }
+        if (touchIds.current.size > 1) {
+            resetGesture()
+            return
+        }
         e.preventDefault()
+
         const p = toRelative(e)
 
         if (tool === "pen" || tool === "highlighter") {
@@ -193,6 +222,8 @@ export function DrawLayer({ strokes, onChange, tool, color, width }: Props) {
     }
 
     function handlePointerUp(e: React.PointerEvent) {
+        touchIds.current.delete(e.pointerId)
+
         if (drafting && drafting.length > 1) {
             const stroke: Stroke = {
                 id: crypto.randomUUID(),
@@ -231,6 +262,14 @@ export function DrawLayer({ strokes, onChange, tool, color, width }: Props) {
         setLiveTransforms(null)
         if (svgRef.current?.hasPointerCapture(e.pointerId)) {
             svgRef.current?.releasePointerCapture(e.pointerId)
+        }
+    }
+
+    function handlePointerCancel(e: React.PointerEvent) {
+        touchIds.current.delete(e.pointerId)
+        resetGesture()
+        if (svgRef.current?.hasPointerCapture(e.pointerId)) {
+            svgRef.current.releasePointerCapture(e.pointerId)
         }
     }
 
@@ -331,7 +370,7 @@ export function DrawLayer({ strokes, onChange, tool, color, width }: Props) {
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
         >
             {rect && visibleStrokes.map(s => {
                 const isSelected = selectedIds.includes(s.id)
