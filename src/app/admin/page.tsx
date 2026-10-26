@@ -51,10 +51,12 @@ export default function AdminPage() {
     const [uploading, setUploading] = useState<'cover' | 'audio' | null>(null)
 
     const [savedArtists, setArtists] = useState<string[]>([])
-    const [savedAlbums, setAlbums] = useState<string[]>([])
+    const [artistAlbums, setArtistAlbums] = useState<{ artist: string, album: string }[]>([])
 
     const [editingSlug, setEditingSlug] = useState<string | null>(null)
     const [songs, setSongs] = useState<{ slug: string, title: string }[]>([])
+
+    const [formKey, setFormKey] = useState(0)
 
     // Fetch saved songs, artists and albums list.
     useEffect(() => {
@@ -62,10 +64,13 @@ export default function AdminPage() {
             .then(r => r.json())
             .then((data: { slug: string, title: string, artist?: string, album?: string }[]) => {
                 const artists = [...new Set(data.map(s => s.artist).filter(Boolean) as string[])]
-                const albums = [...new Set(data.map(s => s.album).filter(Boolean) as string[])]
                 setArtists(artists)
-                setAlbums(albums)
-                setSongs(data.map(s => ({ slug: s.slug, title: s.title})))
+                setArtistAlbums(
+                    data
+                        .filter(s => s.artist && s.album)
+                        .map(s => ({ artist: s.artist as string, album: s.album as string }))
+                )
+                setSongs(data.map(s => ({ slug: s.slug, title: s.title })))
             })
     }, [])
 
@@ -84,6 +89,18 @@ export default function AdminPage() {
             audioUrl: audioUrl ?? undefined
         }
     }, [parsed, title, artist, album, songKey, bpm, timeSignature, coverUrl, audioUrl])
+
+    const filteredAlbums = useMemo(
+        () => [...new Set(artistAlbums.filter(a => a.artist === artist).map(a => a.album))],
+        [artistAlbums, artist]
+    )
+
+    const handleArtistChange = (value: string) => {
+        if (value !== artist) {
+            setAlbum('')
+        }
+        setArtist(value)
+    }
 
     const handleChange = (text: string) => {
         setRaw(text)
@@ -125,12 +142,14 @@ export default function AdminPage() {
         setCoverUrl(data.coverUrl ?? null)
         setAudioUrl(data.audioUrl ?? null)
         setEditingSlug(slug)
+        setFormKey(k => k + 1)
 
         setRaw(songToRaw(data))
     }
 
     const handleClear = () => {
         setEditingSlug(null)
+        setFormKey(k => k + 1)
         setTitle('')
         setArtist('')
         setAlbum('')
@@ -285,11 +304,31 @@ export default function AdminPage() {
                     <div className="meta-row-2col">
                         <div className="meta-group">
                             <label htmlFor="song-artist" className="meta-label">{t.admin.artist}</label>
-                            <SelectOrNew id="song-artist" options={savedArtists} value={artist} onChange={setArtist} placeholder="选择艺术家" label="艺术家"></SelectOrNew>
+                            <SelectOrNew
+                                key={`artist-${formKey}`}
+                                id="song-artist"
+                                options={savedArtists}
+                                value={artist}
+                                onChange={handleArtistChange}
+                                placeholder="选择艺术家"
+                                label="艺术家"
+                            ></SelectOrNew>
                         </div>
                         <div className="meta-group">
                             <label htmlFor="song-album" className="meta-label">{t.admin.album}</label>
-                            <SelectOrNew id="song-album" options={savedAlbums} value={album} onChange={setAlbum} placeholder="选择专辑" label="专辑"></SelectOrNew>
+                            {artist ? (
+                                <SelectOrNew
+                                    key={`album-${formKey}-${artist}`}
+                                    id="song-album"
+                                    options={filteredAlbums}
+                                    value={album}
+                                    onChange={setAlbum}
+                                    placeholder="选择专辑"
+                                    label="专辑"
+                                ></SelectOrNew>
+                            ) : (
+                                <input type="text" id="song-album" className="meta-input" disabled placeholder="先选择艺术家" />
+                            )}
                         </div>
                     </div>
                     <div className="meta-row-3col">
