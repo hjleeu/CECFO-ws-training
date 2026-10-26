@@ -3,7 +3,7 @@
 import type { Song as SongProps, ShowOptions } from "@/types/MusicNotation"
 import { Measure } from "./Measure"
 import "@/styles/sheet.css"
-import { useRef, useState, useEffect, useCallback, CSSProperties } from "react"
+import { useRef, useState, useEffect, useCallback, CSSProperties, useMemo, Fragment } from "react"
 import { parseJianpu, BAR_STEP_PX, BAR_GAP_PX } from "@/lib/jianpu"
 
 interface Props {
@@ -26,6 +26,9 @@ interface BracketRect {
   endingStyle?: "closed" | "open"
 }
 
+// Sections that must be alone, not sharing rows with other sections.
+const ISOLATED_SECTIONS = /intro|bridge/i
+
 export function Song({ song, showOptions, scale = 1 }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null)
   const noteRefsMap   = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -34,6 +37,19 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
   const [bracketRects, setBracketRects] = useState<BracketRect[]>([])
   const [rowDurationHeights, setRowDurationHeights] = useState<Map<number, number>>(new Map())
   const [rowHasUpper, setRowHasUpper] = useState<Set<number>>(new Set())
+
+  const sectionBreaks = useMemo(() => {
+    const breaks = new Set<number>()
+    let prevIsolated = false
+    song.measures.forEach((m, i) => {
+      if (m.sectionLabel) {
+        const curIsolated = ISOLATED_SECTIONS.test(m.sectionLabel)
+        if (i > 0 && (curIsolated || prevIsolated)) { breaks.add(i) }
+        prevIsolated = curIsolated
+      }
+    })
+    return breaks
+  }, [song.measures])
 
   const registerMeasureRef = useCallback(
     (measureIndex: number, el: HTMLDivElement | null) => {
@@ -296,33 +312,35 @@ export function Song({ song, showOptions, scale = 1 }: Props) {
         )}
 
         {song.measures.map((measure, index) => (
-          <div
-            key={measure.id ?? index}
-            ref={el => registerMeasureRef(index, el)}
-            className="measure-wrapper"
-            style={{
-              flexGrow: measure.notes.length,
-              flexBasis: 0,
-            }}
-          >
-            {measure.sectionLabel && (
-              <div className="measure-section-label">
-                {measure.sectionLabel}
-              </div>
-            )}
+          <Fragment key={measure.id ?? index}>
+            {sectionBreaks.has(index) && <div className="section-break" aria-hidden="true" />}
+            <div
+              ref={el => registerMeasureRef(index, el)}
+              className="measure-wrapper"
+              style={{
+                flexGrow: measure.notes.length,
+                flexBasis: 0,
+              }}
+            >
+              {measure.sectionLabel && (
+                <div className="measure-section-label">
+                  {measure.sectionLabel}
+                </div>
+              )}
 
-            <Measure
-              measure={measure}
-              measureIndex={index}
-              showOptions={showOptions}
-              registerNoteRef={registerNoteRef}
-              rowDurationHeightPx={rowDurationHeights.get(index)}
-              rowHasUpper={rowHasUpper.has(index)} 
-              brackets={song.brackets}
-              scale={scale}
-              timeSignature={song.timeSignature}
-            />
-          </div>
+              <Measure
+                measure={measure}
+                measureIndex={index}
+                showOptions={showOptions}
+                registerNoteRef={registerNoteRef}
+                rowDurationHeightPx={rowDurationHeights.get(index)}
+                rowHasUpper={rowHasUpper.has(index)} 
+                brackets={song.brackets}
+                scale={scale}
+                timeSignature={song.timeSignature}
+              />
+            </div>
+          </Fragment>
         ))}
       </div>
     </div>

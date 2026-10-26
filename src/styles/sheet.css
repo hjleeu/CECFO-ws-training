@@ -32,6 +32,11 @@
     margin-top: calc(1.66rem * var(--song-scale, 1));
 }
 
+.section-break {
+    flex: 0 0 100%;
+    height: 0;
+}
+
 .section-row {
     flex: 0 0 100%;
     margin-bottom: calc(0.52rem * var(--song-scale, 1));
