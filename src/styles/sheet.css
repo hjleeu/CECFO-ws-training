@@ -8,6 +8,7 @@
     color: var(--color-text);
     font-family: var(--font-chinese);
     text-align: center;
+    font-weight: 600;
     font-size: calc(1.37rem * var(--song-scale, 1));
     margin-bottom: 0;
     margin-top: 0;
@@ -51,7 +52,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     color: var(--color-muted);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     font-family: var(--font-mono);
     width: max-content;
     user-select: none;
@@ -123,7 +124,7 @@
     font-family: var(--font-mono);
     font-size: calc(0.73rem * var(--song-scale, 1));
     font-weight: 700;
-    color: var(--color-accent);
+    color: var(--color-accent-text);
     white-space: nowrap;
     user-select: none;
     flex-shrink: 0;
@@ -163,7 +164,7 @@
 
 .chord {
     font-family: var(--font-mono);
-    color: var(--color-accent);
+    color: var(--color-accent-text);
     text-transform: none;
     font-size: calc(0.88rem * var(--song-scale, 1));
     font-weight: 700;
@@ -306,7 +307,7 @@
 }
 
 .note-upper .dots-below,
-.note-wrapper-stacked > .dots-above {
+.note-wrapper-stacked>.dots-above {
     min-height: calc(0.25rem * var(--song-scale, 1));
     margin-top: 0;
 }

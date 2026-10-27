@@ -4,19 +4,19 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { Language } from "@/lib/i18n/translations"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { JSXElementConstructor, optimisticKey, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react"
-import { UrlObject } from "url"
+import { useEffect, useState } from "react"
+import { Globe, Home, ListMusic, Moon, Sun, UserStar, type LucideIcon } from "lucide-react"
 
 interface NavItem {
     href: string
-    icon: string
+    icon: LucideIcon
 }
 
 /* Add or remove nav items here. */
 const NAV_ITEMS: NavItem[] = [
-    { href: '/', icon: "🏠︎" },
-    { href: "/songs", icon: "🔍︎" },
-    { href: "/admin", icon: "♬" }
+    { href: '/', icon: Home },
+    { href: "/songs", icon: ListMusic },
+    { href: "/admin", icon: UserStar }
 ]
 
 const LANGUAGE_LABELS: Record<Language, string> = {
@@ -27,11 +27,7 @@ const LANGUAGE_LABELS: Record<Language, string> = {
 
 export function Navbar() {
     const pathname = usePathname()
-
-    // Hide the navbar in song details page.
-    const isSongDetailPage = /^\/songs\/[^/]+$/.test(pathname)
-    const isWorshirSetPage = /^\/worship\/[^/]+$/.test(pathname)
-    if (isSongDetailPage || isWorshirSetPage) return null
+    const { language, setLanguage, t } = useLanguage()
 
     /* Default use light theme. */
     const [theme, setTheme] = useState<"light" | "dark">("light")
@@ -55,8 +51,6 @@ export function Navbar() {
         localStorage.setItem("theme", next)
     }
 
-    const { language, setLanguage, t } = useLanguage()
-    
     const cycleLanguage = () => {
         const order: Language[] = ["zh", "en", "it"]
         const next = order[(order.indexOf(language) + 1) % order.length]
@@ -69,31 +63,36 @@ export function Navbar() {
         "/admin": t.nav.admin
     }
 
-    return (
+    // Hide the navbar in song details page.
+    const isHidden = /^\/songs\/[^/]+$/.test(pathname) || /^\/worship\/[^/]+$/.test(pathname)
+
+    return isHidden ? null : (
         <nav className="navbar">
             <div className="navbar-inner">
-                {NAV_ITEMS.map((item: { href: string; icon: string }) => {
+                {NAV_ITEMS.map((item: NavItem) => {
                     const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                    const Icon = item.icon
 
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
                             className={`nav-item${active ? " nav-item-active" : ''}`}
+                            aria-current={active ? "page" : undefined}
                         >
-                            <span className="nav-icon">{item.icon}</span>
+                            <span className="nav-icon"><Icon aria-hidden="true"></Icon></span>
                             <span className="nav-label">{navLabels[item.href]}</span>
                         </Link>
                     )
                 })}
 
                 <button className="nav-item nav-theme-btn" onClick={toggleTheme}>
-                    <span className="nav-icon">{theme === "light" ? "⏾" : "☀︎"}</span>
+                    <span className="nav-icon">{theme === "light" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}</span>
                     <span className="nav-label">{theme === "light" ? t.nav.dark : t.nav.light}</span>
                 </button>
 
                 <button className="nav-item" onClick={cycleLanguage}>
-                    <span className="nav-icon">🌐︎</span>
+                    <span className="nav-icon"><Globe aria-hidden="true" /></span>
                     <span className="nav-label">{LANGUAGE_LABELS[language]}</span>
                 </button>
             </div>

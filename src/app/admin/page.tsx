@@ -225,7 +225,7 @@ export default function AdminPage() {
     const { t } = useLanguage()
 
     return (
-        <div className="container">
+        <div className="admin-page">
             <h2>{t.admin.heading}</h2>
             <div className="load-area">
                 <select

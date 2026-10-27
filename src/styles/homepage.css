@@ -1,63 +1,115 @@
 .homepage {
-    max-width: 1200px;
+    max-width: var(--page-max);
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: var(--page-pad);
+    line-height: 1.5;
 }
 
 .home-section {
-    margin-bottom: 2.5rem;
+    margin-bottom: var(--space-6);
 }
 
 .home-section-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    align-items: baseline;
+    margin-bottom: var(--space-3);
 }
 
 .home-section-title {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.37rem;
+    font-weight: 600;
     font-family: var(--font-chinese);
     color: var(--color-text);
 }
 
-.home-section-link {
-    color: var(--color-accent);
+.home-section-link,
+.home-section-header a {
+    color: var(--color-accent-text);
     text-decoration: none;
-    font-size: .9rem;
+    font-size: 0.88rem;
 }
 
-.home-section-link:hover {
+.home-section-link:hover,
+.home-section-header a:hover {
     text-decoration: underline;
 }
 
 .home-song-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: .75rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-3);
 }
 
 .archive-toggle {
-  margin-bottom: 0.75rem;
-  background: none;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-muted);
-  padding: 0.35rem 0.75rem;
-  cursor: pointer;
+    margin-bottom: var(--space-3);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-muted);
+    padding: 0.37rem 0.88rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.archive-toggle:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+}
+
+.homepage .sets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: 0;
+}
+
+.homepage .set-card {
+    display: block;
+    color: inherit;
+    padding: var(--space-3) var(--space-4);
+    transition: var(--transition);
+}
+
+.homepage .set-card:hover {
+    border-color: var(--color-accent);
+}
+
+.homepage .sets-list > .set-card:first-child:not(.archived) {
+    border-left: 3px solid var(--color-accent);
+}
+
+.homepage .set-card-header {
+    align-items: baseline;
+    gap: var(--space-3);
+    font-weight: 600;
+}
+
+.homepage .set-date {
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.homepage .set-songs {
+    margin-bottom: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .set-card.archived {
-  opacity: 0.6;
+    opacity: 0.6;
 }
 
 @media (max-width: 768px) {
-    .homepage {
-        padding: 1rem;
-    }
-
-    .home-song-grid {
+    .home-song-grid,
+    .homepage .sets-list {
         grid-template-columns: 1fr;
     }
 }

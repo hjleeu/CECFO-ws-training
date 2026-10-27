@@ -1,25 +1,23 @@
 .navbar {
     position: fixed;
-    bottom: 0.73rem;
-    left: 0.37rem;
-    right: 0.37rem;
-    background: var(--color-surface);
+    bottom: calc(0.73rem + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(calc(100% - 0.73rem), 32rem);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
     z-index: 37;
     margin: 0;
-    width: auto;
 }
 
 .navbar-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-
     display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-
+    align-items: stretch;
+    gap: 0.15rem;
     padding: 0.37rem 0.73rem;
 }
 
@@ -27,6 +25,9 @@
     appearance: none;
     border: none;
     background: transparent;
+    position: relative;
+    flex: 1;
+    min-width: 0;
 
     color: var(--color-muted);
     text-decoration: none;
@@ -35,25 +36,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.15rem;
 
-    gap: 0.25rem;
-
-    padding: 0.52rem 0.99rem;
+    padding: 0.37rem 0.29rem;
     border-radius: var(--radius-md);
 
     transition: var(--transition);
-
     cursor: pointer;
 }
 
 .nav-item:hover {
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 7%, transparent);
     color: var(--color-text);
 }
 
-.nav-item-active {
-    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
-    color: var(--color-accent);
+.nav-item-active,
+.nav-item-active:hover {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-text);
     font-weight: 600;
 }
 
@@ -64,8 +64,20 @@
 
 .nav-label {
     font-size: 0.73rem;
+    line-height: 1.1;
 }
 
 .nav-theme-btn {
     font: inherit;
+    margin-left: 0.37rem;
+}
+
+.nav-theme-btn::before {
+    content: '';
+    position: absolute;
+    left: -0.15rem;
+    top: 15%;
+    bottom: 15%;
+    width: 1px;
+    background: var(--color-border);
 }
