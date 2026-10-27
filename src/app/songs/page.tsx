@@ -19,8 +19,8 @@ export default function SongsPage() {
     const artists: Record<string, Record<string, any[]>> = {}
 
     for (const song of songs) {
-      const artist = song.artist?.trim() || "Unknown Artist"
-      const album = song.album?.trim() || "Singles"
+      const artist = song.artist?.trim() || "未知艺术家"
+      const album = song.album?.trim() || "单曲"
 
       if (!artists[artist]) {
         artists[artist] = {}
