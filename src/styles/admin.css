@@ -121,6 +121,8 @@
     transition: border-color var(--transition), box-shadow var(--transition);
     box-shadow: var(--shadow-sm);
     white-space: pre;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
 }
 
 .input-area>textarea:focus {
