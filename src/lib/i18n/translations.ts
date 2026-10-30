@@ -31,6 +31,15 @@ export const translations = {
 
             withAudio: "有音频",
 
+            unknownArtist: "未知艺术家",
+            singles: "单曲",
+            searchPlaceholder: "搜索歌名、艺术家、专辑...",
+            allArtist: "全部艺术家",
+            allKey: "全部调性",
+            clearFilter: "清除筛选",
+            noMatches: "没有找到符合条件的歌曲。",
+            showingCount: "显示中 {count} / {total} 首歌曲.",
+
             back: "返回",
             transpose: "调性",
             down: "降半调",
@@ -90,6 +99,15 @@ export const translations = {
 
             withAudio: "Con audio",
 
+            unknownArtist: "Artista sconosciuto",
+            singles: "Singles",
+            searchPlaceholder: "Cerca titolo, artista, album...",
+            allArtist: "Tutti gli artisti",
+            allKey: "Tutte le tonalità",
+            clearFilter: "Rimuovi filtri",
+            noMatches: "Nessuna corrispondenza trovata.",
+            showingCount: "Visualizzando {count} / {total} canzoni.",
+
             back: "Torna indietro",
             transpose: "Tonalità",
             down: "Abbassa",
@@ -148,6 +166,15 @@ export const translations = {
             pinyin: "Pinyin",
 
             withAudio: "With audio",
+
+            unknownArtist: "Unknown artist",
+            singles: "Singles",
+            searchPlaceholder: "Search title, artist, album...",
+            allArtist: "All artists",
+            allKey: "All key",
+            clearFilter: "Clear filters",
+            noMatches: "No songs matches.",
+            showingCount: "Showing {count} / {total} songs.",
 
             back: "Go back",
             transpose: "Key",
