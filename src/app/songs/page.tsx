@@ -137,15 +137,13 @@ export default function SongsPage() {
           {t.song.withAudio}
         </button>
 
-        {hasActiveFilters ? (
-          <button
-            type="button"
-            className="songs-filter-clear"
-            onClick={clearFilters}
-          >
-            {t.song.clearFilter}
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className="songs-filter-clear"
+          onClick={clearFilters}
+        >
+          {t.song.clearFilter}
+        </button>
       </div>
 
       <p className="songs-count">
