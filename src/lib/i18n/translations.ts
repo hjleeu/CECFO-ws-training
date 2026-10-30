@@ -29,6 +29,8 @@ export const translations = {
             jianpu: "歌谱",
             pinyin: "拼音",
 
+            withAudio: "有音频",
+
             back: "返回",
             transpose: "调性",
             down: "降半调",
@@ -86,6 +88,8 @@ export const translations = {
             jianpu: "Jianpu",
             pinyin: "Pinyin",
 
+            withAudio: "Con audio",
+
             back: "Torna indietro",
             transpose: "Tonalità",
             down: "Abbassa",
@@ -142,6 +146,8 @@ export const translations = {
             chords: "Chords",
             jianpu: "Jianpu",
             pinyin: "Pinyin",
+
+            withAudio: "With audio",
 
             back: "Go back",
             transpose: "Key",

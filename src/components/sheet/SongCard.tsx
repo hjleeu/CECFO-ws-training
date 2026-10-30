@@ -4,6 +4,7 @@ import Link from "next/link"
 import "@/styles/songs.css"
 import { useFavorites } from "@/hooks/useFavourite";
 import { Heart } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface Props {
   song: {
@@ -15,11 +16,15 @@ interface Props {
     bpm: number
     timeSignature: string
     coverUrl: string | null
+    audioUrl?: string | null
   }
 }
 
 export function SongCard({ song }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  const { t } = useLanguage()
+
   return (
     <Link
       href={`/songs/${song.slug}`}
@@ -64,6 +69,7 @@ export function SongCard({ song }: Props) {
         <span>{song.key}</span>
         <span>{song.timeSignature}</span>
         <span>{song.bpm} BPM</span>
+        {song.audioUrl && <span className="song-audio-tag">{t.song.withAudio}</span>}
       </div>
     </Link>
   )
