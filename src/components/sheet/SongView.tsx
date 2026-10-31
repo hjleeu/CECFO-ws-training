@@ -16,6 +16,7 @@ import { useStrokes } from "@/hooks/useStrokes"
 import { DrawTool } from "@/types/Drawing"
 import { useSongScale } from "@/hooks/useSongScale"
 import { AudioPlayer } from "../ui/AudioPlayer"
+import { Pencil, PenOff, SlidersHorizontal, X } from "lucide-react"
 
 interface Props {
     song: SongType
@@ -131,14 +132,14 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                 className="toolbar-toggle-btn"
                 onClick={() => setToolbarVisibility(prev => !prev)}
                 title="Toggle toolbar"
-            >{isToolbarVisible ? '✕' : '⚙️'}</button>
+            >{isToolbarVisible ? <X size={18} /> : <SlidersHorizontal size={18}/>}</button>
 
             <button
                 type="button"
                 className="toolbar-toggle-btn draw-toolbar-toggle-btn"
                 onClick={() => setDrawToolbarVisibility(prev => !prev)}
                 title="Toggle draw toolbar"
-            >{isDrawToolbarVisible ? '✕' : '✍🏻'}</button>
+            >{isDrawToolbarVisible ? <PenOff size={18} /> : <Pencil size={18} />}</button>
 
             <div className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
                 <Song song={transposedSong} showOptions={showOptions} scale={scale}/>
