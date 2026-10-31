@@ -19,7 +19,7 @@
 
 .draw-toolbar-toggle-btn {
     bottom: calc(1.73rem + 3.15rem + 0.75rem);
-    left: 1rem;
+    left: 0.73rem;
 }
 
 .draw-toolbar {

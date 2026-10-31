@@ -1,5 +1,5 @@
 .song-container {
-    padding: calc(1.52rem * var(--song-scale, 1));
+    padding: calc(1.52rem * var(--song-scale, 1)) calc(3.75rem * var(--song-scale, 1));
     width: 100%;
     margin: 0;
 }

@@ -21,7 +21,7 @@
 .toolbar-toggle-btn {
     position: fixed;
     bottom: 1.73rem;
-    left: 1rem;
+    left: 0.73rem;
     width: 3.15rem;
     height: 3.15rem;
     border-radius: 50%;
@@ -50,7 +50,7 @@
 
 .song-controls-panel {
     position: fixed;
-    left: 1rem;
+    left: 0.73rem;
     bottom: 5.73rem;
     max-width: calc(100vw - 1.8rem);
     display: flex;
@@ -196,23 +196,6 @@
     min-width: 2.5rem;
     text-align: center;
     font-family: var(--font-mono);
-}
-
-.audio-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.37rem 0.73rem;
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
- 
-.audio-controls-player {
-  height: 32px;
-  max-width: 260px;
-  accent-color: var(--color-accent);
-  border-radius: var(--radius-sm);
 }
 
 @media (max-width: 1024px) {

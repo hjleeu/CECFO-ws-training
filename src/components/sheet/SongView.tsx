@@ -15,6 +15,7 @@ import { DrawToolbar } from "@/components/sheet/DrawToolbar"
 import { useStrokes } from "@/hooks/useStrokes"
 import { DrawTool } from "@/types/Drawing"
 import { useSongScale } from "@/hooks/useSongScale"
+import { AudioPlayer } from "../ui/AudioPlayer"
 
 interface Props {
     song: SongType
@@ -118,14 +119,7 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
 
                 {song.audioUrl && (
                     <div className="audio-controls">
-                        <span className="controls-label">♪</span>
-                        <audio
-                            controls
-                            controlsList="nodownload noplaybackrate"
-                            onContextMenu={(e) => e.preventDefault()}
-                            src={song.audioUrl.startsWith('/') ? song.audioUrl : `/${song.audioUrl}`}
-                            className="audio-controls-player"
-                        ></audio>
+                        <AudioPlayer src={song.audioUrl.startsWith("/") ? song.audioUrl : `/${song.audioUrl}`} />
                     </div>
                 )}
 
