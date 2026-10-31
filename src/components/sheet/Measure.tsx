@@ -97,6 +97,8 @@ function NavMark({ mark }: { mark: NavigationMark }) {
       return <span className="nav-mark"><CodaIcon /></span>
     case "toCoda":
       return <span className="nav-mark">To <CodaIcon /></span>
+    case "toChorus":
+      return <span className="nav-mark">To Chorus</span>
     case "fine":
       return <span className="nav-mark">Fine</span>
     case "ds":

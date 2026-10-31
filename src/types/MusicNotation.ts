@@ -16,7 +16,7 @@ export interface LyricEntry {
 }
 
 export type BarlineType = "normal" | "double" | "final" | "repeatStart" | "repeatEnd"
-export type NavigationMark = "segno" | "coda" | "toCoda" | "fine" | "ds" | "dsFine" | "dsCoda" | "dc" | "dcFine" | "dcCoda"
+export type NavigationMark = "segno" | "coda" | "toCoda" | "toChorus" | "fine" | "ds" | "dsFine" | "dsCoda" | "dc" | "dcFine" | "dcCoda"
 
 export interface Measure {
     id: string
