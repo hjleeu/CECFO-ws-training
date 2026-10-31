@@ -296,7 +296,7 @@ function isSectionLabel(line: string): boolean {
 }
 
 const VALID_NAV_MARKS = new Set<NavigationMark>([
-  "segno", "coda", "toCoda", "fine", "ds", "dsCoda", "dsFine", "dc", "dcFine", "dcCoda"
+  "segno", "coda", "toCoda", "toChorus", "fine", "ds", "dsCoda", "dsFine", "dc", "dcFine", "dcCoda"
 ])
 
 function parseNavMarkLine(line: string): NavigationMark[] | null {
