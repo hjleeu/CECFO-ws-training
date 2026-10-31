@@ -1,6 +1,6 @@
 "use client"
 
-import { Pause, Play, RotateCcw } from "lucide-react"
+import { Pause, Play, StepBack } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import "@/styles/audio-player.css"
 
@@ -71,7 +71,7 @@ export function AudioPlayer({ src }: Props) {
                 className="audio-player-skip"
                 onClick={() => seek(Math.max(0, current - SKIP_BACK_SECS))}
             >
-                <RotateCcw size={16} />
+                <StepBack size={15} />
             </button>
 
             <span className="audio-player-time">{formatTime(current)}</span>

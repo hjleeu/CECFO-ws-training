@@ -8,7 +8,7 @@
     line-height: 1.5;
 }
 
-.admin-page>h2 {
+.admin-page > h2 {
     text-align: center;
     font-family: var(--font-chinese);
     font-size: 1.5rem;
@@ -22,12 +22,13 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     margin-bottom: var(--space-2);
 }
 
 .load-area select {
     width: min(375px, 100%);
+    font-family: var(--font-chinese);
 }
 
 .editing-badge {
@@ -114,7 +115,7 @@
     min-height: 520px;
 }
 
-.input-area>textarea {
+.input-area > textarea {
     width: 100%;
     height: 100%;
     font-family: var(--font-mono);
@@ -187,6 +188,7 @@
 
 .meta-header {
     display: flex;
+    flex-wrap: wrap;
     gap: 1.25rem;
     align-items: flex-start;
     margin-bottom: var(--space-4);
@@ -270,7 +272,7 @@
     flex-direction: column;
     justify-content: center;
     gap: 0.3rem;
-    flex: 1;
+    flex: 1 1 320px;
     min-width: 0;
     height: 128px;
     box-sizing: border-box;
@@ -395,6 +397,10 @@ label.audio-dropzone:hover {
     .audio-dropzone,
     .cover-dropzone {
         width: 200px;
+    }
+
+    .audio-dropzone.audio-dropzone-filled {
+        width: min(360px, 100%);
     }
 
     .meta-fields-col {
