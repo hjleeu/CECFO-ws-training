@@ -9,6 +9,7 @@ import { toSlug } from "@/lib/slug"
 import { SelectOrNew } from "@/components/ui/SelectOrNew"
 import { songToRaw } from "@/lib/songParser"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { AudioPlayer } from "@/components/ui/AudioPlayer"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -48,7 +49,8 @@ export default function AdminPage() {
     const [timeSignature, setTimeSignature] = useState("4/4")
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
-    const [uploading, setUploading] = useState<'cover' | 'audio' | null>(null)
+    const [uploading, setUploading] = useState<"cover" | "audio" | null>(null)
+    const [audioVer, setAudioVer] = useState(0)
 
     const [savedArtists, setArtists] = useState<string[]>([])
     const [artistAlbums, setArtistAlbums] = useState<{ artist: string, album: string }[]>([])
@@ -185,8 +187,8 @@ export default function AdminPage() {
                 return
             }
 
-            if (kind === 'cover') setCoverUrl(data.url)
-            else setAudioUrl(data.url)
+            if (kind === "cover") { setCoverUrl(data.url) }
+            else { setAudioUrl(data.url); setAudioVer(v => v + 1) }
         } catch (e) {
             alert((e as Error).message)
         } finally {
@@ -271,8 +273,16 @@ export default function AdminPage() {
                 <div className="audio-dropzone-wrap">
                     {audioUrl ? (
                         <div className="audio-dropzone audio-dropzone-filled">
-                            <audio controls src={audioUrl} className="audio-dropzone-player" />
-                            <label htmlFor="song-audio" className="audio-replace-label">Replace</label>
+                            <AudioPlayer
+                                key={audioVer}
+                                src={audioUrl.startsWith('/') ? audioUrl : `/${audioUrl}`}
+                            />
+                            <label
+                                htmlFor="song-audio"
+                                className={`audio-replace-btn${uploading === "audio" ? " cover-dropzone-busy" : ''}`}
+                            >
+                                Replace
+                            </label>
                         </div>
                     ) : (
                         <label htmlFor="song-audio" className={`audio-dropzone${uploading === 'audio' ? ' cover-dropzone-busy' : ''}`}>
