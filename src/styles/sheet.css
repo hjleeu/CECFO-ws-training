@@ -300,16 +300,41 @@
     position: relative;
 }
 
+.note-upper-anchor {
+    position: relative;
+    width: 100%;
+    height: 0;
+}
+
 .note-upper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--upper-lift, 0rem) * var(--song-scale, 1));
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.note-upper .dots-below,
-.note-wrapper-stacked>.dots-above {
-    min-height: calc(0.25rem * var(--song-scale, 1));
-    margin-top: 0;
+.note-upper .note {
+    line-height: 1;
+}
+
+.note-wrapper-pair .note-digit-row .note {
+    transform: scaleY(0.7);
+    transform-origin: bottom;
+}
+
+.note-upper .dots-above,
+.note-upper .dots-below {
+    height: 0;
+    min-height: 0;
+    margin: 0;
+    overflow: visible;
+}
+
+.note-upper .dots-above {
+    justify-content: flex-end;
 }
 
 .note {
