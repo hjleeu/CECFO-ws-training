@@ -17,6 +17,7 @@ import { DrawTool } from "@/types/Drawing"
 import { useSongScale } from "@/hooks/useSongScale"
 import { AudioPlayer } from "../ui/AudioPlayer"
 import { Pencil, PenOff, SlidersHorizontal, X } from "lucide-react"
+import { TutorialPopup } from "../ui/TutorialPopup"
 
 interface Props {
     song: SongType
@@ -61,6 +62,7 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
 
     return (
         <div className="song-container">
+            <TutorialPopup page="song"></TutorialPopup>
             <button type="button" className="return-btn" onClick={() => router.push("/songs")}>← {t.song.back}</button>
             <div className="song-controls-panel" style={{ display: isToolbarVisible ? "flex" : "none" }}>
                 <div className="song-checkboxes">

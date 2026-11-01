@@ -10,6 +10,7 @@ import { SelectOrNew } from "@/components/ui/SelectOrNew"
 import { songToRaw } from "@/lib/songParser"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { AudioPlayer } from "@/components/ui/AudioPlayer"
+import { TutorialPopup } from "@/components/ui/TutorialPopup"
 
 const DEFAULT_SHOW: ShowOptions = {
     chords: true,
@@ -228,6 +229,7 @@ export default function AdminPage() {
 
     return (
         <div className="admin-page">
+            <TutorialPopup page="admin" />
             <h2>{t.admin.heading}</h2>
             <div className="load-area">
                 <select

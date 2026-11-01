@@ -4,6 +4,7 @@ import { SongCard } from "@/components/sheet/SongCard"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { useEffect, useMemo, useState } from "react"
 import "@/styles/songs.css"
+import { TutorialPopup } from "@/components/ui/TutorialPopup"
 
 const UNKNOWN = "__unknown__"
 
@@ -49,9 +50,6 @@ export default function SongsPage() {
     })
   }, [songs, query, artistFilter, keyFilter, audioOnly, t])
 
-  const hasActiveFilters = query !== '' || artistFilter !== '' || keyFilter !== '' || audioOnly
-
-
   const clearFilters = () => {
     setQuery('')
     setArtistFilter('')
@@ -94,6 +92,7 @@ export default function SongsPage() {
 
   return (
     <main className="songs-page">
+      <TutorialPopup page="songs"></TutorialPopup>
       <h1 className="songs-title">
         {t.song.library}
       </h1>

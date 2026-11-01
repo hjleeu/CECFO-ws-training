@@ -5,7 +5,7 @@ import { Language } from "@/lib/i18n/translations"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Globe, Home, ListMusic, Moon, Sun, UserStar, type LucideIcon } from "lucide-react"
+import { Home, Languages, ListMusic, Moon, Sun, UserLock, type LucideIcon } from "lucide-react"
 
 interface NavItem {
     href: string
@@ -16,7 +16,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
     { href: '/', icon: Home },
     { href: "/songs", icon: ListMusic },
-    { href: "/admin", icon: UserStar }
+    { href: "/admin", icon: UserLock }
 ]
 
 const LANGUAGE_LABELS: Record<Language, string> = {
@@ -92,7 +92,7 @@ export function Navbar() {
                 </button>
 
                 <button className="nav-item" onClick={cycleLanguage}>
-                    <span className="nav-icon"><Globe aria-hidden="true" /></span>
+                    <span className="nav-icon"><Languages aria-hidden="true" /></span>
                     <span className="nav-label">{LANGUAGE_LABELS[language]}</span>
                 </button>
             </div>

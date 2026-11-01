@@ -6,6 +6,7 @@ import "@/styles/worship-sets.css";
 import { FavoriteSongs } from "@/components/sheet/FavoriteSongs";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { TutorialPopup } from "@/components/ui/TutorialPopup";
 
 interface WorshipSet {
   id: string;
@@ -51,6 +52,7 @@ export default function HomePage() {
 
   return (
     <main className="homepage">
+      <TutorialPopup page="home"></TutorialPopup>
       <section className="home-section">
         <FavoriteSongs songs={songs} />
       </section>
