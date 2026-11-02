@@ -1,6 +1,6 @@
 .tutorial-help-btn {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 0.73rem);
+    top: calc(env(safe-area-inset-top) + 1.73rem);
     right: 0.73rem;
     z-index: 35;
     width: 2.25rem;
@@ -41,6 +41,7 @@
     background: var(--color-surface);
     color: var(--color-text);
     box-shadow: var(--shadow-md);
+    font-family: var(--font-chinese);
 }
 
 .tutorial-close {
