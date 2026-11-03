@@ -92,6 +92,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      <footer className="home-footer">
+        <Link href="/copyright">{t.copyright.link}</Link>
+      </footer>
     </main>
   );
 }

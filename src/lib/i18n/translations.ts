@@ -67,6 +67,15 @@ export const translations = {
             timeSignature: "拍号",
 
             save: "录入"
+        },
+        copyright: {
+            link: "版权声明",
+            title: "版权声明",
+            p1: "本站展示的诗歌、歌词、曲谱、音频、图片等内容，其著作权及相关权利均归原作者及原权利人所有，本站不主张对上述内容的任何权利。",
+            p2: "本站仅提供敬拜辅助功能，供教会敬拜团队内部练习与服事使用，不以营利为目的。",
+            p3: "未经权利人许可，请勿将本站内容转载、复制、传播或用于商业用途。",
+            p4: "如您是权利人，认为本站内容侵犯了您的合法权益，请通过下方联系方式与我们联系。我们收到通知并核实后，将及时删除或修改相关内容。",
+            contactLabel: "联系方式"
         }
     },
     it: {
@@ -135,6 +144,15 @@ export const translations = {
             timeSignature: "Battito",
 
             save: "Salva"
+        },
+        copyright: {
+            link: "Copyright",
+            title: "Avviso sul copyright",
+            p1: "I canti, i testi, gli spartiti, i file audio, le immagini e gli altri contenuti presenti su questo sito restano di proprietà dei rispettivi autori e titolari dei diritti. Il sito non rivendica alcun diritto su tali contenuti.",
+            p2: "Il sito offre soltanto strumenti di supporto al culto, per la pratica e il servizio interni del gruppo di lode della chiesa, senza scopo di lucro.",
+            p3: "Si prega di non riprodurre, copiare, diffondere né utilizzare a fini commerciali tali contenuti senza il permesso dei titolari dei diritti.",
+            p4: "Se sei un titolare dei diritti e ritieni che un contenuto del sito violi i tuoi diritti, scrivici ai recapiti indicati qui sotto. Dopo aver ricevuto la segnalazione e averla verificata, rimuoveremo o correggeremo tempestivamente il contenuto in questione.",
+            contactLabel: "Contatti"
         }
     },
     en: {
@@ -203,6 +221,15 @@ export const translations = {
             timeSignature: "Time signature",
 
             save: "Save"
+        },
+        copyright: {
+            link: "Copyright",
+            title: "Copyright Notice",
+            p1: "The hymns, lyrics, scores, audio, images and other content shown on this site remain the property of their original authors and rights holders. This site claims no rights over such content.",
+            p2: "This site only provides worship-support tools, for internal practice and ministry use by the church worship team, and is not operated for profit.",
+            p3: "Please do not reproduce, copy, distribute or use this content commercially without permission from the rights holders.",
+            p4: "If you are a rights holder and believe that any content on this site infringes your rights, please contact us using the details below. Once we receive your notice and verify it, we will promptly remove or amend the content concerned.",
+            contactLabel: "Contact"
         }
     }
 }
