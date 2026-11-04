@@ -57,7 +57,7 @@ function applyBrackets(
 
   for (const b of brackets) {
     const startsHere = b.startMeasure === measureIndex
-    const endsHere   = b.endMeasure   === measureIndex
+    const endsHere = b.endMeasure === measureIndex
 
     if (!startsHere && !endsHere) continue
 
@@ -73,8 +73,8 @@ function applyBrackets(
 
     if (startsHere) {
       const prefix = b.kind === "ending"
-      ? `(v${b.number}${b.endingStyle === "open" ? ">" : ":"}`
-      : b.number !== undefined ? `(${b.number}:` : '('
+        ? `(v${b.number}${b.endingStyle === "open" ? ">" : ":"}`
+        : b.number !== undefined ? `(${b.number}:` : '('
       out[b.startNote] = prefix + out[b.startNote]
     }
     if (endsHere) {
@@ -117,7 +117,7 @@ export function songToRaw(song: Song): string {
           measure.notes
             .map(n => {
               const entry = n.lyrics?.[lineIdx]
-              const char  = entry?.char
+              const char = entry?.char
               const punct = entry?.punct ?? ''
               return char ? `${char}${punct}` : '@'
             })
@@ -142,6 +142,11 @@ export function songToRaw(song: Song): string {
     if (measure.sectionLabel) {
       rawText += flushRow()
       rawText += `[${measure.sectionLabel}]\n`
+    }
+
+    if (measure.note) {
+      rawText += flushRow()
+      rawText += `! ${measure.note}\n`
     }
 
     currentLineMeasures.push({ measure, index: i })

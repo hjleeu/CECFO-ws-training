@@ -258,6 +258,15 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
 
   return (
     <div className="measure">
+      {measure.note && (
+        <span
+          className="measure-note"
+          style={measure.sectionLabel
+            ? { left: `calc(${(measure.sectionLabel.length * 0.52 + 1).toFixed(2)}rem * var(--song-scale, 1))` }
+            : undefined
+          }
+        >{measure.note}</span>
+      )}
       <div className="measure-notes" ref={notesContainerRef} style={{ position: "relative" }}>
         {showOptions.jianpu && finalSegments.map((seg, si) => {
           const isGroup = seg.notes.length > 1 && seg.sharedBeams > 0

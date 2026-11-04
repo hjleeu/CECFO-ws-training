@@ -9,7 +9,7 @@ interface ParsedNote {
   upper?: string
 }
 
- interface OpenBracket {
+interface OpenBracket {
   id: string
   number?: number
   kind?: "tuplet" | "ending"
@@ -44,7 +44,7 @@ function tokenToBarline(token: string): BarlineType {
     case "|]":
       return "final"
     default:
-      return "normal" 
+      return "normal"
   }
 }
 
@@ -82,7 +82,7 @@ function parseNotes(
 
   let bracketCounter = 0
   let measureCounter = measureOffset
-  let pendingChord : string | undefined
+  let pendingChord: string | undefined
   let noteIndex = 0
   let tieStart: { measure: number, note: number } | null = null
 
@@ -133,10 +133,10 @@ function parseNotes(
       if (!next) continue
 
       if (tieStart === null) {
-        tieStart = { measure: measureCounter, note: noteIndex - 1}
+        tieStart = { measure: measureCounter, note: noteIndex - 1 }
       } else {
         closeTie()
-        tieStart = { measure: measureCounter, note: noteIndex - 1}
+        tieStart = { measure: measureCounter, note: noteIndex - 1 }
       }
       continue
     }
@@ -277,7 +277,7 @@ function parseLyrics(raw: string): string[] {
   let match
 
   while ((match = LYRIC_REGEX.exec(raw)) !== null) {
-      tokens.push(match[1] + match[2])
+    tokens.push(match[1] + match[2])
   }
 
   return tokens
@@ -324,6 +324,7 @@ export function parse(raw: string): Song {
   const measures: Measure[] = []
   const allBrackets: BracketSpan[] = []
   let currentLabel: string | undefined = undefined
+  let currentNote: string | undefined = undefined
   let pendingNoteLine: string | null = null
   let pendingLyricLine: string[] = []
   let measureCount = 0
@@ -385,10 +386,12 @@ export function parse(raw: string): Song {
       measures.push({
         id: `m-${measureCount}`,
         sectionLabel: currentLabel,
+        note: currentNote,
         notes: noteItems,
         barline: barlines[j] ?? "normal"
       })
-      if (currentLabel) currentLabel = undefined
+      if (currentLabel) { currentLabel = undefined }
+      if (currentNote) { currentNote = undefined }
       measureCount++
     })
 
@@ -400,6 +403,17 @@ export function parse(raw: string): Song {
 
     // Skip empty lines.
     if (!line) continue
+
+    if (line.startsWith('!')) {
+      if (pendingNoteLine !== null) {
+        flush(pendingNoteLine, pendingLyricLine)
+        pendingNoteLine = null
+        pendingLyricLine = []
+      }
+      const text = line.slice(1).trim()
+      if (text) { currentNote = currentNote ? `${currentNote} / ${text}` : text }
+      continue
+    }
 
     const navMarks = parseNavMarkLine(line)
     if (navMarks) {

@@ -24,6 +24,7 @@ export interface Measure {
     sectionLabel?: string
     barline: BarlineType
     navigationMark?: NavigationMark[]
+    note?: string
 }
 
 export interface BracketSpan {

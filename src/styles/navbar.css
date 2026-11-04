@@ -12,6 +12,8 @@
     box-shadow: var(--shadow-md);
     z-index: 37;
     margin: 0;
+    font-family: var(--font-chinese);
+    font-weight: 700;
 }
 
 .navbar-inner {

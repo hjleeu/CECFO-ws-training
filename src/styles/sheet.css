@@ -58,6 +58,18 @@
     user-select: none;
 }
 
+.measure-note {
+    position: absolute;
+    left: 0;
+    top: calc(-1.73rem * var(--song-scale, 1));
+    font-family: var(--font-chinese);
+    font-size: calc(0.73rem * var(--song-scale, 1));
+    font-weight: 600;
+    color: var(--color-accent-text);
+    white-space: nowrap;
+    user-select: none;
+}
+
 .measure-wrapper {
     position: relative;
     display: flex;

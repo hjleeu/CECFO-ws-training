@@ -111,6 +111,7 @@
     margin-top: var(--space-6);
     text-align: center;
     font-size: 0.75rem;
+    font-family: var(--font-chinese);
 }
 
 .home-footer a {
