@@ -51,6 +51,7 @@ export interface Song {
     brackets: BracketSpan[]
     coverUrl?: string
     audioUrl?: string
+    lrcUrl?: string
 }
 
 export interface ShowOptions {

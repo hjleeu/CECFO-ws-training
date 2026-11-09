@@ -8,9 +8,9 @@ interface Props {
 export async function GET(_: Request, { params }: Props) {
     const { slug } = await params
 
-    const song = await prisma.song.findUnique({ where: {slug} })
+    const song = await prisma.song.findUnique({ where: { slug } })
     if (!song) return NextResponse.json({ error: "Not found" }, { status: 404 })
-    
+
     return NextResponse.json(song)
 }
 
@@ -39,7 +39,8 @@ export async function PUT(request: Request, { params }: Props) {
                 measures: body.measures,
                 brackets: body.brackets ?? [],
                 coverUrl: body.coverUrl ?? null,
-                audioUrl: body.audioUrl ?? null
+                audioUrl: body.audioUrl ?? null,
+                lrcUrl: body.lrcUrl ?? null
             }
         })
         return NextResponse.json(song)

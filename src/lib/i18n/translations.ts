@@ -9,6 +9,7 @@ export const translations = {
         nav: {
             home: "首页",
             songs: "曲库",
+            player: "播放列表",
             admin: "管理",
             theme: "主题",
             dark: "暗色",
@@ -68,6 +69,21 @@ export const translations = {
 
             save: "录入"
         },
+        player: {
+            title: "播放器",
+            queue: "播放队列",
+            emptyQueue: "队列为空，请在曲库的歌曲卡片上点击加入队列。",
+            noLyrics: "暂无歌词",
+            withLyrics: "有歌词",
+            seek: "进度",
+            prev: "上一首",
+            next: "下一首",
+            play: "播放",
+            pause: "暂停",
+            addToQueue: "加入队列",
+            removeFromQueue: "移出队列",
+            clear: "清空"
+        },
         copyright: {
             link: "版权声明",
             title: "版权声明",
@@ -86,6 +102,7 @@ export const translations = {
         nav: {
             home: "Home",
             songs: "Libreria",
+            player: "Player",
             admin: "Gestione",
             theme: "Tema",
             dark: "Scuro",
@@ -145,6 +162,21 @@ export const translations = {
 
             save: "Salva"
         },
+        player: {
+            title: "Player",
+            queue: "Coda di riproduzione",
+            emptyQueue: "La coda è vuota. Aggiungi canzoni con il pulsante sulla scheda in libreria.",
+            noLyrics: "Testo non disponibile",
+            withLyrics: "Con testo",
+            seek: "Posizione",
+            prev: "Precedente",
+            next: "Successivo",
+            play: "Riproduci",
+            pause: "Pausa",
+            addToQueue: "Aggiungi alla coda",
+            removeFromQueue: "Rimuovi dalla coda",
+            clear: "Svuota"
+        },
         copyright: {
             link: "Copyright",
             title: "Avviso sul copyright",
@@ -163,6 +195,7 @@ export const translations = {
         nav: {
             home: "Home",
             songs: "Songs",
+            player: "Player",
             admin: "Admin",
             theme: "Theme",
             dark: "Dark",
@@ -221,6 +254,21 @@ export const translations = {
             timeSignature: "Time signature",
 
             save: "Save"
+        },
+        player: {
+            title: "Player",
+            queue: "Queue",
+            emptyQueue: "Your queue is empty. Add songs with the button on a song card in the library.",
+            noLyrics: "No lyrics available",
+            withLyrics: "Lyrics",
+            seek: "Seek",
+            prev: "Previous",
+            next: "Next",
+            play: "Play",
+            pause: "Pause",
+            addToQueue: "Add to queue",
+            removeFromQueue: "Remove from queue",
+            clear: "Clear"
         },
         copyright: {
             link: "Copyright",

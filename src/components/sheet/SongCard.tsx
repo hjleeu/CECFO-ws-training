@@ -3,8 +3,9 @@
 import Link from "next/link"
 import "@/styles/songs.css"
 import { useFavorites } from "@/hooks/useFavourite";
-import { Heart } from "lucide-react";
+import { Check, Heart, ListPlus } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { usePlayerQueue } from "@/hooks/usePlayerQueue";
 
 interface Props {
   song: {
@@ -22,6 +23,7 @@ interface Props {
 
 export function SongCard({ song }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { has: isQueued, toggle: toggleQueue } = usePlayerQueue();
 
   const { t } = useLanguage()
 
@@ -44,6 +46,23 @@ export function SongCard({ song }: Props) {
           fill={isFavorite(song.slug) ? "currentColor" : "none"}
         />
       </button>
+
+      {song.audioUrl && (
+        <button
+          type="button"
+          className={`queue-btn${isQueued(song.slug) ? " active" : ""}`}
+          aria-pressed={isQueued(song.slug)}
+          aria-label={isQueued(song.slug) ? t.player.removeFromQueue : t.player.addToQueue}
+          title={isQueued(song.slug) ? t.player.removeFromQueue : t.player.addToQueue}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleQueue(song.slug);
+          }}
+        >
+          {isQueued(song.slug) ? <Check size={18} /> : <ListPlus size={18} />}
+        </button>
+      )}
 
       <div className="song-card-header">
         {song.coverUrl ? (

@@ -24,7 +24,8 @@ export async function POST(request: Request) {
         measures: body.measures,
         brackets: body.brackets ?? [],
         coverUrl: body.coverUrl ?? null,
-        audioUrl: body.audioUrl ?? null
+        audioUrl: body.audioUrl ?? null,
+        lrcUrl: body.lrcUrl ?? null
       }
     })
 

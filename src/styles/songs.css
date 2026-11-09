@@ -162,6 +162,37 @@
     background: var(--color-accent-soft);
 }
 
+.queue-btn {
+    position: absolute;
+    right: calc(var(--space-2) + 2.25rem);
+    bottom: var(--space-2);
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.queue-btn:hover,
+.queue-btn.active {
+    background: var(--color-accent-soft);
+}
+
+.queue-btn.active {
+    color: var(--color-accent-text);
+}
+
+.song-card:has(.queue-btn) .song-card-meta {
+    padding-right: 5.25rem;
+}
+
 .songs-filters {
     display: flex;
     flex-wrap: wrap;

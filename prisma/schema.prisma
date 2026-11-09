@@ -26,6 +26,7 @@ model Song {
   brackets      Json?
   coverUrl      String?
   audioUrl      String?
+  lrcUrl        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

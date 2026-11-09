@@ -4,9 +4,10 @@ import path from "path";
 
 const ROOT = path.join(process.cwd(), "public", "uploads")
 const TYPES: Record<string, string> = {
-    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
-    ".webp": "image/webp", ".mp3": "audio/mpeg", ".mpeg": "audio/mpeg",
-    ".m4a": "audio/mp4", ".mp4": "audio/mp4", ".aac": "audio/aac"
+  ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+  ".webp": "image/webp", ".mp3": "audio/mpeg", ".mpeg": "audio/mpeg",
+  ".m4a": "audio/mp4", ".mp4": "audio/mp4", ".aac": "audio/aac",
+  ".lrc": "text/plain; charset=utf-8"
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
@@ -17,16 +18,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
 
   return file.startsWith(ROOT + path.sep) && type
     ? fs.readFile(file).then(buf => {
-        const m = /bytes=(\d*)-(\d*)/.exec(req.headers.get("range") ?? '')
-        const start = m && m[1] ? parseInt(m[1]) : 0
-        const end = m && m[2] ? parseInt(m[2]) : buf.length - 1
-        const headers = { "Content-Type": type, "Accept-Ranges": "bytes", "Cache-Control": "no-cache" }
-        return m
-          ? new NextResponse(new Uint8Array(buf.subarray(start, end + 1)), {
-              status: 206,
-              headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${buf.length}` },
-            })
-          : new NextResponse(new Uint8Array(buf), { headers })
-      }).catch(() => notFound)
+      const m = /bytes=(\d*)-(\d*)/.exec(req.headers.get("range") ?? '')
+      const start = m && m[1] ? parseInt(m[1]) : 0
+      const end = m && m[2] ? parseInt(m[2]) : buf.length - 1
+      const headers = { "Content-Type": type, "Accept-Ranges": "bytes", "Cache-Control": "no-cache" }
+      return m
+        ? new NextResponse(new Uint8Array(buf.subarray(start, end + 1)), {
+          status: 206,
+          headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${buf.length}` },
+        })
+        : new NextResponse(new Uint8Array(buf), { headers })
+    }).catch(() => notFound)
     : notFound
 }

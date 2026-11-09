@@ -5,7 +5,7 @@ import { Language } from "@/lib/i18n/translations"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Home, Languages, ListMusic, Moon, Sun, UserLock, type LucideIcon } from "lucide-react"
+import { Headphones, Home, Languages, ListMusic, Moon, Sun, UserLock, type LucideIcon } from "lucide-react"
 
 interface NavItem {
     href: string
@@ -16,6 +16,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
     { href: '/', icon: Home },
     { href: "/songs", icon: ListMusic },
+    { href: "/player", icon: Headphones },
     { href: "/admin", icon: UserLock }
 ]
 
@@ -60,6 +61,7 @@ export function Navbar() {
     const navLabels: Record<string, string> = {
         '/': t.nav.home,
         "/songs": t.nav.songs,
+        "/player": t.nav.player,
         "/admin": t.nav.admin
     }
 

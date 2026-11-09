@@ -50,7 +50,8 @@ export default function AdminPage() {
     const [timeSignature, setTimeSignature] = useState("4/4")
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
-    const [uploading, setUploading] = useState<"cover" | "audio" | null>(null)
+    const [lrcUrl, setLrcUrl] = useState<string | null>(null)
+    const [uploading, setUploading] = useState<"cover" | "audio" | "lrc" | null>(null)
     const [audioVer, setAudioVer] = useState(0)
 
     const [savedArtists, setArtists] = useState<string[]>([])
@@ -89,9 +90,10 @@ export default function AdminPage() {
             bpm,
             timeSignature,
             coverUrl: coverUrl ?? undefined,
-            audioUrl: audioUrl ?? undefined
+            audioUrl: audioUrl ?? undefined,
+            lrcUrl: lrcUrl ?? undefined
         }
-    }, [parsed, title, artist, album, songKey, bpm, timeSignature, coverUrl, audioUrl])
+    }, [parsed, title, artist, album, songKey, bpm, timeSignature, coverUrl, audioUrl, lrcUrl])
 
     const filteredAlbums = useMemo(
         () => [...new Set(artistAlbums.filter(a => a.artist === artist).map(a => a.album))],
@@ -144,6 +146,7 @@ export default function AdminPage() {
         setTimeSignature(data.timeSignature)
         setCoverUrl(data.coverUrl ?? null)
         setAudioUrl(data.audioUrl ?? null)
+        setLrcUrl(data.lrcUrl ?? null)
         setEditingSlug(slug)
         setFormKey(k => k + 1)
 
@@ -161,12 +164,13 @@ export default function AdminPage() {
         setTimeSignature("4/4")
         setCoverUrl(null)
         setAudioUrl(null)
+        setLrcUrl(null)
         setRaw('')
         setParsed(null)
         setError(null)
     }
 
-    const handleUpload = async (file: File, kind: 'cover' | 'audio') => {
+    const handleUpload = async (file: File, kind: "cover" | "audio" | "lrc") => {
         const slug = editingSlug ?? toSlug(title)
         if (!slug) {
             alert('请先输入标题 / Enter a title first')
@@ -189,6 +193,7 @@ export default function AdminPage() {
             }
 
             if (kind === "cover") { setCoverUrl(data.url) }
+            else if (kind === "lrc") { setLrcUrl(data.url) }
             else { setAudioUrl(data.url); setAudioVer(v => v + 1) }
         } catch (e) {
             alert((e as Error).message)
@@ -305,6 +310,32 @@ export default function AdminPage() {
                     />
                     {audioUrl && (
                         <button type="button" className="cover-remove-btn" onClick={() => setAudioUrl(null)}>×</button>
+                    )}
+                </div>
+
+                <div className="audio-dropzone-wrap">
+                    <label
+                        htmlFor="song-lrc"
+                        className={`audio-dropzone${uploading === 'lrc' ? ' cover-dropzone-busy' : ''}`}
+                    >
+                        <span className="audio-dropzone-icon">≡</span>
+                        <span className="cover-dropzone-label lrc-dropzone-name">
+                            {lrcUrl ? lrcUrl.split('/').pop() : 'Lyrics (.lrc)'}
+                        </span>
+                    </label>
+                    <input
+                        type="file"
+                        id="song-lrc"
+                        className="cover-dropzone-input"
+                        accept=".lrc,.txt"
+                        disabled={uploading === 'lrc'}
+                        onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) handleUpload(file, 'lrc')
+                        }}
+                    />
+                    {lrcUrl && (
+                        <button type="button" className="cover-remove-btn" onClick={() => setLrcUrl(null)}>×</button>
                     )}
                 </div>
 
