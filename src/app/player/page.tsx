@@ -6,7 +6,6 @@ import "@/styles/player.css"
 import { readResume, SongPlayer, type PlayerSong } from "@/components/ui/SongPlayer"
 import { usePlayerQueue } from "@/hooks/usePlayerQueue"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
-import { resume } from "react-dom/server"
 
 export default function PlayerPage() {
     const { t } = useLanguage()

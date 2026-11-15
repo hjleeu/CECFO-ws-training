@@ -9,7 +9,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
     const [error, setError] = useState('')
 
     useEffect(() => {
-        fetch("/api/login")
+        fetch("/api/session")
             .then(r => r.json())
             .then(d => setStatus(d.ok ? "in" : "out"))
             .catch(() => setStatus("out"))
