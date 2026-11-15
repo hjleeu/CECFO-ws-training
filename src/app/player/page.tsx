@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { X } from "lucide-react"
 import "@/styles/player.css"
-import { SongPlayer, type PlayerSong } from "@/components/ui/SongPlayer"
+import { readResume, SongPlayer, type PlayerSong } from "@/components/ui/SongPlayer"
 import { usePlayerQueue } from "@/hooks/usePlayerQueue"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { resume } from "react-dom/server"
 
 export default function PlayerPage() {
     const { t } = useLanguage()
@@ -30,6 +31,16 @@ export default function PlayerPage() {
             .map((slug) => bySlug.get(slug))
             .filter((s): s is PlayerSong => Boolean(s && s.audioUrl))
     }, [catalog, queue])
+
+    const resumed = useRef(false)
+    useEffect(() => {
+        if (!resumed.current && songs.length > 0) {
+            resumed.current = true
+            const i = songs.findIndex((s) => s.slug === readResume()?.slug)
+            if (i >= 0) { setIndex(i) }
+            setAutoPlay(true)
+        }
+    }, [songs])
 
     const current = Math.min(index, Math.max(songs.length - 1, 0))
     const song = songs[current]

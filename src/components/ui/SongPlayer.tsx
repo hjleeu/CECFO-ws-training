@@ -6,6 +6,34 @@ import { LyricsView } from "@/components/ui/LyricsView"
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { parseLrc, type LrcLine } from "@/lib/lrc"
 
+const RESUME_KEY = "playerResume"
+
+interface Resume {
+    slug: string
+    time: number
+}
+
+export function readResume(): Resume | null {
+    try {
+        const raw = localStorage.getItem(RESUME_KEY)
+        return raw ? (JSON.parse(raw) as Resume) : null
+    } catch {
+        return null
+    }
+}
+
+function writeResume(slug: string, time: number) {
+    try {
+        localStorage.setItem(RESUME_KEY, JSON.stringify({ slug, time }))
+    } catch { }
+}
+
+function clearResume() {
+    try {
+        localStorage.removeItem(RESUME_KEY)
+    } catch { }
+}
+
 export interface PlayerSong {
     slug: string
     title: string
@@ -42,6 +70,40 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
     const [duration, setDuration] = useState(0)
     const [lines, setLines] = useState<LrcLine[]>([])
     const safeDuration = Number.isFinite(duration) ? duration : 0
+
+    const restoredSlug = useRef('')
+    const lastSaved = useRef(0)
+
+    const save = (audio: HTMLAudioElement) => {
+        if (audio.currentTime > 0) {
+            writeResume(song.slug, audio.currentTime)
+            lastSaved.current = audio.currentTime
+        }
+    }
+
+    useEffect(() => {
+        const audio = audioRef.current
+        const onHide = () => {
+            if (audio && audio.currentTime > 0) { writeResume(song.slug, audio.currentTime)}
+        }
+        window.addEventListener("pagehide", onHide)
+        return () => {
+            window.removeEventListener("pagehide", onHide)
+            onHide()
+        }
+    }, [song.slug])
+
+    const handleMetadata = (audio: HTMLAudioElement) => {
+        setDuration(audio.duration)
+        if (restoredSlug.current !== song.slug) {
+            restoredSlug.current = song.slug
+            const saved = readResume()
+            if (saved && saved.slug === song.slug && saved.time > 3 && saved.time < audio.duration - 3) {
+                audio.currentTime = saved.time
+                setTime(saved.time)
+            }
+        }
+    }
 
     useEffect(() => {
         let alive = true
@@ -93,7 +155,7 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
         if (session) {
             session.metadata = new MediaMetadata({
                 title: song.title,
-                artist: song.artist ?? "",
+                artist: song.artist ?? '',
                 artwork: song.coverUrl ? [{ src: withSlash(song.coverUrl) }] : [],
             })
             session.setActionHandler("play", () => void audioRef.current?.play())
@@ -134,8 +196,9 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
     }
 
     const handleEnded = () => {
+        clearResume()
         setPlaying(false)
-        if (hasNext) onNext()
+        if (hasNext) { onNext() }
     }
 
     return (
@@ -191,11 +254,17 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
                 autoPlay={autoPlay}
                 preload="metadata"
                 onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
+                onPause={(e) => { setPlaying(false); save(e.currentTarget) }}
                 onEnded={handleEnded}
-                onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                onLoadedMetadata={(e) => handleMetadata(e.currentTarget)}
                 onDurationChange={(e) => setDuration(e.currentTarget.duration)}
-                onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+                onTimeUpdate={(e) => {
+                    const audio = e.currentTarget
+                    setTime(audio.currentTime)
+                    if (!audio.paused && Math.abs(audio.currentTime - lastSaved.current) >= 2) {
+                        save(audio)
+                    }
+                }}
             />
         </section>
     )
