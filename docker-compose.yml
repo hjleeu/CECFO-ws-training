@@ -41,6 +41,8 @@ services:
      - "3000:3000"
     environment:
      - DATABASE_URL=postgresql://worship:worship@db:5432/worship
+     - ADMIN_PWD=${ADMIN_PWD}
+     - AUTH_SECRET=${AUTH_SECRET}
     volumes:
       - uploads:/app/public/uploads
     depends_on:

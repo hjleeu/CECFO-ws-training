@@ -2,6 +2,7 @@
     max-width: var(--page-max);
     margin: 0 auto;
     padding: var(--space-4) var(--page-pad);
+    font-family: var(--font-chinese);
 }
 
 .player-layout {
