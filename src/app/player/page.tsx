@@ -50,7 +50,6 @@ export default function PlayerPage() {
             {song ? (
                 <div className="player-layout">
                     <SongPlayer
-                        key={song.slug}
                         song={song}
                         autoPlay={autoPlay}
                         hasPrev={current > 0}

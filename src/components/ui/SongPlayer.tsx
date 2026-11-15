@@ -34,8 +34,6 @@ function formatTime(seconds: number): string {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
 }
 
-// Render it with key={song.slug}: a new song remounts it, so audio, time and
-// lyrics reset without extra effects.
 export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }: SongPlayerProps) {
     const { t } = useLanguage()
     const audioRef = useRef<HTMLAudioElement>(null)
@@ -45,9 +43,11 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
     const [lines, setLines] = useState<LrcLine[]>([])
     const safeDuration = Number.isFinite(duration) ? duration : 0
 
-    // lyrics: fetched once per song (the component remounts on song change)
     useEffect(() => {
         let alive = true
+        setLines([])
+        setTime(0)
+        setDuration(0)
         if (song.lrcUrl) {
             fetch(withSlash(song.lrcUrl))
                 .then((res) => (res.ok ? res.text() : ""))
@@ -59,7 +59,13 @@ export function SongPlayer({ song, autoPlay, hasPrev, hasNext, onPrev, onNext }:
         return () => {
             alive = false
         }
-    }, [song.lrcUrl])
+    }, [song.slug, song.lrcUrl])
+
+    useEffect(() => {
+        if (autoPlay) {
+            audioRef.current?.play().catch(() => setPlaying(false))
+        }
+    }, [song.slug, autoPlay])
 
     // timeupdate fires ~4x/s; while playing, follow the clock every frame so the
     // lyric highlight is not late. Only commit changes > 50ms.
