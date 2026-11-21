@@ -151,7 +151,7 @@ export function songToRaw(song: Song): string {
 
     currentLineMeasures.push({ measure, index: i })
 
-    if (currentLineMeasures.length === 4) {
+    if (currentLineMeasures.length === 4 || measure.navigationMark?.length) {
       rawText += flushRow()
     }
   }
