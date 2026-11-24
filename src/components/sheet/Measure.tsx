@@ -148,7 +148,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
   })
 
   const measureMaxDuration = Math.max(...parsedNote.map(note => note.duration), 0)
-  
+
   const barStepPx = BAR_STEP_PX * scale
   const barGapPx = BAR_GAP_PX * scale
   const localFallbackHeightPx = measureMaxDuration * barStepPx + barGapPx
@@ -275,10 +275,11 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
 
             const isGhost = measure.notes[ni].note === '\\'
             const hasChord = showOptions.chords && !!measure.notes[ni].chord
-          
+
             return (
               <div
                 key={k}
+                data-note={`${measureIndex}-${ni}`}
                 className={isGhost && !hasChord ? "note-column note-column-ghost" : "note-column"}
                 ref={(el: HTMLDivElement | null) => {
                   registerNoteRef(measureIndex, ni, el)
@@ -287,7 +288,7 @@ export function Measure({ measure, measureIndex, showOptions, registerNoteRef, r
                 }}
               >
                 <span className="chord">
-                  {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord: ''}
+                  {showOptions.chords && measure.notes[ni].chord ? measure.notes[ni].chord : ''}
                 </span>
                 <Note
                   note={measure.notes[ni]}

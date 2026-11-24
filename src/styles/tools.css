@@ -149,13 +149,6 @@
     font-size: 0.88rem;
 }
 
-.metronome-title {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.37rem;
-}
-
 .metronome-btn.play {
     background: var(--color-accent);
     color: var(--color-on-accent);

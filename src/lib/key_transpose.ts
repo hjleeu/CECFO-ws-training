@@ -3,7 +3,7 @@ import { Song } from "@/types/MusicNotation"
 const SHARPS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const FLATS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
-const PITCH_MAP: Record<string, number> = {
+export const PITCH_MAP: Record<string, number> = {
     'C': 0, 'B#': 0,
     'C#': 1, 'Db': 1,
     'D': 2,

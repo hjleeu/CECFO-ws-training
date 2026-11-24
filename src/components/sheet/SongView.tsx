@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Song } from "@/components/sheet/Song"
 import { Metronome } from "@/components/sheet/Metronome"
 import { transposeSong } from "@/lib/key_transpose"
@@ -16,8 +16,9 @@ import { useStrokes } from "@/hooks/useStrokes"
 import { DrawTool } from "@/types/Drawing"
 import { useSongScale } from "@/hooks/useSongScale"
 import { AudioPlayer } from "../ui/AudioPlayer"
-import { Pencil, PenOff, SlidersHorizontal, X } from "lucide-react"
+import { Headset, Pencil, PenOff, SlidersHorizontal, X } from "lucide-react"
 import { TutorialPopup } from "../ui/TutorialPopup"
+import { useSongPlayback } from "@/hooks/useSongPlayback"
 
 interface Props {
     song: SongType
@@ -41,11 +42,18 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
     const [isDrawToolbarVisible, setDrawToolbarVisibility] = useState(false)
 
     const transposedSong = transposeSong(song, transposeOffset)
+    const [tempo, setTempo] = useState<{ slug: string; bpm: number } | null>(null)
+    const bpm = tempo?.slug === song.slug ? tempo.bpm : song.bpm || 73
+    const playSong = { ...song, bpm }
 
     const { strokes, persist, undo, canUndo } = useStrokes(worshipSetId, song.slug)
     const [drawTool, setDrawTool] = useState<DrawTool | null>(null)
-    const [drawColor, setDrawColor] = useState("#1a1a1a")
+    const [drawColor, setDrawColor] = useState("#1A1A1A")
     const [drawWidth, setDrawWidth] = useState(3)
+
+    const sheetRef = useRef<HTMLDivElement>(null)
+    const meterRef = useRef<HTMLSpanElement>(null)
+    const { playing, practicing, score, error, toggle: togglePlayBack, togglePractice } = useSongPlayback(playSong, transposeOffset, sheetRef, meterRef)
 
     const showLabel: Record<string, string> = {
         "chords": t.song.chords,
@@ -126,7 +134,20 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                     </div>
                 )}
 
-                <Metronome key={song.slug} defaultBpm={song.bpm || 73} timeSignature={song.timeSignature || "4/4"} />
+                <div className="transpose-controls">
+                    <span className="controls-label"><Headset /></span>
+                    <button type="button" disabled={practicing} onClick={togglePlayBack} className={`metronome-btn ${playing && !practicing ? "stop" : "play"}`}>
+                        {playing && !practicing ? "■" : "▶"}
+                    </button>
+                    <button type="button" disabled={playing && !practicing} onClick={togglePractice} className={`metronome-btn ${practicing ? "stop" : "play"}`}>
+                        {practicing ? "■" : "练习模式"}
+                    </button>
+                    {score && <span className="current-key font-bold">{((score.ok / score.total) * 100).toPrecision(3)}%</span>}
+                    {error === "headphones" && <span>Use headphones (speaker sound detected)</span>}
+                    {error === "mic" && <span>Microphone not available</span>}
+                </div>
+
+                <Metronome key={song.slug} bpm={bpm} onBpmChange={b => setTempo({ slug: song.slug, bpm: b })} timeSignature={song.timeSignature || "4/4"} />
             </div>
 
             <button
@@ -143,7 +164,13 @@ export function SongView({ song, worshipSetId, onDrawingActiveChange }: Props) {
                 title="Toggle draw toolbar"
             >{isDrawToolbarVisible ? <PenOff size={18} /> : <Pencil size={18} />}</button>
 
-            <div className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
+            {practicing && (
+                <button type="button" className="practice-meter" onClick={togglePractice}>
+                    <span ref={meterRef} data-state="idle">...</span> ■
+                </button>
+            )}
+
+            <div ref={sheetRef} className={`song-sheet-wrapper${drawTool ? " drawing-active" : ""}`} style={{ position: "relative" }}>
                 <Song song={transposedSong} showOptions={showOptions} scale={scale}/>
                 <DrawLayer
                     strokes={strokes}

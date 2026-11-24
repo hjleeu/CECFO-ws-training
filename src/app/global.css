@@ -19,6 +19,7 @@
   --color-accent-soft: color-mix(in srgb, var(--color-accent) 15%, transparent);
   --color-accent-text: light-dark(#8A6508, #E3B93C);
   --color-on-accent: light-dark(#FFFFFF, #141A14);
+  --color-ok: light-dark(#2E7D4F, #6FCF97);
   --color-danger: light-dark(#B5343A, #E05560);
   --color-border: light-dark(#D4D0C4, #283028);
   --color-shadow: light-dark(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.35));

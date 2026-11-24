@@ -2,9 +2,11 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { Metronome as MetronomeIcon } from "lucide-react"
 
 interface Props {
-  defaultBpm?: number
+  bpm: number
+  onBpmChange: (bpm: number) => void
   timeSignature?: string
 }
 
@@ -41,9 +43,8 @@ function accentForClick(clickIndex: number, groupSize: number): Accent {
   return groupIndex === 0 ? "Forte" : "Mezzoforte"
 }
 
-export function Metronome({ defaultBpm = 73, timeSignature = "4/4" }: Props) {
+export function Metronome({ bpm, onBpmChange, timeSignature = "4/4" }: Props) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [bpm, setBpm] = useState(defaultBpm)
 
   const { clicksPerMeasure, groupSize } = useMemo(() => parseTimeSignature(timeSignature), [timeSignature])
 
@@ -132,7 +133,7 @@ export function Metronome({ defaultBpm = 73, timeSignature = "4/4" }: Props) {
 
   return (
     <div className="metronome-container">
-      <span className="metronome-title">🎵 {t.metronome.metronome}</span>
+      <MetronomeIcon />
 
       <button
         onClick={() => setIsPlaying(!isPlaying)}
@@ -149,7 +150,7 @@ export function Metronome({ defaultBpm = 73, timeSignature = "4/4" }: Props) {
           min="40"
           max="200"
           value={bpm}
-          onChange={(e) => setBpm(Number(e.target.value))}
+          onChange={(e) => onBpmChange(Number(e.target.value))}
         />
         <span className="metronome-bpm-value">{bpm}</span>
       </div>
