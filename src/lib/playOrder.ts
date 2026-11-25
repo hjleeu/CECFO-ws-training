@@ -4,7 +4,7 @@
 
 import { NavigationMark, Song } from "@/types/MusicNotation"
 
-const SIGN_OFFSET = 1
+const SIGN_OFFSET = 1 // Jump to the next measure of the Coda and Segno symbol.
 const DEFAULT_PASSES = 2
 
 interface Volta {
@@ -55,7 +55,7 @@ export function playOrder(song: Song): number[] {
     const limit = n * 8 + 32
 
     const sectionStart = (i: number) => {
-        let j = 1
+        let j = i
         while (j > 0 && !ms[j].sectionLabel) { j-- }
         return j
     }
@@ -65,22 +65,14 @@ export function playOrder(song: Song): number[] {
     }
 
     let i = 0
-    let pass = -1
+    let pass = 1
     let repeatStart = -1
     let jumped = false
     let jumpKind = ''
-    let justJumped = false
     const usedChorusJump = new Set<number>()
 
     while (i < n && order.length < limit) {
         const m = ms[i]
-        if (m.barline === "repeatStart" && !justJumped) {
-            repeatStart = i + 1
-            pass = 1
-        }
-
-        justJumped = false
-
         const v = voltas.find(x => i >= x.start && i <= x.end)
         if (v && v.number !== (jumped ? v.last : pass)) {
             i = v.end + 1
@@ -97,7 +89,6 @@ export function playOrder(song: Song): number[] {
             if (pass < passes) {
                 pass++
                 i = blockStart
-                justJumped = true
                 continue
             }
         }
@@ -105,12 +96,17 @@ export function playOrder(song: Song): number[] {
             pass = 1
             repeatStart = -1
         }
+
+        if (m.barline === "repeatStart") {
+            repeatStart = i + 1 < n ? i + 1 : -1
+            pass = 1
+        }
+
         const jump = marks.map(k => JUMPS[k]).find(j => j !== undefined)
         if (!jumped && jump) {
             jumped = true
             jumpKind = jump.kind
             i = jump.to === "segno" ? signTarget("segno", 0) : 0
-            justJumped = true
             continue
         }
 
@@ -119,7 +115,6 @@ export function playOrder(song: Song): number[] {
             const coda = signTarget("coda", -1)
             if (coda >= 0) {
                 i = coda
-                justJumped = true
                 continue
             }
         }
@@ -128,11 +123,11 @@ export function playOrder(song: Song): number[] {
             if (chorus >= 0 && chorus !== i + 1) {
                 usedChorusJump.add(i)
                 i = chorus
-                justJumped = true
                 continue
             }
         }
         i++
     }
+
     return order
 }
