@@ -56,9 +56,7 @@ function midisOf(n: Note, tonic: number): number[] {
 export function buildPlayback(song: Song, semitones = 0): PlayPlan {
     const tonic = tonicMidi(song.key) + semitones
     const flat = playOrder(song).flatMap(mi => song.measures[mi].notes.map((n, ni) => ({ mi, ni, n })))
-    const ties = song.brackets.filter(b => b.kind !== "ending" && b.number !== undefined)
-
-    const indexOf = new Map(flat.map((f, i) => [`${f.mi}-${f.ni}`, i]))
+    const ties = song.brackets.filter(b => b.kind !== "ending" && b.number === undefined)
 
     const tieStart = new Map<number, number>()
     flat.forEach((f, i) => {
